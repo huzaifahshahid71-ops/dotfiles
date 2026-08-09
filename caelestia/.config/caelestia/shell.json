@@ -1,0 +1,62 @@
+{
+    "audio": {
+        "sounds": {
+            "sfxVolume": 1
+        }
+    },
+    "background": {
+        "desktopLyrics": {
+            "alignment": 1,
+            "autoHide": true,
+            "background": {
+                "blur": true,
+                "enabled": false,
+                "opacity": 0.7
+            },
+            "enabled": true,
+            "invertColors": false,
+            "position": "bottom-center",
+            "scale": 1.161813836348684,
+            "shadow": {
+                "blur": 0.4,
+                "enabled": true,
+                "opacity": 0.7
+            }
+        },
+        "enabled": true,
+        "videoWallpaperPaused": false,
+        "visualiser": {
+            "autoHide": true,
+            "blur": false,
+            "enabled": true,
+            "rounding": 1,
+            "spacing": 1
+        }
+    },
+    "bar": {
+        "activeWindow": {
+            "compact": false,
+            "inverted": false
+        },
+        "persistent": false
+    },
+    "launcher": {
+        "showOnHover": false,
+        "useFuzzy": {
+            "apps": false
+        },
+        "vimKeybinds": false
+    },
+    "paths": {
+        "wallpaperDir": "/home/gamer/Pictures/Wallpapers"
+    },
+    "services": {
+        "brightnessIncrement": 0.05,
+        "maxVolume": 1.25,
+        "useFahrenheit": false,
+        "visualiserBars": 60
+    },
+    "shimeji": {
+        "enabled": false
+    }
+}

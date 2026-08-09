@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -u
+
+runtime="${XDG_RUNTIME_DIR:-/run/user/$UID}"
+
+while true; do
+    for dir in "$runtime"/hypr/*; do
+        [[ -S "$dir/.socket.sock" ]] || continue
+
+        export HYPRLAND_INSTANCE_SIGNATURE="${dir##*/}"
+
+        if hyprctl -j monitors >/dev/null 2>&1; then
+            exec "$HOME/.local/bin/auto-refresh-rate"
+        fi
+    done
+
+    sleep 1
+done

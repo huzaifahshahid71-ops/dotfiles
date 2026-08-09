@@ -1,0 +1,11 @@
+[Unit]
+Description=Automatic 120/240 Hz refresh-rate switching
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/start-auto-refresh-rate
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=default.target

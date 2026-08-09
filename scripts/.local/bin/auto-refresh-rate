@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+
+set -u
+
+OUTPUT="eDP-1"
+
+BATTERY_MODE='modeline 1125.275 2560 2568 2600 2640 1600 3534 3542 3552 -hsync -vsync'
+AC_MODE='preferred'
+
+exec 9>"${XDG_RUNTIME_DIR:-/run/user/$UID}/auto-refresh-rate.lock"
+flock -n 9 || exit 0
+
+last_state=""
+last_verification=0
+
+get_power_state() {
+    local result
+
+    result="$(
+        busctl --system get-property \
+            org.freedesktop.UPower \
+            /org/freedesktop/UPower \
+            org.freedesktop.UPower \
+            OnBattery 2>/dev/null
+    )" || return 1
+
+    case "$result" in
+        "b true")  printf 'battery\n' ;;
+        "b false") printf 'ac\n' ;;
+        *) return 1 ;;
+    esac
+}
+
+get_refresh_rate() {
+    hyprctl monitors -j 2>/dev/null |
+        jq -r --arg output "$OUTPUT" \
+            '.[] | select(.name == $output) | .refreshRate'
+}
+
+apply_mode() {
+    local state="$1"
+    local mode
+    local result
+
+    if [[ "$state" == "battery" ]]; then
+        mode="$BATTERY_MODE"
+    else
+        mode="$AC_MODE"
+    fi
+
+    result="$(
+        hyprctl eval "hl.monitor({
+            output = \"$OUTPUT\",
+            mode = \"$mode\",
+            position = \"0x0\",
+            scale = 1.25
+        })" 2>&1
+    )"
+
+    if [[ "$result" == "ok" ]]; then
+        echo "Power state: $state — refresh-rate command applied"
+        return 0
+    fi
+
+    echo "Failed to apply $state mode: $result" >&2
+    return 1
+}
+
+echo "Automatic refresh-rate service started"
+
+while true; do
+    state="$(get_power_state)" || {
+        echo "Could not read UPower state" >&2
+        sleep 2
+        continue
+    }
+
+    now="$(date +%s)"
+    should_apply=false
+
+    # Apply immediately whenever charger state changes.
+    if [[ "$state" != "$last_state" ]]; then
+        echo "Power-state change detected: ${last_state:-unknown} -> $state"
+        should_apply=true
+
+    # Also verify every 30 seconds in case Hyprland reloads its monitor rule.
+    elif (( now - last_verification >= 30 )); then
+        refresh="$(get_refresh_rate)"
+
+        if [[ "$state" == "battery" ]]; then
+            awk -v hz="$refresh" 'BEGIN { exit !(hz > 180) }' &&
+                should_apply=true
+        else
+            awk -v hz="$refresh" 'BEGIN { exit !(hz < 200) }' &&
+                should_apply=true
+        fi
+
+        last_verification="$now"
+    fi
+
+    if [[ "$should_apply" == true ]]; then
+        if apply_mode "$state"; then
+            last_state="$state"
+            last_verification="$now"
+        fi
+    fi
+
+    sleep 1
+done

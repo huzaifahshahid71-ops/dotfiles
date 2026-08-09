@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+state="${XDG_RUNTIME_DIR:-/run/user/$UID}/caelestia-night-light"
+
+if [[ -e "$state" ]]; then
+    hyprctl hyprsunset identity
+    rm -f "$state"
+else
+    hyprctl hyprsunset temperature 4000
+    : > "$state"
+fi

@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+MUSIC_DIR="$HOME/Music"
+STATE_DIR="$HOME/.local/state/background-music"
+PLAYLIST="$MUSIC_DIR/Favorites.m3u8"
+SOCKET="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/mpv-background-music.sock"
+
+mkdir -p "$STATE_DIR"
+rm -f "$SOCKET"
+
+if [[ ! -s "$PLAYLIST" ]]; then
+    echo "Playlist missing or empty: $PLAYLIST" >&2
+    exit 1
+fi
+
+args=(
+    --no-video
+    --audio-display=no
+    --force-window=no
+    --terminal=no
+    --pause
+    --save-position-on-quit
+    --resume-playback=yes
+    --playlist-start=auto
+    --write-filename-in-watch-later-config
+    "--input-ipc-server=$SOCKET"
+    --loop-playlist=inf
+    "--playlist=$PLAYLIST"
+)
+
+exec /usr/bin/mpv "${args[@]}"
