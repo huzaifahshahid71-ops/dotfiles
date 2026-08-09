@@ -1,0 +1,17 @@
+caelestia-cli
+caelestia-firefox-theme
+darkly-bin
+dim-caelestia-shell-git
+equibop-bin
+google-chrome
+localsend-bin
+papirus-folders
+qtengine
+quickshell-git
+spicetify-cli
+spicetify-marketplace-bin
+spotify
+todoist-appimage
+vscodium-bin
+vscodium-bin-marketplace
+waylyrics
