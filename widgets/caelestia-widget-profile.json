@@ -1,0 +1,36 @@
+{
+  "formatVersion": 1,
+  "description": "Huzaifah's portable Caelestia desktop Lyrics + Audio Visualiser profile",
+  "background": {
+    "desktopLyrics": {
+      "alignment": 1,
+      "autoHide": true,
+      "background": {
+        "blur": true,
+        "enabled": false,
+        "opacity": 0.7
+      },
+      "enabled": true,
+      "invertColors": false,
+      "position": "bottom-center",
+      "scale": 1.161813836348684,
+      "shadow": {
+        "blur": 0.4,
+        "enabled": true,
+        "opacity": 0.7
+      }
+    },
+    "visualiser": {
+      "autoHide": true,
+      "blur": false,
+      "enabled": true,
+      "rounding": 1,
+      "spacing": 1
+    }
+  },
+  "services": {
+    "visualiserBars": 60,
+    "showLyrics": true
+  },
+  "paths": {}
+}

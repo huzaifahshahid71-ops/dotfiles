@@ -136,6 +136,55 @@ capture_dotfiles() {
     fi
 }
 
+
+capture_widget_profile() {
+    local src="$HOME/.config/caelestia/shell.json"
+    local dst="$REPO_DIR/widgets/caelestia-widget-profile.json"
+
+    [[ -f "$src" ]] || { warn "No Caelestia shell.json; skipping widget profile capture."; return 0; }
+
+    mkdir -p "$REPO_DIR/widgets"
+
+    jq '{
+        formatVersion: 1,
+        description: "Portable Caelestia desktop Lyrics + Audio Visualiser profile",
+        background: (
+            {}
+            + (if (.background.desktopLyrics? | type) == "object"
+               then {desktopLyrics: .background.desktopLyrics}
+               else {desktopLyrics: {enabled: true}}
+               end)
+            + (if (.background.visualiser? | type) == "object"
+               then {visualiser: .background.visualiser}
+               else {visualiser: {enabled: true, blur: false, autoHide: true, rounding: 1, spacing: 1}}
+               end)
+        ),
+        services: (
+            {}
+            + (if (.services? | type) == "object" and (.services | has("showLyrics"))
+               then {showLyrics: .services.showLyrics}
+               else {showLyrics: true}
+               end)
+            + (if (.services? | type) == "object" and (.services | has("lyricsBackend"))
+               then {lyricsBackend: .services.lyricsBackend}
+               else {}
+               end)
+            + (if (.services? | type) == "object" and (.services | has("visualiserBars"))
+               then {visualiserBars: .services.visualiserBars}
+               else {visualiserBars: 45}
+               end)
+        ),
+        paths: (
+            if (.paths? | type) == "object" and (.paths | has("lyricsDir"))
+            then {lyricsDir: .paths.lyricsDir}
+            else {}
+            end
+        )
+    }' "$src" > "$dst"
+
+    log "Saved portable Lyrics/Visualiser widget profile."
+}
+
 capture_packages() {
     mkdir -p "$PKG_DIR"
     local excludes='(^|[-_])(nvidia|cuda|cudnn|nvtop)([-_]|$)|^(sbctl|sbsigntools|mokutil|shim)$'
@@ -298,6 +347,7 @@ capture() {
     require_arch
     sudo -v
     capture_dotfiles
+    capture_widget_profile
     capture_packages
     capture_refind
     capture_sddm

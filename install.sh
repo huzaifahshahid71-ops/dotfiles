@@ -125,6 +125,110 @@ backup_stow_conflicts() {
     done < <(find "$src" -type f -print0)
 }
 
+
+install_widgets() {
+    local spec="${1:-}"
+    [[ -n "$spec" ]] || die "--widgets requires a comma-separated list: lyrics, visualiser, or lyrics,visualiser"
+
+    is_arch_family || die "The widget installer currently supports Arch/CachyOS only."
+
+    local want_lyrics=0
+    local want_visualiser=0
+    local item
+    local -a raw
+
+    IFS=',' read -ra raw <<< "$spec"
+    for item in "${raw[@]}"; do
+        item="${item,,}"
+        item="${item// /}"
+        case "$item" in
+            lyrics|desktoplyrics|desktop-lyrics) want_lyrics=1 ;;
+            visualiser|visualizer|audio-visualiser|audio-visualizer|desktop-visualiser|desktop-visualizer) want_visualiser=1 ;;
+            "") ;;
+            *) die "Unknown widget '$item'. Supported: lyrics, visualiser" ;;
+        esac
+    done
+
+    (( want_lyrics || want_visualiser )) || die "No supported widgets were selected."
+
+    log "Installing minimal Caelestia widget dependencies"
+    sudo pacman -S --needed jq
+    install_flexible_pkg dim-caelestia-shell-git || die "Could not install dim-caelestia-shell-git"
+    install_flexible_pkg caelestia-cli || die "Could not install caelestia-cli"
+
+    if (( want_visualiser )) && pacman -Si cava >/dev/null 2>&1; then
+        sudo pacman -S --needed cava
+    fi
+
+    local profile="$DOTFILES_DIR/widgets/caelestia-widget-profile.json"
+    [[ -f "$profile" ]] || die "Widget profile is missing from the repository: $profile"
+
+    local config_dir="$HOME/.config/caelestia"
+    local config="$config_dir/shell.json"
+    mkdir -p "$config_dir"
+    [[ -f "$config" ]] || printf '{}\n' > "$config"
+
+    jq empty "$config" >/dev/null || die "$config is not valid JSON"
+    jq empty "$profile" >/dev/null || die "$profile is not valid JSON"
+
+    local backup="$config.pre-widget-$(date +%Y%m%d-%H%M%S)"
+    cp -a "$config" "$backup"
+
+    local patch merged
+    patch="$(mktemp)"
+    merged="$(mktemp)"
+
+    jq \
+        --argjson lyrics "$want_lyrics" \
+        --argjson visualiser "$want_visualiser" '
+        (.background // {}) as $bg |
+        (.services // {}) as $svc |
+        (.paths // {}) as $paths |
+        {
+          background:
+            ({enabled: true}
+             + (if $lyrics == 1 then {desktopLyrics: (($bg.desktopLyrics // {}) + {enabled: true})} else {} end)
+             + (if $visualiser == 1 then {visualiser: (($bg.visualiser // {}) + {enabled: true})} else {} end)),
+          services:
+            ((if $lyrics == 1
+              then ({showLyrics: true}
+                    + (if ($svc | has("lyricsBackend")) then {lyricsBackend: $svc.lyricsBackend} else {} end))
+              else {} end)
+             + (if $visualiser == 1
+                then (if ($svc | has("visualiserBars")) then {visualiserBars: $svc.visualiserBars} else {} end)
+                else {} end)),
+          paths:
+            (if $lyrics == 1 and ($paths | has("lyricsDir"))
+             then {lyricsDir: $paths.lyricsDir}
+             else {} end)
+        }' "$profile" > "$patch"
+
+    jq -s '.[0] * .[1]' "$config" "$patch" > "$merged"
+    mv "$merged" "$config"
+    rm -f "$patch"
+
+    log "Widget configuration installed"
+    printf 'Backup of previous config: %s\n' "$backup"
+
+    if (( want_lyrics && want_visualiser )); then
+        printf 'Enabled: Desktop Lyrics + Desktop Audio Visualiser\n'
+    elif (( want_lyrics )); then
+        printf 'Enabled: Desktop Lyrics\n'
+    else
+        printf 'Enabled: Desktop Audio Visualiser\n'
+    fi
+
+    if pgrep -f 'qs -c caelestia' >/dev/null 2>&1; then
+        printf '\nCaelestia is already running. If needed, restart it with:\n'
+        printf 'pkill -f "qs -c caelestia"; caelestia shell -d\n'
+    else
+        printf '\nStarting Caelestia...\n'
+        caelestia shell -d || true
+    fi
+
+    printf '\nWidget-only mode did not install this repository'\''s Hyprland, Fish, SDDM, rEFInd, ASUS/G16, hibernation, refresh-rate, scripts, or systemd profiles.\n'
+}
+
 base_install() {
     is_arch_family || die "This installer currently supports Arch/CachyOS only."
 
@@ -171,6 +275,7 @@ No options:
 
 Options:
   --base          Base CachyOS/Arch + Hyprland + DiM Caelestia dotfiles
+  --widgets LIST  Install only selected Caelestia desktop widgets
   --asus          ASUS laptop support (asusctl + ROG Control Center)
   --g16           Zephyrus G16 profile; implies --asus
   --refind        rEFInd install/restore/customization
@@ -183,6 +288,9 @@ Options:
 
 Examples:
   ./install.sh --base
+  ./install.sh --widgets lyrics
+  ./install.sh --widgets visualiser
+  ./install.sh --widgets lyrics,visualiser
   ./install.sh --asus
   ./install.sh --g16 --refind
   ./install.sh --all
@@ -194,11 +302,22 @@ main() {
     is_arch_family || die "This installer currently supports Arch/CachyOS only."
 
     local do_asus=0 do_g16=0 do_refind=0 do_refresh=0 do_hibernate=0 do_status=0
+    local widget_spec=""
     local explicit=0
 
     while (($#)); do
         case "$1" in
             --base) explicit=1 ;;
+            --widgets)
+                [[ $# -ge 2 ]] || die "--widgets requires a value"
+                widget_spec="$2"
+                explicit=1
+                shift
+                ;;
+            --widgets=*)
+                widget_spec="${1#*=}"
+                explicit=1
+                ;;
             --asus) do_asus=1; explicit=1 ;;
             --g16) do_g16=1; do_asus=1; explicit=1 ;;
             --refind) do_refind=1; explicit=1 ;;
@@ -217,6 +336,11 @@ main() {
         esac
         shift
     done
+
+    if [[ -n "$widget_spec" ]]; then
+        install_widgets "$widget_spec"
+        exit 0
+    fi
 
     base_install
 

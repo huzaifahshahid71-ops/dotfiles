@@ -76,6 +76,76 @@ Example:
 
 ---
 
+
+# Widget-only installation
+
+People who only want the **Desktop Lyrics** and/or **Desktop Audio Visualiser**
+do not need to install my complete dotfiles or any G16-specific setup.
+
+The repository includes a portable profile captured from my Caelestia
+configuration:
+
+```text
+widgets/caelestia-widget-profile.json
+```
+
+The widget installer merges only those widget-related settings into the
+user's existing `~/.config/caelestia/shell.json`. It does not replace the
+rest of their Caelestia configuration.
+
+## Desktop Lyrics only
+
+```bash
+./install.sh --widgets lyrics
+```
+
+One-command remote install:
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/huzaifahshahid71-ops/dotfiles/main/install.sh)" -- --widgets lyrics
+```
+
+## Desktop Audio Visualiser only
+
+Both spellings are accepted:
+
+```bash
+./install.sh --widgets visualiser
+./install.sh --widgets visualizer
+```
+
+One-command remote install:
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/huzaifahshahid71-ops/dotfiles/main/install.sh)" -- --widgets visualiser
+```
+
+## Lyrics + Visualiser
+
+```bash
+./install.sh --widgets lyrics,visualiser
+```
+
+or directly from GitHub:
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/huzaifahshahid71-ops/dotfiles/main/install.sh)" -- --widgets lyrics,visualiser
+```
+
+Widget-only mode installs the Caelestia shell/CLI and the minimum
+widget-specific configuration. It intentionally does **not** install or
+modify the repository's Hyprland, Fish, Frieren SDDM, rEFInd, ASUS/G16,
+hibernation, refresh-rate, personal-script, or systemd profiles.
+
+Before changing an existing Caelestia `shell.json`, the installer creates a
+timestamped backup next to the original file.
+
+Desktop Lyrics requires a compatible active media player and lyrics available
+through the configured Caelestia lyrics backend. The Audio Visualiser reacts
+to audio through Caelestia's audio service.
+
+---
+
 # Base desktop setup
 
 The base profile is intended for CachyOS/Arch and installs/restores the normal desktop environment.
@@ -415,6 +485,8 @@ dotfiles/
 ├── mpv/                       # ~/.config/mpv
 ├── scripts/                   # ~/.local/bin helpers
 ├── systemd/                   # ~/.config/systemd/user
+├── widgets/
+│   └── caelestia-widget-profile.json
 ├── hardware/
 │   ├── ASUS.md
 │   ├── ZEPHYRUS-G16.md
