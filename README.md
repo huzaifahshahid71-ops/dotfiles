@@ -1,368 +1,493 @@
-CachyOS + Hyprland Dotfiles
+# Huzaifah's CachyOS / Hyprland Dotfiles
 
-My personal CachyOS / Hyprland desktop configuration, built around DIM Caelestia, with custom display scaling, automatic refresh-rate switching, background music, floating lyrics, a desktop audio visualizer, and other quality-of-life tweaks.
+Personal dotfiles and setup automation for my CachyOS/Arch Linux workstation, centered around **Hyprland**, **DiM Caelestia**, **Fish**, and an ASUS ROG Zephyrus G16 workflow.
 
-[!WARNING]These dotfiles are tuned for my own laptop and display.Read the configuration before enabling the monitor, refresh-rate, ASUS, or systemd-related parts on another machine.
+The goal of this repository is simple: after a reinstall, I should be able to clone one repository, run one command, and restore the core desktop experience without manually rebuilding every configuration from scratch.
 
-Features
+> This is primarily a personal configuration repository. It is designed around my own hardware and workflow, especially CachyOS/Arch and ASUS ROG laptops. Read the scripts before using them on a different machine.
 
-Hyprland with Lua configuration
+---
 
-125% display scaling
+## What this repository restores
 
-Automatic internal-display refresh-rate switching:
+The installer is intended to restore the user-facing configuration and supporting utilities that make up the desktop environment:
 
-~120 Hz on battery
+- Hyprland configuration
+- DiM Caelestia user configuration
+- Fish shell configuration
+- mpv / MPRIS configuration
+- personal helper scripts in `~/.local/bin`
+- user-level systemd services
+- saved official repository and AUR package lists
+- ASUS laptop utilities
+- Zephyrus G16-specific helpers
+- rEFInd configuration and theme
+- optional refresh-rate automation
+- optional Btrfs hibernation swap setup
 
-240 Hz on AC power
+The repository deliberately keeps hardware-sensitive or security-sensitive operations out of the automatic path where possible.
 
-DIM Caelestia Shell
+---
 
-desktop audio visualizer
+# Quick install
 
-floating desktop lyrics
+For a fresh CachyOS/Arch installation:
 
-weather in Celsius
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/huzaifahshahid71-ops/dotfiles/main/install.sh)"
+```
 
-custom wallpaper directory
+The default command starts the interactive installer.
 
-Shimeji desktop pet disabled
+For a direct Zephyrus G16 setup with rEFInd:
 
-Fish shell
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/huzaifahshahid71-ops/dotfiles/main/install.sh)" -- --g16 --refind
+```
 
-Headless mpv background music
+For the complete supported setup:
 
-Caelestia/MPRIS media controls
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/huzaifahshahid71-ops/dotfiles/main/install.sh)" -- --all
+```
 
-Persistent custom .m3u8 playlist support
+---
 
-Automatic music startup and playback resume
+# Installer profiles
 
-User systemd services
+The installer supports separate profiles so machine-specific configuration does not have to be mixed into the normal desktop setup.
 
-Custom helper scripts
+| Option | Purpose |
+|---|---|
+| `--base` | Base CachyOS/Arch desktop configuration |
+| `--asus` | Generic ASUS laptop support |
+| `--g16` | ASUS ROG Zephyrus G16-specific additions |
+| `--refind` | rEFInd installation/restoration |
+| `--refresh` | Enable AC/battery refresh-rate automation |
+| `--hibernate` | Configure the saved Btrfs hibernation setup |
+| `--all` | Install the full supported configuration |
+| `--status` | Show system and configuration status |
 
-hyprsunset support for a Windows-style Night Light
+Example:
 
-ASUS ROG utilities used separately through asusctl / ROG Control Center
+```bash
+./install.sh --g16 --refind
+```
 
-Repository Structure
+---
 
-dotfiles/
-├── caelestia/
-│   └── .config/caelestia/
-├── fish/
-│   └── .config/fish/
-├── hypr/
-│   └── .config/hypr/
-├── mpv/
-│   └── .config/mpv/
-├── scripts/
-│   └── .local/bin/
-├── systemd/
-│   └── .config/systemd/user/
-└── .gitignore
+# Base desktop setup
 
-The folders are arranged in a GNU Stow-friendly layout.
+The base profile is intended for CachyOS/Arch and installs/restores the normal desktop environment.
 
-Screenshots
+The core stack is:
 
-Add screenshots of the desktop here:
+- **CachyOS / Arch Linux**
+- **Hyprland**
+- **DiM Caelestia**
+- **Fish**
+- **GNU Stow**
+- **mpv**
+- **playerctl**
+- supporting shell and desktop utilities
 
-![Desktop](assets/desktop.png)
-![Caelestia](assets/caelestia.png)
+The installer uses GNU Stow-style package directories so the repository remains readable and configuration files still appear at their normal locations inside `$HOME`.
 
-Requirements
+Before replacing a regular file, the installer moves conflicting files into a timestamped backup directory under:
 
-This setup is primarily intended for Arch Linux / CachyOS.
+```text
+~/dotfiles-backup/
+```
 
-Core packages:
+This makes reinstalling much safer than blindly overwriting an existing setup.
 
-sudo pacman -S git stow hyprland fish mpv jq hyprsunset
+---
 
-For AUR packages, install an AUR helper such as paru, then:
+# DiM Caelestia
 
-paru -S dim-caelestia-shell-git
+The daily shell is based on the **DiM Caelestia** fork.
 
-Depending on your existing CachyOS installation, you may already have many of the required Hyprland/Wayland packages.
+The dotfiles repository stores the user configuration for Caelestia rather than embedding the entire upstream shell source tree.
 
-Installation
+The experimental development shell is kept separate at:
 
-1. Clone the repository
+```text
+~/.config/quickshell/huzaifah-shell-dev
+```
 
-git clone https://github.com/huzaifahshahid71-ops/dotfiles.git ~/dotfiles
-cd ~/dotfiles
+That development repository is intentionally **not nested inside this dotfiles repository**. When the system is captured, its Git origin, branch, and commit can be recorded in:
 
-2. Back up your current configuration
+```text
+machine/custom-shell.txt
+```
 
-Do this before applying anything:
+This keeps the main dotfiles repository clean while still preserving exactly which custom-shell revision was being used.
 
-mkdir -p ~/dotfiles-backup
+---
 
-cp -a ~/.config/hypr ~/dotfiles-backup/ 2>/dev/null || true
-cp -a ~/.config/caelestia ~/dotfiles-backup/ 2>/dev/null || true
-cp -a ~/.config/fish ~/dotfiles-backup/ 2>/dev/null || true
-cp -a ~/.config/mpv ~/dotfiles-backup/ 2>/dev/null || true
-cp -a ~/.config/systemd/user ~/dotfiles-backup/systemd-user 2>/dev/null || true
-cp -a ~/.local/bin ~/dotfiles-backup/local-bin 2>/dev/null || true
+# ASUS laptop support
 
-3. Apply with GNU Stow
+Install the ASUS profile with:
 
-From ~/dotfiles:
+```bash
+./install.sh --asus
+```
 
-stow -t "$HOME" caelestia
-stow -t "$HOME" fish
-stow -t "$HOME" hypr
-stow -t "$HOME" mpv
-stow -t "$HOME" scripts
-stow -t "$HOME" systemd
+The ASUS profile installs the ASUS laptop control utilities used by this setup and exposes the normal management commands without automatically changing GPU mode.
 
-You do not have to use every package. Stow only the parts you want.
+Typical commands include:
 
-If Stow reports that files already exist, move or back them up first instead of forcing the operation blindly.
+```bash
+asusctl --help
+asusctl profile -n
+rog-control-center
+```
 
-Configuration Notes
+The installer avoids silently replacing another active power-management stack. If something such as TLP or tuned is already active, it leaves that decision to the user.
 
-Hyprland Monitor Configuration
+---
 
-My internal display is named:
+# ASUS ROG Zephyrus G16 profile
 
-eDP-1
+Install the G16 profile with:
 
-Check your monitor names with:
+```bash
+./install.sh --g16
+```
 
-hyprctl monitors
+This profile builds on the generic ASUS setup and is intended for the ROG Zephyrus G16 family used with these dotfiles.
 
-If your display has a different name, update the relevant Hyprland files and scripts before using them.
+The current desktop assumptions include:
 
-125% scaling
+- Hyprland display scale around `1.25`
+- high-refresh internal panel
+- approximately `120 Hz` on battery
+- `240 Hz` on AC power
+- an optional user systemd service for automatic refresh-rate switching
 
-My internal display uses:
+The installer can detect common G16 DMI identifiers and also allows the profile to be applied manually when the exact revision is different.
 
-scale = 1.25
+## GPU switching
 
-Check the current scale with:
+GPU mode is intentionally not changed automatically.
 
-hyprctl monitors | grep -E 'Monitor|scale'
+Optional GPU switching tools may be installed, but commands such as the following should be run manually only after checking the current system state:
 
-Automatic 120 / 240 Hz Switching
+```bash
+supergfxctl --help
+supergfxctl --mode Hybrid
+supergfxctl --mode Integrated
+```
 
-My laptop automatically changes refresh rate depending on charger state:
+This is intentional: changing graphics mode can terminate the graphical session or require a reboot depending on the hardware and current driver state.
 
-Power state
+---
 
-Refresh rate
+# Refresh-rate automation
 
-Battery
+The optional refresh profile enables the existing user service:
 
-~119.97 Hz
-
-AC power
-
-240 Hz
-
-The custom battery mode currently uses this modeline:
-
-modeline 1125.275 2560 2568 2600 2640 1600 3534 3542 3552 -hsync -vsync
-
-[!CAUTION]Do not copy this modeline blindly to another display.It was created specifically for my laptop panel.
-
-The helper scripts are located under:
-
-~/.local/bin/
-
-The associated user service is:
-
+```text
 auto-refresh-rate.service
+```
+
+Its purpose is to keep the internal display at the preferred high refresh rate on AC power and a lower high-refresh mode on battery.
 
 Enable it with:
 
-systemctl --user daemon-reload
-systemctl --user enable --now auto-refresh-rate.service
+```bash
+./install.sh --refresh
+```
 
-Check the current refresh rate:
+The exact behavior remains defined by the scripts/service files stored in this repository, so it can be reviewed or changed without editing the installer itself.
 
-hyprctl monitors -j | jq -r '.[] | "\(.name): \(.refreshRate) Hz"'
+---
 
-DIM Caelestia
+# rEFInd
 
-This setup uses the DIM fork of Caelestia:
+The rEFInd profile is intended to restore the customized boot manager after a reinstall.
 
-paru -S dim-caelestia-shell-git
+Run:
 
-My configuration includes:
+```bash
+./install.sh --refind
+```
 
-desktop audio visualizer
+The setup process is designed to:
 
-floating lyrics
+1. detect the EFI System Partition
+2. install rEFInd when necessary
+3. create a timestamped backup of the active `refind.conf`
+4. restore the repository's rEFInd configuration
+5. replace the stored root UUID placeholder with the current machine's root UUID
+6. restore the saved `rEFInd-minimal` theme when available
+7. preserve graphical Linux boot configuration
 
-Celsius weather
+The stored configuration uses:
 
-custom wallpaper directory
+```text
+__ROOT_UUID__
+```
 
-Shimeji disabled
+instead of hard-coding the UUID of one installation.
 
-Wallpaper directory:
+That allows the same repository to be reused after repartitioning or reinstalling.
 
-~/Pictures/Wallpapers
+## Secure Boot
 
-Create it if necessary:
+Secure-Boot signing is intentionally not automated by this repository.
 
-mkdir -p ~/Pictures/Wallpapers
+If Secure Boot is enabled, the installer stops before performing configuration that assumes unsigned rEFInd binaries.
 
-Background Music
+This is kept manual because signing keys and Secure-Boot enrollment are machine-security credentials, not normal dotfiles.
 
-Music is played by a headless mpv process controlled through Caelestia/MPRIS.
+---
 
-The service:
+# Hibernation
 
-background-music.service
+The optional hibernation profile is for the Btrfs-based setup used on the target machine.
 
-uses this playlist by default:
+Run:
 
-~/Music/Favorites.m3u8
+```bash
+./install.sh --hibernate
+```
 
-Important
+The current profile is designed around:
 
-The actual music files and my personal playlist are not intended to be part of the dotfiles repo.
+```text
+/swap/swapfile
+```
 
-Create your own playlist, for example:
+with a size of:
 
-#EXTM3U
-/home/YOUR_USER/Music/Song One.mp3
-/home/YOUR_USER/Music/Song Two.mp3
-/home/YOUR_USER/Music/Song Three.mp3
+```text
+20G
+```
 
-The line order is the playback order.
+It creates/configures the Btrfs swapfile, adds it to `/etc/fstab`, configures the hibernation image size, and displays the Btrfs resume offset needed for verification.
 
-If you want a different playlist location, edit:
+The script **does not automatically hibernate the machine**.
 
-~/.local/bin/background-music
+Because hibernation depends on the active kernel/initramfs/boot configuration, the resulting setup should always be verified before relying on it.
 
-and change:
+---
 
-PLAYLIST="$MUSIC_DIR/Favorites.m3u8"
+# Package backup and restore
 
-Enable the service:
+The machine capture command stores separately:
 
-systemctl --user daemon-reload
-systemctl --user enable --now background-music.service
+```text
+machine/packages/pacman.txt
+machine/packages/aur.txt
+```
 
-Check it:
+These represent explicitly installed official-repository and foreign/AUR packages.
 
-systemctl --user status background-music.service
+Restore them with:
 
-Restart after changing the playlist:
+```bash
+./system-setup.sh packages
+```
 
-systemctl --user restart background-music.service
+The package capture intentionally excludes categories that should not be blindly reproduced on another install, especially GPU/NVIDIA/CUDA and Secure-Boot tooling.
 
-mpv
+---
 
-My mpv configuration keeps background audio playback invisible:
+# Capturing the current machine
 
-audio-display=no
-force-window=no
+After changing the desktop configuration, update the repository with:
 
-Caelestia then acts as the visible media interface.
-
-Night Light
-
-I use hyprsunset as the Hyprland equivalent of Windows Night Light.
-
-Enable its user service:
-
-systemctl --user enable --now hyprsunset.service
-
-Set a warm color temperature:
-
-hyprctl hyprsunset temperature 4000
-
-Disable the filter:
-
-hyprctl hyprsunset identity
-
-ASUS ROG Notes
-
-My machine is an ASUS ROG laptop and I also use asusctl / ROG Control Center outside of these dotfiles.
-
-ASUS-specific GPU modes, fan curves, power controls, and firmware behavior vary between models.
-
-Do not assume my ASUS-related settings are appropriate for another laptop.
-
-Useful Commands
-
-Reload Hyprland
-
-hyprctl reload
-
-Check monitor scale and refresh rate
-
-hyprctl monitors
-
-Restart refresh-rate automation
-
-systemctl --user restart auto-refresh-rate.service
-
-Check background music
-
-systemctl --user status background-music.service
-
-Restart background music
-
-systemctl --user restart background-music.service
-
-Check which playlist mpv is using
-
-ps aux | grep '[m]pv'
-
-Updating the Dotfiles
-
-After changing your configuration:
-
+```bash
 cd ~/dotfiles
+./system-setup.sh capture
 git status
-git add .
-git commit -m "Update dotfiles"
+git diff
+```
+
+The capture command synchronizes supported configuration into the repository and records machine-specific metadata.
+
+It can capture:
+
+- Caelestia configuration
+- Fish configuration
+- Hyprland configuration
+- mpv configuration
+- `~/.local/bin`
+- user systemd units
+- package lists
+- sanitized rEFInd configuration
+- rEFInd theme files
+- hardware/system metadata
+- custom Quickshell development revision metadata
+
+After reviewing:
+
+```bash
+git add -A
+git commit -m "chore: update system snapshot"
 git push
+```
 
-Always inspect what is about to be published:
+---
 
-git diff --cached
+# Repository structure
 
-Security
+```text
+dotfiles/
+├── caelestia/                 # ~/.config/caelestia
+├── fish/                      # ~/.config/fish
+├── hypr/                      # ~/.config/hypr
+├── mpv/                       # ~/.config/mpv
+├── scripts/                   # ~/.local/bin helpers
+├── systemd/                   # ~/.config/systemd/user
+├── hardware/
+│   ├── ASUS.md
+│   ├── ZEPHYRUS-G16.md
+│   └── REFIND.md
+├── machine/
+│   ├── packages/
+│   │   ├── pacman.txt
+│   │   └── aur.txt
+│   ├── refind/
+│   ├── current-system.txt
+│   └── custom-shell.txt
+├── install.sh
+├── system-setup.sh
+└── README.md
+```
 
-Never commit:
+Some `machine/` files only appear after running a capture.
 
-GitHub Personal Access Tokens
+---
 
-passwords
+# System management commands
 
-API keys
+The lower-level helper can also be called directly:
 
-SSH private keys
+```bash
+./system-setup.sh capture
+./system-setup.sh packages
+./system-setup.sh asus
+./system-setup.sh g16
+./system-setup.sh refind
+./system-setup.sh refresh
+./system-setup.sh hibernate
+./system-setup.sh status
+```
 
-Wi-Fi credentials
+Use:
 
-browser profiles or cookies
+```bash
+./system-setup.sh --help
+```
 
-encryption / BitLocker recovery keys
+or:
 
-private certificates
+```bash
+./install.sh --help
+```
 
-other personal secrets
+to see the available options.
 
-If a secret is ever committed, removing it in a later commit is not enough. Revoke/rotate the secret and remove it from Git history.
+---
 
-Disclaimer
+# What is intentionally NOT automated
 
-These are my personal dotfiles, not a universal installer.
+A reinstall script should not make every possible system decision automatically.
 
-Some settings—especially display modelines, monitor names, refresh rates, laptop hardware controls, absolute paths, and user services—must be adapted before using them on another system.
+This repository deliberately avoids automatically managing:
 
-Feel free to fork the repo and customize it for your own setup.
+- NVIDIA driver installation or replacement
+- CUDA installation
+- automatic GPU-mode switching
+- Secure-Boot key creation
+- Secure-Boot signing/enrollment
+- destructive partitioning
+- BIOS/UEFI settings
+- automatic hibernation testing
+- secrets, tokens, passwords, or credentials
 
-License
+Those operations are either hardware-specific, security-sensitive, or capable of leaving the machine unbootable if applied incorrectly.
 
-You are welcome to use and modify these configs.
+---
 
-Consider adding an MIT License to make the reuse terms explicit.
+# Secret and cache handling
+
+The capture process excludes common temporary or sensitive files such as:
+
+```text
+.env
+.env.*
+*token*
+*secret*
+*credential*
+*.log
+*.pid
+*.lock
+cache/
+.cache/
+build/
+```
+
+Fish universal variables are also excluded from the automatic capture.
+
+Before pushing a new snapshot, always review:
+
+```bash
+git status
+git diff
+```
+
+This repository is public-facing, so secret review remains important even with automatic exclusions.
+
+---
+
+# Reinstall workflow
+
+A typical reinstall looks like this:
+
+```text
+1. Install CachyOS / Arch Linux
+2. Connect to the internet
+3. Run the one-command installer
+4. Choose the G16/ASUS/rEFInd options required by the machine
+5. Reboot when appropriate
+6. Verify graphics, display refresh rate, audio, networking and hibernation
+```
+
+Then future updates to the current machine can be saved using:
+
+```bash
+cd ~/dotfiles
+./system-setup.sh capture
+git add -A
+git commit -m "chore: update dotfiles"
+git push
+```
+
+---
+
+# Notes for other users
+
+These files are published primarily as a backup and reproducible configuration for my own machines.
+
+If you want to use them:
+
+- fork the repository first
+- inspect `install.sh` and `system-setup.sh`
+- remove hardware-specific assumptions you do not need
+- review Hyprland monitor configuration
+- review ASUS/G16 services
+- review rEFInd paths before installing
+- never reuse someone else's Secure-Boot keys or credentials
+
+The base Stow layout can still be useful even if none of the hardware profiles apply to your system.
+
+---
+
+## Current focus
+
+The repository is now focused on maintaining a **stable, reproducible daily desktop** rather than continuously modifying the Caelestia shell itself.
+
+Experimental shell/widget work can remain in its own development repository, while this dotfiles repository stays responsible for making the working system easy to restore.
