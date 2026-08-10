@@ -203,78 +203,6 @@ The exact behavior remains defined by the scripts/service files stored in this r
 
 ---
 
-
-# Frieren SDDM login theme
-
-The repository also backs up and restores my **exact SDDM login screen**, not
-just the name of the theme.
-
-The live theme is captured from:
-
-```text
-/usr/share/sddm/themes/sddm-frieren-theme
-```
-
-and stored in:
-
-```text
-machine/sddm/themes/sddm-frieren-theme/
-```
-
-The capture preserves the complete theme directory as it exists on the
-working machine, including its QML layout, configuration, images, theme
-metadata, positioning, sizing, and other customizations.
-
-The active SDDM configuration is also captured from:
-
-```text
-/etc/sddm.conf
-/etc/sddm.conf.d/
-```
-
-when those paths exist. Their repository copies live under:
-
-```text
-machine/sddm/etc/
-```
-
-This means a fresh install restores the **same Frieren login-screen format and
-configuration**, rather than installing a generic copy of the theme.
-
-The normal one-command installer restores this automatically during the base
-installation whenever an SDDM snapshot exists:
-
-```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/huzaifahshahid71-ops/dotfiles/main/install.sh)"
-```
-
-It can also be restored manually with:
-
-```bash
-./system-setup.sh sddm
-```
-
-or:
-
-```bash
-./install.sh --sddm
-```
-
-Before replacing the installed theme or `/etc` configuration, the installer
-makes a timestamped root-owned backup under:
-
-```text
-/var/backups/huzaifah-dotfiles/sddm/
-```
-
-If another display manager is already configured, the files are restored but
-the installer does not silently replace that display manager.
-
-> The Frieren screen described here is the **SDDM login screen**. The in-session
-> Super+L lock screen remains part of Caelestia and is separate from SDDM.
-
----
-
 # rEFInd
 
 The rEFInd profile is intended to restore the customized boot manager after a reinstall.
@@ -422,9 +350,6 @@ dotfiles/
 │   │   ├── pacman.txt
 │   │   └── aur.txt
 │   ├── refind/
-│   ├── sddm/
-│   │   ├── themes/sddm-frieren-theme/
-│   │   └── etc/
 │   ├── current-system.txt
 │   └── custom-shell.txt
 ├── install.sh
@@ -446,7 +371,6 @@ The lower-level helper can also be called directly:
 ./system-setup.sh asus
 ./system-setup.sh g16
 ./system-setup.sh refind
-./system-setup.sh sddm
 ./system-setup.sh refresh
 ./system-setup.sh hibernate
 ./system-setup.sh status

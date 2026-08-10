@@ -1,0 +1,13 @@
+[SddmGreeterTheme]
+Name=sddm-frieren-theme
+Description=Frieren: Beyond Journey's End themed SDDM login screen
+Author=moau-prog
+Website=https://github.com/moau-prog
+License=GPL-3.0-or-later
+Type=sddm-theme
+Version=1.0
+ConfigFile=Themes/theme.conf
+MainScript=Main.qml
+Theme-Id=sddm-frieren-theme
+Theme-API=2.0
+QtVersion=6

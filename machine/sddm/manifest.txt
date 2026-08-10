@@ -1,0 +1,4 @@
+captured_at=2026-08-10T18:48:34+03:00
+theme_path=/usr/share/sddm/themes/sddm-frieren-theme
+display_manager=/usr/lib/systemd/system/sddm.service
+sddm_version=

@@ -1,8 +1,8 @@
-captured_at=2026-08-10T18:32:27+03:00
+captured_at=2026-08-10T18:48:34+03:00
 hostname=cachyos-x8664
 kernel=7.1.6-1-cachyos
 root_fs=btrfs
 root_uuid=138b3e7f-ee84-4cc3-8e88-dcd2e9bc57c2
 dmi_vendor=ASUSTeK COMPUTER INC.
 dmi_product=ROG Zephyrus G16 GU605CR_GU605CR
-swap=/swap/swapfile file 20G 0B 10;/dev/zram0 partition 62.2G 3.9M 100;
+swap=/swap/swapfile file 20G 0B 10;/dev/zram0 partition 62.2G 3.8M 100;

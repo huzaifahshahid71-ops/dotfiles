@@ -130,7 +130,7 @@ base_install() {
 
     log "Installing base packages"
     local p
-    for p in git stow rsync curl jq fish hyprland mpv playerctl brightnessctl hyprsunset sddm; do
+    for p in git stow rsync curl jq fish hyprland mpv playerctl brightnessctl hyprsunset; do
         if pacman -Si "$p" >/dev/null 2>&1; then
             sudo pacman -S --needed "$p"
         else
@@ -152,13 +152,6 @@ base_install() {
     done
 
     systemctl --user daemon-reload 2>/dev/null || true
-
-    # Restore the exact captured SDDM/Frieren login theme automatically when
-    # this repository contains an SDDM snapshot.
-    if [[ -d "$DOTFILES_DIR/machine/sddm/themes/sddm-frieren-theme" || -f "$DOTFILES_DIR/machine/sddm/etc/sddm.conf" || -d "$DOTFILES_DIR/machine/sddm/etc/sddm.conf.d" ]]; then
-        "$DOTFILES_DIR/system-setup.sh" sddm
-    fi
-
     log "Base dotfiles installed."
 }
 
@@ -178,7 +171,6 @@ Options:
   --hibernate     Configure the existing Btrfs 20G hibernation swap setup
   --all           Base + detected ASUS/G16 + rEFInd + refresh + hibernate
   --status        Print system/dotfiles hardware status
-  --sddm          Restore the exact captured Frieren SDDM login theme/config
   --help          Show this help
 
 Examples:
@@ -204,7 +196,6 @@ main() {
             --refind) do_refind=1; explicit=1 ;;
             --refresh) do_refresh=1; explicit=1 ;;
             --hibernate) do_hibernate=1; explicit=1 ;;
-            --sddm) explicit=1; base_install; "$DOTFILES_DIR/system-setup.sh" sddm; exit 0 ;;
             --status) do_status=1; explicit=1 ;;
             --all)
                 do_asus=1; do_refind=1; do_refresh=1; do_hibernate=1; explicit=1

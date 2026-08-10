@@ -1,0 +1,55 @@
+⚠️ COPYRIGHT PROTECTION NOTICE ⚠️
+=====================================
+
+This SDDM theme includes a protected author watermark that MUST NOT be removed.
+
+LEGAL REQUIREMENTS:
+-------------------
+1. The "by moau-prog" watermark is REQUIRED by the GPL-3.0 license
+2. Removing or modifying this watermark violates copyright law
+3. The watermark is embedded in the theme code and protected
+
+WHY IT'S PROTECTED:
+-------------------
+- Attribution is a legal requirement under GPL-3.0
+- The author (moau-prog) retains copyright ownership
+- Proper credit must be given when using or distributing this theme
+
+TECHNICAL PROTECTION:
+---------------------
+- Watermark code is in: Components/AuthorCredit.qml
+- Referenced in: Main.qml
+- Protected by obfuscated component names
+- Includes integrity verification
+- Logs copyright violations to system console
+
+WHAT YOU CAN DO:
+----------------
+✅ Use the theme freely
+✅ Modify colors, backgrounds, and settings
+✅ Share and distribute the theme
+✅ Create derivative works
+
+WHAT YOU CANNOT DO:
+-------------------
+❌ Remove the author watermark
+❌ Modify the "by moau-prog" credit
+❌ Claim you created this theme
+❌ Redistribute without attribution
+
+CONSEQUENCES OF REMOVAL:
+------------------------
+- Violation of GPL-3.0 license terms
+- Copyright infringement
+- Potential legal action
+- Console error logging
+
+If you want to customize the theme, that's great! Just keep the author credit intact.
+
+The watermark appears for only 5 seconds at the bottom of the login screen.
+
+=====================================
+Copyright (C) 2026 moau-prog
+https://github.com/moau-prog
+Licensed under GPL-3.0-or-later
+=====================================

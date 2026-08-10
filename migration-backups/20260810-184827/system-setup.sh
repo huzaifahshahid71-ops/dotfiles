@@ -187,112 +187,12 @@ capture_system_info() {
     } > "$MACHINE_DIR/current-system.txt"
 }
 
-
-capture_sddm() {
-    local dst="$MACHINE_DIR/sddm"
-    local theme_src="/usr/share/sddm/themes/sddm-frieren-theme"
-
-    log "Capturing exact SDDM/Frieren login theme and configuration"
-    rm -rf "$dst"
-    mkdir -p "$dst/themes" "$dst/etc"
-
-    if sudo test -d "$theme_src"; then
-        sudo cp -a "$theme_src" "$dst/themes/sddm-frieren-theme"
-        sudo chown -R "$USER":"$(id -gn)" "$dst/themes/sddm-frieren-theme"
-    else
-        warn "Frieren theme not found at $theme_src"
-    fi
-
-    if sudo test -f /etc/sddm.conf; then
-        sudo cp -a /etc/sddm.conf "$dst/etc/sddm.conf"
-        sudo chown "$USER":"$(id -gn)" "$dst/etc/sddm.conf"
-    fi
-
-    if sudo test -d /etc/sddm.conf.d; then
-        mkdir -p "$dst/etc/sddm.conf.d"
-        sudo cp -a /etc/sddm.conf.d/. "$dst/etc/sddm.conf.d/"
-        sudo chown -R "$USER":"$(id -gn)" "$dst/etc/sddm.conf.d"
-    fi
-
-    {
-        printf 'captured_at=%s\n' "$(date --iso-8601=seconds)"
-        printf 'theme_path=%s\n' "$theme_src"
-        printf 'display_manager=%s\n' "$(systemctl status display-manager.service --no-pager 2>/dev/null | sed -n 's/.*Loaded: loaded (\([^;]*\).*/\1/p' | head -1 || true)"
-        printf 'sddm_version=%s\n' "$(sddm --version 2>/dev/null | head -1 || true)"
-    } > "$dst/manifest.txt"
-
-    log "Exact SDDM snapshot saved under machine/sddm/"
-}
-
-restore_sddm() {
-    require_arch
-
-    local src="$MACHINE_DIR/sddm"
-    local theme_src="$src/themes/sddm-frieren-theme"
-    local theme_dst="/usr/share/sddm/themes/sddm-frieren-theme"
-    local stamp backup dm_target
-
-    if [[ ! -d "$theme_src" && ! -f "$src/etc/sddm.conf" && ! -d "$src/etc/sddm.conf.d" ]]; then
-        warn "No captured SDDM snapshot exists in machine/sddm; skipping."
-        return 0
-    fi
-
-    sudo pacman -S --needed sddm rsync
-    sudo -v
-
-    stamp="$(date +%Y%m%d-%H%M%S)"
-    backup="/var/backups/huzaifah-dotfiles/sddm/$stamp"
-    sudo mkdir -p "$backup"
-
-    if sudo test -d "$theme_dst"; then
-        sudo cp -a "$theme_dst" "$backup/sddm-frieren-theme"
-    fi
-    if sudo test -f /etc/sddm.conf; then
-        sudo cp -a /etc/sddm.conf "$backup/sddm.conf"
-    fi
-    if sudo test -d /etc/sddm.conf.d; then
-        sudo cp -a /etc/sddm.conf.d "$backup/sddm.conf.d"
-    fi
-
-    if [[ -d "$theme_src" ]]; then
-        sudo mkdir -p /usr/share/sddm/themes
-        sudo rm -rf "$theme_dst"
-        sudo cp -a "$theme_src" "$theme_dst"
-        sudo chown -R root:root "$theme_dst"
-    fi
-
-    if [[ -f "$src/etc/sddm.conf" ]]; then
-        sudo install -o root -g root -m 0644 "$src/etc/sddm.conf" /etc/sddm.conf
-    fi
-
-    if [[ -d "$src/etc/sddm.conf.d" ]]; then
-        sudo mkdir -p /etc/sddm.conf.d
-        sudo rsync -a --delete "$src/etc/sddm.conf.d/" /etc/sddm.conf.d/
-        sudo chown -R root:root /etc/sddm.conf.d
-    fi
-
-    # On a fresh install, enable SDDM if no other display manager currently
-    # owns display-manager.service. Never replace another configured DM.
-    dm_target="$(readlink -f /etc/systemd/system/display-manager.service 2>/dev/null || true)"
-    if [[ -z "$dm_target" || "$dm_target" == *"/sddm.service" ]]; then
-        sudo systemctl enable sddm.service
-    else
-        warn "Another display manager is configured: $dm_target"
-        warn "Frieren SDDM files were restored, but SDDM was not enabled automatically."
-    fi
-
-    log "Restored the exact captured Frieren SDDM login theme/configuration."
-    log "Previous SDDM files were backed up to $backup"
-}
-
-
 capture() {
     require_arch
     sudo -v
     capture_dotfiles
     capture_packages
     capture_refind
-    capture_sddm
     capture_system_info
     log "Capture complete. Review with:"
     printf '  git -C %q status\n' "$REPO_DIR"
@@ -503,7 +403,6 @@ status_report() {
     printf 'ASUS:           '
     asusctl --version 2>/dev/null | head -1 || printf 'not installed\n'
     printf 'rEFInd ESP:     %s\n' "$(find_esp 2>/dev/null || printf 'not detected')"
-    printf 'Frieren SDDM:   %s\n' "$([[ -d "$MACHINE_DIR/sddm/themes/sddm-frieren-theme" ]] && echo captured || echo not-captured)"
     printf 'Refresh service:\n'
     systemctl --user --no-pager --full status auto-refresh-rate.service 2>/dev/null | sed -n '1,5p' || true
     printf 'Saved packages: pacman=%s aur=%s\n' \
@@ -522,7 +421,6 @@ Commands:
   asus         Install generic ASUS laptop support
   g16          ASUS ROG Zephyrus G16 extras
   refind       Install/restore rEFInd and rEFInd-minimal theme
-  sddm         Restore exact Frieren SDDM theme and config
   refresh      Enable 120/240 Hz AC/battery refresh service
   hibernate    Configure the 20G Btrfs hibernation swap setup
   status       Show current setup status
@@ -537,7 +435,6 @@ main() {
         asus) setup_asus ;;
         g16) setup_g16 ;;
         refind) setup_refind ;;
-        sddm) restore_sddm ;;
         refresh) enable_refresh ;;
         hibernate) setup_hibernate ;;
         status) status_report ;;
