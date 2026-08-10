@@ -29,6 +29,379 @@ The repository deliberately keeps hardware-sensitive or security-sensitive opera
 
 ---
 
+<!-- CACHYOS-INSTALL-GUIDE:START -->
+# Installing CachyOS from scratch
+
+This repository is designed so that the desktop can be rebuilt after a fresh
+CachyOS installation. Install the operating system first; after the first
+successful boot, this repository restores the desktop and machine-specific
+configuration.
+
+These instructions follow the official CachyOS documentation. Always re-check
+the official guides before partitioning because installer recommendations can
+change:
+
+- [CachyOS Downloads and ISO Verification](https://wiki.cachyos.org/cachyos_basic/download/)
+- [CachyOS Desktop/Laptop Installation](https://wiki.cachyos.org/installation/installation_on_root/)
+- [CachyOS Boot Managers](https://wiki.cachyos.org/installation/boot_managers/)
+- [CachyOS Boot Manager Configuration](https://wiki.cachyos.org/configuration/boot_manager_configuration/)
+- [CachyOS Secure Boot Setup](https://wiki.cachyos.org/configuration/secure_boot_setup/)
+
+> **Important:** Never blindly copy device names such as `nvme0n1p3` from
+> this README onto another computer. Identify disks by size, filesystem,
+> labels and contents before formatting anything.
+
+## 1. Back up important data first
+
+Back up personal files separately before touching partitions.
+
+This repository restores configuration. It is **not** a backup for documents,
+photos, games, music libraries, Windows partitions, passwords, tokens or
+Secure Boot keys.
+
+## 2. Download and verify CachyOS
+
+Download the latest **CachyOS Desktop Edition** ISO from an official CachyOS
+source.
+
+Do not hard-code an ISO version or checksum from this README. CachyOS publishes
+new ISOs regularly.
+
+Download the matching `.sha256` file and verify the ISO.
+
+On Linux:
+
+```bash
+cd ~/Downloads
+sha256sum -c cachyos-desktop-linux-*.iso.sha256
+```
+
+The result should report the ISO as `OK`.
+
+CachyOS also publishes a GPG signature for authenticity verification.
+
+## 3. Create a bootable USB
+
+Create the USB with a suitable image-writing tool. CachyOS documents options
+including Rufus, Ventoy and `dd`.
+
+When using `dd`, identify the **whole USB device** correctly. Writing to the
+wrong device destroys its existing partition table.
+
+## 4. Prepare Windows for dual boot
+
+If Windows is being kept, disable Windows Fast Startup and Windows hibernation
+before the Linux installation.
+
+Run from an Administrator PowerShell or Command Prompt:
+
+```powershell
+powercfg /H off
+```
+
+Check BitLocker status before modifying any Windows-owned partition:
+
+```powershell
+manage-bde -status
+```
+
+The official CachyOS dual-boot guide recommends disabling BitLocker for its
+Windows-partition workflow. On this machine, never format an existing
+BitLocker partition merely because the Linux installer can see it.
+
+## 5. Prepare UEFI/BIOS
+
+For the CachyOS UEFI installation:
+
+- boot the USB in **UEFI mode**
+- disable **CSM**
+- disable **Secure Boot during installation**
+- leave Legacy USB Support on `Auto` where applicable
+
+Secure Boot can be configured separately after installation. This repository
+does not automate Secure Boot key creation or enrollment.
+
+From the live ISO, verify UEFI mode with:
+
+```bash
+efibootmgr -v
+```
+
+If EFI variables are unavailable, the USB was probably booted in Legacy/BIOS
+mode instead of UEFI mode.
+
+## 6. Launch the installer
+
+Boot the USB and select **Launch Installer**.
+
+Configure language, region/time zone, keyboard layout and networking.
+
+CachyOS does not allow multiple desktop environments to be selected during the
+installation process.
+
+For this setup, select **Hyprland**.
+
+## 7. Use manual partitioning
+
+CachyOS currently warns that `Install alongside` and `Replace partition` are
+not completely reliable and strongly prefers **Manual partitioning**.
+
+For this setup the intended Linux layout is:
+
+```text
+/boot   FAT32
+/       Btrfs
+```
+
+The repository's hibernation setup assumes Btrfs for the Linux root
+filesystem.
+
+CachyOS currently documents a dedicated FAT32 `/boot` partition for rEFInd and
+systemd-boot installations. Review the current official size recommendation
+when installing rather than relying on an old value copied into this README.
+
+Review the installer's final partition summary very carefully before clicking
+**Install Now**.
+
+---
+
+## Reinstalling CachyOS on my current Zephyrus G16
+
+This section records the disk layout that existed when this recovery repository
+was created.
+
+It is a **reference snapshot**, not permission to blindly format partitions by
+device name. NVMe numbering can change. Always inspect the real disks first:
+
+```bash
+lsblk -o NAME,PATH,SIZE,FSTYPE,LABEL,PARTLABEL,UUID,PARTUUID,MOUNTPOINTS
+```
+
+At the time of capture, this G16 used two NVMe drives.
+
+### Windows / ASUS drive
+
+The first NVMe contained the Windows OS, Windows EFI partition, recovery
+partitions and ASUS recovery data.
+
+These are **not Linux installation targets** during a Linux-only reinstall.
+
+### Mixed data + Linux drive
+
+The second NVMe contained:
+
+```text
+p1  Microsoft Reserved
+p2  BitLocker "HUZAIFAHS_G16 PROGRAMS ..."
+p3  BitLocker "HUZAIFAHS_G16 DATA ..."
+p4  FAT32 Linux EFI/boot partition, mounted at /boot
+p5  Btrfs CachyOS partition, providing /, /home and Btrfs subvolumes
+```
+
+The critical rule is:
+
+> **Do not touch the BitLocker PROGRAMS or DATA partitions during a Linux-only
+> reinstall.**
+
+Identify the Linux FAT32 and Btrfs partitions by filesystem, size, labels and
+contents, not only by `p4`/`p5`.
+
+The recovery snapshot recorded this active Linux boot layout:
+
+```text
+Linux ESP mount:       /boot
+rEFInd EFI loader:     /boot/EFI/refind/refind_x64.efi
+rEFInd configuration:  /boot/EFI/refind/refind.conf
+Linux boot options:    /boot/refind_linux.conf
+Root filesystem:       Btrfs
+```
+
+The machine also had firmware entries for systemd-boot and rEFInd. The
+customized graphical boot manager restored by this repository is rEFInd.
+
+### Recommended reinstall flow on this exact machine
+
+1. boot the CachyOS USB in UEFI mode
+2. choose Manual partitioning
+3. identify and preserve every Windows and BitLocker partition
+4. assign the dedicated Linux FAT32 partition to `/boot`
+5. assign the dedicated Linux Btrfs partition to `/`
+6. choose rEFInd as the boot manager if available
+7. choose Hyprland as the desktop environment
+8. inspect the final partition summary again
+9. install CachyOS
+10. reboot into the fresh system
+
+Formatting Linux filesystems normally gives them new identifiers. The rEFInd
+backup therefore stores the Linux root identifier using a portable placeholder
+and substitutes the fresh installation's identifier during restoration.
+
+If the real disk layout ever differs from this README, trust the real disk
+layout and stop before formatting anything uncertain.
+
+## 8. First boot
+
+After installation, verify the basics:
+
+```bash
+uname -a
+ip link
+lsblk -f
+efibootmgr -v
+```
+
+Make sure networking works and the expected `/` and `/boot` partitions are
+mounted.
+
+Update the fresh installation:
+
+```bash
+sudo pacman -Syu
+```
+
+## 9. Restore this desktop
+
+Interactive recovery:
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/huzaifahshahid71-ops/dotfiles/main/install.sh)"
+```
+
+Full supported machine profile:
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/huzaifahshahid71-ops/dotfiles/main/install.sh)" -- --all
+```
+
+The recovery can restore the supported configuration for:
+
+- Hyprland
+- DiM Caelestia
+- Fish
+- helper scripts
+- user systemd services
+- ASUS support
+- Zephyrus G16-specific setup
+- AC/battery refresh-rate automation
+- the exact Frieren SDDM theme and SDDM configuration
+- rEFInd configuration and rEFInd-minimal theme
+- Btrfs hibernation setup
+
+Restore the saved explicit package lists when required:
+
+```bash
+cd ~/dotfiles
+./system-setup.sh packages
+```
+
+## 10. Restore rEFInd
+
+Run:
+
+```bash
+cd ~/dotfiles
+./system-setup.sh refind
+```
+
+or:
+
+```bash
+./install.sh --refind
+```
+
+The saved rEFInd recovery data includes:
+
+```text
+machine/refind/refind.conf
+machine/refind/refind_linux.conf
+machine/refind/themes/rEFInd-minimal/
+```
+
+The current installation's Linux root identifier is inserted into the restored
+boot options instead of reusing an obsolete filesystem identifier.
+
+## 11. Verify the restored system
+
+Run:
+
+```bash
+./system-setup.sh status
+```
+
+Then verify manually that:
+
+- Hyprland starts
+- DiM Caelestia starts
+- the Frieren SDDM screen appears
+- rEFInd appears at boot
+- Windows still boots
+- networking and audio work
+- brightness control works
+- the internal display uses the expected refresh rate
+- ASUS controls work
+- suspend works
+
+Do not assume hibernation works merely because a swapfile exists. Test it only
+after verifying the kernel, initramfs, resume configuration and Btrfs swap
+resume offset.
+
+## 12. NVIDIA / hybrid graphics
+
+NVIDIA/CUDA installation and automatic GPU-mode switching are deliberately
+outside this repository's destructive automation.
+
+After a fresh install, first inspect what CachyOS hardware detection installed
+for the actual G16 before changing GPU drivers.
+
+## 13. Secure Boot
+
+Secure Boot is a separate post-install task.
+
+CachyOS currently documents Secure Boot using `sbctl`, with ASUS-specific
+warnings for key enrollment and firmware settings.
+
+Never publish or restore private Secure Boot keys through a public dotfiles
+repository.
+
+---
+
+## Short version: complete reinstall
+
+```text
+Back up personal files
+        ↓
+Download + verify latest CachyOS Desktop ISO
+        ↓
+Create bootable USB
+        ↓
+Boot in UEFI mode with Secure Boot/CSM disabled
+        ↓
+Launch Installer
+        ↓
+Manual partitioning
+        ↓
+Preserve all Windows / BitLocker partitions
+        ↓
+Use dedicated FAT32 Linux /boot + Btrfs /
+        ↓
+Choose Hyprland + rEFInd
+        ↓
+Install and boot fresh CachyOS
+        ↓
+Run the dotfiles installer
+        ↓
+Restore packages / G16 / SDDM / rEFInd / hibernation as required
+        ↓
+Reboot and verify
+```
+
+If anything in the live disk layout disagrees with this README, stop and
+identify the partitions before formatting them.
+
+<!-- CACHYOS-INSTALL-GUIDE:END -->
+
+---
+
 # Quick install
 
 For a fresh CachyOS/Arch installation:
