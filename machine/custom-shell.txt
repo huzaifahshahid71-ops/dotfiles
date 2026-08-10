@@ -1,0 +1,4 @@
+path=/home/gamer/.config/quickshell/huzaifah-shell-dev
+branch=widgets-windowmgmt
+commit=715941cb3630e6b1cdd50e5ae12a8ef6527ad5bf
+origin=https://github.com/huzaifahshahid71-ops/shell.git

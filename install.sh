@@ -1,560 +1,240 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-set -Eeuo pipefail
+REPO_URL="${DOTFILES_REPO_URL:-https://github.com/huzaifahshahid71-ops/dotfiles.git}"
+DOTFILES_DIR="${DOTFILES_DIR:-$HOME/dotfiles}"
+SCRIPT_NAME="$(basename "$0")"
 
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BACKUP_DIR="$HOME/dotfiles-backup-$(date +%Y%m%d-%H%M%S)"
+log()  { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
+warn() { printf '\033[1;33mWARNING:\033[0m %s\n' "$*" >&2; }
+die()  { printf '\033[1;31mERROR:\033[0m %s\n' "$*" >&2; exit 1; }
 
-# ---------------------------------------------------------
-# Pretty output
-# ---------------------------------------------------------
-
-info() {
-    printf "\n\033[1;36m==> %s\033[0m\n" "$*"
+is_arch_family() {
+    [[ -r /etc/os-release ]] || return 1
+    . /etc/os-release
+    [[ "${ID:-}" == "arch" || "${ID:-}" == "cachyos" || "${ID_LIKE:-}" == *arch* ]]
 }
 
-success() {
-    printf "\033[1;32m✓ %s\033[0m\n" "$*"
-}
-
-warn() {
-    printf "\033[1;33m! %s\033[0m\n" "$*"
-}
-
-die() {
-    printf "\033[1;31mERROR: %s\033[0m\n" "$*" >&2
-    exit 1
-}
-
-trap 'echo "Installer failed near line $LINENO."' ERR
-
-echo
-echo "=============================================="
-echo "     Huzaifah's CachyOS / Hyprland Setup"
-echo "=============================================="
-echo
-
-# ---------------------------------------------------------
-# Checks
-# ---------------------------------------------------------
-
-[[ -f /etc/arch-release ]] || \
-    die "This installer is intended for Arch Linux / CachyOS."
-
-[[ "$EUID" -ne 0 ]] || \
-    die "Run this script as your normal user, NOT with sudo."
-
-command -v sudo >/dev/null || \
-    die "sudo is required."
-
-info "Requesting sudo access"
-sudo -v
-
-# ---------------------------------------------------------
-# Update system + install main packages
-# ---------------------------------------------------------
-
-info "Updating system and installing desktop dependencies"
-
-PACMAN_PACKAGES=(
-    base-devel
-    git
-    stow
-
-    hyprland
-    hypridle
-    hyprlock
-    hyprpicker
-    hyprsunset
-
-    xdg-desktop-portal-hyprland
-    xdg-desktop-portal-gtk
-    xdg-user-dirs
-    xdg-utils
-
-    fish
-    foot
-    starship
-    fastfetch
-    btop
-    eza
-    jq
-
-    mpv
-    playerctl
-    pavucontrol
-
-    pipewire
-    pipewire-alsa
-    pipewire-pulse
-    wireplumber
-
-    brightnessctl
-    upower
-
-    networkmanager
-
-    bluez
-    bluez-utils
-
-    wl-clipboard
-    cliphist
-
-    grim
-    slurp
-    swappy
-
-    fuzzel
-
-    libnotify
-    dconf
-
-    inotify-tools
-    trash-cli
-
-    lm_sensors
-
-    noto-fonts
-    noto-fonts-emoji
-    ttf-jetbrains-mono-nerd
-    ttf-cascadia-code-nerd
-    ttf-nerd-fonts-symbols
-
-    papirus-icon-theme
-    adw-gtk-theme
-)
-
-sudo pacman -Syu \
-    --needed \
-    --noconfirm \
-    "${PACMAN_PACKAGES[@]}"
-
-success "Main packages installed"
-
-# ---------------------------------------------------------
-# Install paru
-# ---------------------------------------------------------
-
-if command -v paru >/dev/null 2>&1; then
-
-    success "paru is already installed"
-
-else
-
-    info "Installing paru"
-
-    # CachyOS ships paru in its repositories.
-    if sudo pacman -S --needed --noconfirm paru; then
-
-        success "paru installed from system repository"
-
+prompt_yes_no() {
+    local prompt="$1" default="${2:-n}" ans
+    if [[ ! -r /dev/tty ]]; then
+        [[ "$default" == "y" ]]
+        return
+    fi
+    if [[ "$default" == "y" ]]; then
+        read -r -p "$prompt [Y/n] " ans < /dev/tty || true
+        ans="${ans:-y}"
     else
-
-        warn "paru was not available from the system repository."
-        info "Building paru from the AUR"
-
-        sudo pacman -S --needed --noconfirm \
-            base-devel \
-            git \
-            rust
-
-        PARU_BUILD="$(mktemp -d)"
-
-        git clone \
-            https://aur.archlinux.org/paru.git \
-            "$PARU_BUILD/paru"
-
-        (
-            cd "$PARU_BUILD/paru"
-            makepkg -si --needed --noconfirm
-        )
-
-        rm -rf "$PARU_BUILD"
-
-        success "paru built and installed"
+        read -r -p "$prompt [y/N] " ans < /dev/tty || true
+        ans="${ans:-n}"
     fi
-fi
-
-command -v paru >/dev/null 2>&1 || \
-    die "paru installation failed."
-
-# ---------------------------------------------------------
-# DIM Caelestia
-# ---------------------------------------------------------
-
-info "Installing DIM Caelestia Shell"
-
-paru -S \
-    --needed \
-    --noconfirm \
-    dim-caelestia-shell-git
-
-success "DIM Caelestia installed"
-
-# ---------------------------------------------------------
-# app2unit
-# ---------------------------------------------------------
-
-info "Installing Caelestia application helper"
-
-paru -S \
-    --needed \
-    --noconfirm \
-    app2unit
-
-success "app2unit installed"
-
-# ---------------------------------------------------------
-# Create standard folders
-# ---------------------------------------------------------
-
-info "Creating user directories"
-
-xdg-user-dirs-update || true
-
-mkdir -p \
-    "$HOME/.config" \
-    "$HOME/.local/bin" \
-    "$HOME/.config/systemd/user" \
-    "$HOME/Pictures/Wallpapers" \
-    "$HOME/Music"
-
-# ---------------------------------------------------------
-# Backup function
-# ---------------------------------------------------------
-
-backup_path() {
-
-    local path="$1"
-
-    [[ -e "$path" || -L "$path" ]] || return 0
-
-    # Ignore links already pointing into this repository
-    if [[ -L "$path" ]]; then
-
-        local resolved
-        resolved="$(readlink -f "$path" 2>/dev/null || true)"
-
-        case "$resolved" in
-            "$REPO_DIR"/*)
-                return 0
-                ;;
-        esac
-    fi
-
-    local relative="${path#"$HOME"/}"
-    local destination="$BACKUP_DIR/$relative"
-
-    mkdir -p "$(dirname "$destination")"
-
-    echo "Backing up:"
-    echo "  $path"
-    echo "  -> $destination"
-
-    mv "$path" "$destination"
+    [[ "$ans" =~ ^[Yy]$ ]]
 }
 
-info "Backing up conflicting configuration"
-
-mkdir -p "$BACKUP_DIR"
-
-# Whole configuration directories
-backup_path "$HOME/.config/hypr"
-backup_path "$HOME/.config/caelestia"
-backup_path "$HOME/.config/fish"
-backup_path "$HOME/.config/mpv"
-
-# Individual systemd services
-if [[ -d "$REPO_DIR/systemd/.config/systemd/user" ]]; then
-
-    for src in "$REPO_DIR/systemd/.config/systemd/user/"*; do
-
-        [[ -e "$src" ]] || continue
-
-        backup_path \
-            "$HOME/.config/systemd/user/$(basename "$src")"
-
-    done
-fi
-
-# Individual helper scripts
-if [[ -d "$REPO_DIR/scripts/.local/bin" ]]; then
-
-    for src in "$REPO_DIR/scripts/.local/bin/"*; do
-
-        [[ -e "$src" ]] || continue
-
-        backup_path \
-            "$HOME/.local/bin/$(basename "$src")"
-
-    done
-fi
-
-success "Existing conflicting configs backed up"
-
-# ---------------------------------------------------------
-# GNU Stow
-# ---------------------------------------------------------
-
-info "Applying dotfiles with GNU Stow"
-
-cd "$REPO_DIR"
-
-STOW_PACKAGES=(
-    caelestia
-    fish
-    hypr
-    mpv
-    scripts
-    systemd
-)
-
-for package in "${STOW_PACKAGES[@]}"; do
-
-    if [[ -d "$package" ]]; then
-
-        echo "Stowing $package..."
-
-        stow \
-            --restow \
-            --target="$HOME" \
-            "$package"
-
+ensure_repo() {
+    if [[ -d "$DOTFILES_DIR/.git" ]]; then
+        log "Updating $DOTFILES_DIR"
+        git -C "$DOTFILES_DIR" pull --ff-only
+    else
+        command -v git >/dev/null 2>&1 || {
+            is_arch_family || die "Git is required. Install it first."
+            sudo pacman -S --needed git
+        }
+        log "Cloning dotfiles"
+        git clone "$REPO_URL" "$DOTFILES_DIR"
     fi
-done
 
-success "Dotfiles applied"
+    # If this is the curl-piped copy, hand off to the repository copy so all
+    # hardware/profile files are available.
+    local self_real repo_real
+    self_real="$(readlink -f "$0" 2>/dev/null || true)"
+    repo_real="$(readlink -f "$DOTFILES_DIR/install.sh" 2>/dev/null || true)"
+    if [[ -n "$repo_real" && "$self_real" != "$repo_real" ]]; then
+        exec "$DOTFILES_DIR/install.sh" "$@"
+    fi
+}
 
-# ---------------------------------------------------------
-# Fish shell
-# ---------------------------------------------------------
+install_repo_pkg() {
+    local pkg
+    for pkg in "$@"; do
+        if pacman -Q "$pkg" >/dev/null 2>&1; then
+            continue
+        fi
+        if pacman -Si "$pkg" >/dev/null 2>&1; then
+            sudo pacman -S --needed "$pkg"
+        else
+            return 1
+        fi
+    done
+}
 
-info "Configuring Fish"
+ensure_aur_helper() {
+    if command -v paru >/dev/null 2>&1; then
+        printf '%s\n' "paru"
+        return
+    fi
+    if command -v yay >/dev/null 2>&1; then
+        printf '%s\n' "yay"
+        return
+    fi
 
-FISH_PATH="$(command -v fish)"
-
-if ! grep -Fxq "$FISH_PATH" /etc/shells; then
-    echo "$FISH_PATH" | sudo tee -a /etc/shells >/dev/null
-fi
-
-CURRENT_LOGIN_SHELL="$(getent passwd "$USER" | cut -d: -f7)"
-
-if [[ "$CURRENT_LOGIN_SHELL" != "$FISH_PATH" ]]; then
-
-    chsh -s "$FISH_PATH"
-
-    success "Fish set as default shell"
-
-else
-
-    success "Fish is already the default shell"
-fi
-
-# ---------------------------------------------------------
-# Audio
-# ---------------------------------------------------------
-
-info "Starting PipeWire audio"
-
-systemctl --user enable --now pipewire.socket \
-    2>/dev/null || true
-
-systemctl --user enable --now pipewire-pulse.socket \
-    2>/dev/null || true
-
-systemctl --user enable --now wireplumber.service \
-    2>/dev/null || true
-
-# ---------------------------------------------------------
-# Bluetooth
-# ---------------------------------------------------------
-
-info "Enabling Bluetooth"
-
-sudo systemctl enable --now bluetooth.service \
-    2>/dev/null || true
-
-# ---------------------------------------------------------
-# NetworkManager
-# ---------------------------------------------------------
-
-if systemctl is-active --quiet NetworkManager; then
-
-    success "NetworkManager already running"
-
-elif systemctl is-active --quiet systemd-networkd ||
-     systemctl is-active --quiet iwd; then
-
-    warn "Another network service is already active."
-    warn "NetworkManager was installed but NOT automatically enabled."
-
-else
-
-    info "Enabling NetworkManager"
-
-    sudo systemctl enable --now NetworkManager.service \
-        2>/dev/null || true
-fi
-
-# ---------------------------------------------------------
-# Hyprsunset / Night Light
-# ---------------------------------------------------------
-
-info "Enabling Hyprsunset"
-
-systemctl --user enable --now hyprsunset.service \
-    2>/dev/null || true
-
-# ---------------------------------------------------------
-# Background music playlist
-# ---------------------------------------------------------
-
-PLAYLIST="$HOME/Music/Favorites.m3u8"
-
-if [[ ! -f "$PLAYLIST" ]]; then
-
-    info "Looking for music in ~/Music"
-
-    mapfile -d '' TRACKS < <(
-        find "$HOME/Music" \
-            -maxdepth 1 \
-            -type f \
-            \( \
-                -iname '*.mp3' \
-                -o -iname '*.flac' \
-                -o -iname '*.m4a' \
-                -o -iname '*.ogg' \
-                -o -iname '*.opus' \
-                -o -iname '*.wav' \
-            \) \
-            -print0 |
-        sort -z
+    log "Installing paru for AUR packages"
+    sudo pacman -S --needed base-devel git
+    local tmp
+    tmp="$(mktemp -d)"
+    git clone https://aur.archlinux.org/paru.git "$tmp/paru"
+    (
+        cd "$tmp/paru"
+        makepkg -si --needed --noconfirm
     )
+    rm -rf "$tmp"
+    printf '%s\n' "paru"
+}
 
-    if (( ${#TRACKS[@]} > 0 )); then
-
-        {
-            echo "#EXTM3U"
-            printf '%s\n' "${TRACKS[@]}"
-        } > "$PLAYLIST"
-
-        success "Generated Favorites.m3u8"
-
-    else
-
-        warn "No music found in ~/Music."
-        warn "Background music will remain disabled."
-
+install_flexible_pkg() {
+    local pkg="$1"
+    if pacman -Q "$pkg" >/dev/null 2>&1; then
+        return
     fi
-fi
-
-# ---------------------------------------------------------
-# Reload systemd user units
-# ---------------------------------------------------------
-
-systemctl --user daemon-reload
-
-# ---------------------------------------------------------
-# Background music
-# ---------------------------------------------------------
-
-if [[ -f "$PLAYLIST" ]] &&
-   grep -qvE '^[[:space:]]*(#|$)' "$PLAYLIST"; then
-
-    if systemctl --user list-unit-files \
-        | grep -q '^background-music.service'; then
-
-        info "Enabling background music"
-
-        systemctl --user enable \
-            background-music.service || true
-
-        systemctl --user restart \
-            background-music.service || true
-
+    if pacman -Si "$pkg" >/dev/null 2>&1; then
+        sudo pacman -S --needed "$pkg"
+        return
     fi
-fi
+    local aur
+    aur="$(ensure_aur_helper)"
+    "$aur" -S --needed "$pkg"
+}
 
-# ---------------------------------------------------------
-# IMPORTANT:
-# Do not enable Huzaifah's custom display modeline automatically
-# ---------------------------------------------------------
+backup_stow_conflicts() {
+    local pkg="$1" src="$DOTFILES_DIR/$pkg" stamp backup rel dst
+    [[ -d "$src" ]] || return 0
 
-if systemctl --user list-unit-files \
-    | grep -q '^auto-refresh-rate.service'; then
+    stamp="${DOTFILES_BACKUP_STAMP:-$(date +%Y%m%d-%H%M%S)}"
+    DOTFILES_BACKUP_STAMP="$stamp"
+    export DOTFILES_BACKUP_STAMP
+    backup="$HOME/dotfiles-backup/$stamp"
 
-    systemctl --user disable --now \
-        auto-refresh-rate.service \
-        2>/dev/null || true
-fi
+    while IFS= read -r -d '' file; do
+        rel="${file#"$src/"}"
+        dst="$HOME/$rel"
+        if [[ -e "$dst" && ! -L "$dst" ]]; then
+            mkdir -p "$backup/$(dirname "$rel")"
+            mv "$dst" "$backup/$rel"
+            log "Backed up $dst"
+        fi
+    done < <(find "$src" -type f -print0)
+}
 
-warn "Custom 120/240 Hz automatic refresh switching was NOT enabled."
-warn "It contains a modeline specific to Huzaifah's laptop panel."
+base_install() {
+    is_arch_family || die "This installer currently supports Arch/CachyOS only."
 
-# ---------------------------------------------------------
-# Final sanity checks
-# ---------------------------------------------------------
+    log "Installing base packages"
+    local p
+    for p in git stow rsync curl jq fish hyprland mpv playerctl brightnessctl hyprsunset; do
+        if pacman -Si "$p" >/dev/null 2>&1; then
+            sudo pacman -S --needed "$p"
+        else
+            warn "Package '$p' is not in enabled pacman repositories; skipping."
+        fi
+    done
 
-info "Checking installation"
+    # DiM Caelestia remains the daily shell. Keep it separate from archived
+    # development shell experiments.
+    install_flexible_pkg dim-caelestia-shell-git || warn "Could not install dim-caelestia-shell-git."
+    install_flexible_pkg caelestia-cli || warn "Could not install caelestia-cli."
 
-command -v Hyprland >/dev/null &&
-    success "Hyprland installed"
+    log "Applying GNU Stow packages"
+    local pkg
+    for pkg in caelestia fish hypr mpv scripts systemd; do
+        [[ -d "$DOTFILES_DIR/$pkg" ]] || continue
+        backup_stow_conflicts "$pkg"
+        stow -d "$DOTFILES_DIR" -t "$HOME" --restow "$pkg"
+    done
 
-command -v fish >/dev/null &&
-    success "Fish installed"
+    systemctl --user daemon-reload 2>/dev/null || true
+    log "Base dotfiles installed."
+}
 
-command -v mpv >/dev/null &&
-    success "mpv installed"
+usage() {
+    cat <<'EOF'
+Usage: ./install.sh [options]
 
-command -v caelestia >/dev/null &&
-    success "Caelestia CLI installed"
+No options:
+  Interactive installer. Base dotfiles are always installed first.
 
-command -v paru >/dev/null &&
-    success "paru installed"
+Options:
+  --base          Base CachyOS/Arch + Hyprland + DiM Caelestia dotfiles
+  --asus          ASUS laptop support (asusctl + ROG Control Center)
+  --g16           Zephyrus G16 profile; implies --asus
+  --refind        rEFInd install/restore/customization
+  --refresh       Enable the existing 120/240 Hz AC/battery refresh service
+  --hibernate     Configure the existing Btrfs 20G hibernation swap setup
+  --all           Base + detected ASUS/G16 + rEFInd + refresh + hibernate
+  --status        Print system/dotfiles hardware status
+  --help          Show this help
 
-command -v stow >/dev/null &&
-    success "GNU Stow installed"
+Examples:
+  ./install.sh --base
+  ./install.sh --asus
+  ./install.sh --g16 --refind
+  ./install.sh --all
+EOF
+}
 
-# ---------------------------------------------------------
-# Done
-# ---------------------------------------------------------
+main() {
+    ensure_repo "$@"
+    is_arch_family || die "This installer currently supports Arch/CachyOS only."
 
-echo
-echo "=================================================="
-echo "              INSTALLATION COMPLETE"
-echo "=================================================="
-echo
-echo "Previous configuration backup:"
-echo
-echo "  $BACKUP_DIR"
-echo
-echo "Wallpapers:"
-echo
-echo "  ~/Pictures/Wallpapers"
-echo
-echo "Music:"
-echo
-echo "  ~/Music"
-echo
-echo "Playlist:"
-echo
-echo "  ~/Music/Favorites.m3u8"
-echo
-echo "IMPORTANT:"
-echo
-echo "  Log out and log back in before using the setup."
-echo
-echo "  Select Hyprland from your login manager."
-echo
-echo "  The custom 120/240 Hz service is disabled by default"
-echo "  because it is hardware-specific."
-echo
-echo "Useful checks:"
-echo
-echo "  hyprctl monitors"
-echo "  caelestia shell -d"
-echo
-echo "  systemctl --user status background-music.service"
-echo
-echo "=================================================="
-echo
+    local do_asus=0 do_g16=0 do_refind=0 do_refresh=0 do_hibernate=0 do_status=0
+    local explicit=0
+
+    while (($#)); do
+        case "$1" in
+            --base) explicit=1 ;;
+            --asus) do_asus=1; explicit=1 ;;
+            --g16) do_g16=1; do_asus=1; explicit=1 ;;
+            --refind) do_refind=1; explicit=1 ;;
+            --refresh) do_refresh=1; explicit=1 ;;
+            --hibernate) do_hibernate=1; explicit=1 ;;
+            --status) do_status=1; explicit=1 ;;
+            --all)
+                do_asus=1; do_refind=1; do_refresh=1; do_hibernate=1; explicit=1
+                if grep -Eqi 'GU60[35]|Zephyrus G16' /sys/class/dmi/id/product_name 2>/dev/null; then
+                    do_g16=1
+                fi
+                ;;
+            --help|-h) usage; exit 0 ;;
+            *) die "Unknown option: $1" ;;
+        esac
+        shift
+    done
+
+    base_install
+
+    if (( explicit == 0 )); then
+        local vendor product
+        vendor="$(cat /sys/class/dmi/id/sys_vendor 2>/dev/null || true)"
+        product="$(cat /sys/class/dmi/id/product_name 2>/dev/null || true)"
+
+        if [[ "$vendor" == *ASUS* || "$vendor" == *ASUSTeK* ]]; then
+            prompt_yes_no "ASUS laptop detected ($product). Install ASUS support?" y && do_asus=1
+        fi
+        if [[ "$product" =~ GU60[35] || "$product" == *"Zephyrus G16"* ]]; then
+            prompt_yes_no "Zephyrus G16-like model detected. Enable G16 extras?" y && { do_g16=1; do_asus=1; }
+        fi
+        prompt_yes_no "Configure rEFInd from the saved profile?" n && do_refind=1
+        prompt_yes_no "Enable 120/240 Hz AC/battery refresh automation?" n && do_refresh=1
+        prompt_yes_no "Configure the 20G Btrfs hibernation swap setup?" n && do_hibernate=1
+    fi
+
+    (( do_asus )) && "$DOTFILES_DIR/system-setup.sh" asus
+    (( do_g16 )) && "$DOTFILES_DIR/system-setup.sh" g16
+    (( do_refind )) && "$DOTFILES_DIR/system-setup.sh" refind
+    (( do_refresh )) && "$DOTFILES_DIR/system-setup.sh" refresh
+    (( do_hibernate )) && "$DOTFILES_DIR/system-setup.sh" hibernate
+    (( do_status )) && "$DOTFILES_DIR/system-setup.sh" status
+
+    log "Done."
+}
+
+main "$@"

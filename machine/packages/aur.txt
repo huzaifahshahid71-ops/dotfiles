@@ -12,6 +12,7 @@ spicetify-cli
 spicetify-marketplace-bin
 spotify
 todoist-appimage
+unimatrix-git
 vscodium-bin
 vscodium-bin-marketplace
 waylyrics
