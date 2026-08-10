@@ -161,6 +161,14 @@ capture_refind() {
         sed -Ei "s#root=UUID=[A-Fa-f0-9-]+#root=UUID=__ROOT_UUID__#g" "$REFIND_BACKUP_DIR/refind.conf"
     fi
 
+    if [[ -f "$esp/refind_linux.conf" ]]; then
+        sudo cat "$esp/refind_linux.conf" > "$REFIND_BACKUP_DIR/refind_linux.conf"
+        if [[ -n "$root_uuid" ]]; then
+            sed -Ei "s#root=UUID=[A-Fa-f0-9-]+#root=UUID=__ROOT_UUID__#g" "$REFIND_BACKUP_DIR/refind_linux.conf"
+        fi
+        chmod 0644 "$REFIND_BACKUP_DIR/refind_linux.conf"
+    fi
+
     local theme_src
     theme_src="$(dirname "$conf")/themes/rEFInd-minimal"
     if sudo test -d "$theme_src"; then
@@ -467,6 +475,14 @@ setup_refind() {
         :
     else
         printf '\nuse_graphics_for + linux\n' | sudo tee -a "$conf" >/dev/null
+    fi
+
+    if [[ -f "$REFIND_BACKUP_DIR/refind_linux.conf" ]]; then
+        local linux_tmp
+        linux_tmp="$(mktemp)"
+        sed "s/__ROOT_UUID__/$root_uuid/g" "$REFIND_BACKUP_DIR/refind_linux.conf" > "$linux_tmp"
+        sudo install -m 0600 "$linux_tmp" "$esp/refind_linux.conf"
+        rm -f "$linux_tmp"
     fi
 
     if command -v mkrlconf >/dev/null 2>&1 && [[ ! -f "$esp/refind_linux.conf" && ! -f /boot/refind_linux.conf ]]; then

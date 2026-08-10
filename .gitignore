@@ -14,3 +14,15 @@
 id_rsa*
 id_ed25519*
 known_hosts
+
+# --- Disaster-recovery snapshots ---
+migration-backups/
+
+# These are intentional restore snapshots. Track them even if generic
+# *.conf, *.bak, or machine rules appear earlier in this file.
+!machine/
+!machine/refind/
+!machine/refind/**
+!machine/sddm/
+!machine/sddm/**
+# --- End disaster-recovery snapshots ---

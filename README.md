@@ -295,6 +295,8 @@ The setup process is designed to:
 6. restore the saved `rEFInd-minimal` theme when available
 7. preserve graphical Linux boot configuration
 
+The rEFInd snapshot also stores `/boot/refind_linux.conf`, which contains the Linux kernel boot options used by rEFInd. During capture, the current root filesystem UUID is replaced with `__ROOT_UUID__`; during restore, the installer substitutes the UUID of the fresh Linux installation.
+
 The stored configuration uses:
 
 ```text

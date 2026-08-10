@@ -1,0 +1,5 @@
+esp=/boot
+loader=/boot/EFI/refind/refind_x64.efi
+config=/boot/EFI/refind/refind.conf
+linux_options=/boot/refind_linux.conf
+firmware_entry=rEFInd Boot Manager -> \\EFI\\refind\\refind_x64.efi
