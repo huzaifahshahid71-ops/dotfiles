@@ -1,0 +1,25 @@
+name: Validate shell installer
+
+on:
+  push:
+    paths:
+      - "install.sh"
+      - "system-setup.sh"
+      - ".github/workflows/validate-shell.yml"
+  pull_request:
+    paths:
+      - "install.sh"
+      - "system-setup.sh"
+      - ".github/workflows/validate-shell.yml"
+
+jobs:
+  bash-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Bash syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n install.sh
+          bash -n system-setup.sh
