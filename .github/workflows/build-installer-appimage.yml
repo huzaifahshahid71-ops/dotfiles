@@ -1,0 +1,110 @@
+name: Build Triple-Rice Installer AppImage
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "installer-appimage/**"
+      - ".github/workflows/build-installer-appimage.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Prepare AppDir
+        run: |
+          set -euo pipefail
+          mkdir -p build/AppDir dist
+          cp installer-appimage/AppRun build/AppDir/AppRun
+          cp installer-appimage/huzaifah-triple-rice-installer.desktop build/AppDir/
+          cp installer-appimage/huzaifah-triple-rice-installer.svg build/AppDir/
+          ln -s huzaifah-triple-rice-installer.svg build/AppDir/.DirIcon
+          chmod +x build/AppDir/AppRun
+
+      - name: Download appimagetool
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 \
+            https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage \
+            -o build/appimagetool-x86_64.AppImage
+          chmod +x build/appimagetool-x86_64.AppImage
+
+      - name: Build AppImage
+        env:
+          ARCH: x86_64
+        run: |
+          set -euo pipefail
+          APPIMAGE_EXTRACT_AND_RUN=1 build/appimagetool-x86_64.AppImage \
+            build/AppDir \
+            dist/Huzaifah-Triple-Rice-Installer-x86_64.AppImage
+          chmod +x dist/Huzaifah-Triple-Rice-Installer-x86_64.AppImage
+          tar -C dist -czf dist/Huzaifah-Triple-Rice-Installer-x86_64.tar.gz \
+            Huzaifah-Triple-Rice-Installer-x86_64.AppImage
+          sha256sum \
+            dist/Huzaifah-Triple-Rice-Installer-x86_64.AppImage \
+            dist/Huzaifah-Triple-Rice-Installer-x86_64.tar.gz \
+            > dist/SHA256SUMS.txt
+
+      - name: Smoke-test AppImage structure
+        run: |
+          set -euo pipefail
+          APPIMAGE_EXTRACT_AND_RUN=1 \
+            dist/Huzaifah-Triple-Rice-Installer-x86_64.AppImage --appimage-version >/dev/null
+          bash -n installer-appimage/AppRun
+
+      - name: Write release notes
+        run: |
+          cat > dist/RELEASE_NOTES.md <<'EOF'
+          # Huzaifah Triple-Rice Installer v1.0.0
+
+          Double-click graphical installer for the Huzaifah Hyprland triple-rice setup.
+
+          **Installs:**
+          - ✦ Caelestia
+          - ◈ end4-pC
+          - ◆ Ambxst with axctl integration
+          - ⇄ `SUPER + SHIFT + D` profile switcher
+          - 🌙 Frieren SDDM login theme
+          - saved end4/Ambxst fixes and configuration from the dotfiles repository
+
+          This AppImage is intentionally lightweight. It does **not** bundle upstream packages or rice source trees; those remain online and are downloaded by the repository's normal `install.sh` during installation.
+
+          **Requirements:** x86_64 Arch/CachyOS-family Linux, internet access, sudo privileges, and a graphical desktop session.
+
+          The installer leaves your desktop wallpaper unchanged.
+
+          The `.tar.gz` asset contains the same AppImage while preserving its executable bit after extraction. If your browser strips the executable permission from the raw `.AppImage`, mark it executable in your file manager or run `chmod +x` on it once.
+          EOF
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="triple-rice-installer-v1.0.0"
+          TITLE="Huzaifah Triple-Rice Installer v1.0.0"
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --title "$TITLE" --notes-file dist/RELEASE_NOTES.md
+            gh release upload "$TAG" \
+              dist/Huzaifah-Triple-Rice-Installer-x86_64.AppImage \
+              dist/Huzaifah-Triple-Rice-Installer-x86_64.tar.gz \
+              dist/SHA256SUMS.txt \
+              --clobber
+          else
+            gh release create "$TAG" \
+              dist/Huzaifah-Triple-Rice-Installer-x86_64.AppImage \
+              dist/Huzaifah-Triple-Rice-Installer-x86_64.tar.gz \
+              dist/SHA256SUMS.txt \
+              --target "$GITHUB_SHA" \
+              --title "$TITLE" \
+              --notes-file dist/RELEASE_NOTES.md
+          fi
