@@ -60,8 +60,11 @@ is_arch_family || die "This restore currently supports Arch/CachyOS only"
 [[ -f "$SRC/profiles/caelestia/hypr/hyprland.lua" ]] || die "Backed-up Caelestia hyprland.lua missing"
 [[ -f "$SRC/profiles/end4/hypr/hyprland.lua" ]] || die "Backed-up end4 hyprland.lua missing"
 
-log "Refreshing package databases"
-sudo pacman -Sy
+# Never use pacman -Sy by itself on Arch-family systems: that can create a
+# partial-upgrade state. Bring the system fully current before installing the
+# mixed repo/AUR dependency set.
+log "Updating the system before dual-rice restore"
+sudo pacman -Syu
 
 ensure_paru
 
