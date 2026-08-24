@@ -38,6 +38,25 @@ ensure_repo() {
     fi
 }
 
+configure_end4_search_only() {
+    local config_dir="$HOME/.config/illogical-impulse"
+    local config="$config_dir/config.json"
+    local tmp
+
+    mkdir -p "$config_dir"
+    [[ -f "$config" ]] || printf '{}\n' > "$config"
+
+    if ! jq empty "$config" >/dev/null 2>&1; then
+        warn "end4 config is not valid JSON; leaving it unchanged."
+        return
+    fi
+
+    tmp="$(mktemp)"
+    jq '.overview = (.overview // {}) | .overview.enable = false' "$config" > "$tmp"
+    mv "$tmp" "$config"
+    ok "end4 launcher set to search-only mode (workspace overview hidden)"
+}
+
 install_dual_rice() {
     local restore="$DOTFILES_DIR/scripts/restore-dual-rice.sh"
     [[ -f "$restore" ]] || die "Missing dual-rice restore script: $restore"
@@ -51,6 +70,7 @@ install_dual_rice() {
     printf '  🖼 Frieren desktop wallpaper\n\n'
 
     "$restore"
+    configure_end4_search_only
 }
 
 install_frieren_sddm_theme() {
@@ -71,6 +91,7 @@ full_customization() {
     printf '\nIncluded:\n'
     printf '  ✦ Caelestia configuration\n'
     printf '  ◈ end4-pC configuration and saved album-art fixes\n'
+    printf '  🔎 end4 search-only launcher (workspace grid hidden)\n'
     printf '  🖼 Frieren desktop wallpaper\n'
     printf '  🌙 Frieren SDDM login theme\n'
     printf '  ⇄ SUPER + SHIFT + D desktop switcher\n'
@@ -88,6 +109,7 @@ Default (no options):
     - Caelestia rice
     - end4-pC rice
     - saved end4 widget/bar layout
+    - search-only end4 launcher (workspace overview hidden)
     - Frieren desktop wallpaper
     - Frieren SDDM theme
     - SUPER + SHIFT + D rice switcher
