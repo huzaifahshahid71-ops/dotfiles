@@ -20,3 +20,25 @@ index 16a966f..665480c 100644
              root.downloaded = true
              return
          }
+diff --git a/modules/ii/background/widgets/media/MediaWidget.qml b/modules/ii/background/widgets/media/MediaWidget.qml
+index 172fe5c..b1b4701 100644
+--- a/modules/ii/background/widgets/media/MediaWidget.qml
++++ b/modules/ii/background/widgets/media/MediaWidget.qml
+@@ -95,7 +95,7 @@ AbstractBackgroundWidget {
+ 
+     property string displayedArtFilePath: {
+         if (!root.downloaded) return ""
+-        if (root.artUrl && root.artUrl.startsWith("file://")) return root.artUrl
++        if (root.artUrl && root.artUrl.startsWith("file://") || root.artUrl.startsWith("data:image/")) return root.artUrl
+         return root.downloaded ? Qt.resolvedUrl(artFilePath) : ""
+     }
+ 
+@@ -109,7 +109,7 @@ AbstractBackgroundWidget {
+             root.downloaded = false
+             return
+         }
+-        if (root.artUrl.startsWith("file://")) {
++        if (root.artUrl.startsWith("file://") || root.artUrl.startsWith("data:image/")) {
+             root.downloaded = true
+             return
+         }
