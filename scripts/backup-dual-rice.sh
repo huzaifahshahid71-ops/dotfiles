@@ -17,7 +17,11 @@ Usage: ./scripts/backup-dual-rice.sh [--push]
 
 Backs up the currently working Caelestia + end4-pC dual-rice setup into
 this dotfiles repository. With --push, the script also commits and pushes
-only the dual-rice snapshot and this backup script's generated manifests.
+the generated dual-rice snapshot.
+
+The snapshot includes the end4 user layout from
+~/.config/illogical-impulse/config.json, but deliberately excludes caches,
+SSH keys, .env files and obvious credential files.
 EOF
 }
 
@@ -42,6 +46,7 @@ mkdir -p \
     "$DEST/profiles/caelestia/hypr" \
     "$DEST/profiles/end4/hypr" \
     "$DEST/caelestia" \
+    "$DEST/end4" \
     "$DEST/desktop-switcher" \
     "$DEST/bin" \
     "$DEST/systemd/user" \
@@ -50,7 +55,6 @@ mkdir -p \
     "$DEST/versions" \
     "$DEST/state"
 
-# Common exclusions for anything copied from user configuration.
 RSYNC_EXCLUDES=(
     --exclude='.git/'
     --exclude='.cache/'
@@ -85,6 +89,12 @@ if [[ -d "$HOME/.config/caelestia" ]]; then
     rsync -a --delete "${RSYNC_EXCLUDES[@]}" \
         "$HOME/.config/caelestia/" \
         "$DEST/caelestia/"
+fi
+
+if [[ -f "$HOME/.config/illogical-impulse/config.json" ]]; then
+    log "Backing up end4 widget/bar layout"
+    cp -a "$HOME/.config/illogical-impulse/config.json" \
+        "$DEST/end4/config.json"
 fi
 
 if [[ -d "$HOME/.config/desktop-switcher" ]]; then
@@ -153,10 +163,9 @@ Host: $(hostname)
 Kernel: $(uname -sr)
 EOF
 
-# Remove empty local patches so they don't create noise.
 find "$DEST/versions" -type f -name '*-local.patch' -empty -delete
 
-# Refuse to auto-push obvious credentials if they accidentally landed in the snapshot.
+# Refuse to auto-push obvious credentials if they accidentally land in the snapshot.
 secret_hits="$(grep -RIlE \
     '(^|[^[:alnum:]_])(password|passwd|api[_-]?key|access[_-]?token|refresh[_-]?token)[[:space:]]*[:=]' \
     "$DEST" 2>/dev/null || true)"
