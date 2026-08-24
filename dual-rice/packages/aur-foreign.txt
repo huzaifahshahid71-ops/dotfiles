@@ -17,6 +17,8 @@ spicetify-cli
 spicetify-marketplace-bin
 spotify
 todoist-appimage
+ttf-league-gothic
+ttf-phosphor-icons
 ttf-readex-pro
 ttf-rubik-vf
 unimatrix-git

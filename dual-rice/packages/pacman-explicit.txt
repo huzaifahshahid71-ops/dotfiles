@@ -211,9 +211,11 @@ trash-cli
 ttf-bitstream-vera
 ttf-dejavu
 ttf-jetbrains-mono-nerd
+ttf-league-gothic
 ttf-liberation
 ttf-meslo-nerd
 ttf-opensans
+ttf-phosphor-icons
 ttf-readex-pro
 tty-clock
 turbostat

@@ -1,0 +1,58 @@
+diff --git a/modules/widgets/dashboard/wallpapers/Wallpaper.qml b/modules/widgets/dashboard/wallpapers/Wallpaper.qml
+index 852359ef..3d36907c 100644
+--- a/modules/widgets/dashboard/wallpapers/Wallpaper.qml
++++ b/modules/widgets/dashboard/wallpapers/Wallpaper.qml
+@@ -239,7 +239,7 @@ PanelWindow {
+         if (!wallpaperDir)
+             return;
+         // Explicitly update command with current wallpaperDir
+-        var cmd = ["find", wallpaperDir, "-mindepth", "1", "-name", ".*", "-prune", "-o", "-type", "d", "-print"];
++        var cmd = ["find", wallpaperDir, "-mindepth", "1", "-iname", ".*", "-prune", "-o", "-type", "d", "-print"];
+         scanSubfoldersProcess.command = cmd;
+         scanSubfoldersProcess.running = true;
+     }
+@@ -264,7 +264,7 @@ PanelWindow {
+         directoryWatcher.path = wallpaperDir;
+ 
+         // Force update scan command
+-        var cmd = ["find", wallpaperDir, "-name", ".*", "-prune", "-o", "-type", "f", "(", "-name", "*.jpg", "-o", "-name", "*.jpeg", "-o", "-name", "*.png", "-o", "-name", "*.webp", "-o", "-name", "*.tif", "-o", "-name", "*.tiff", "-o", "-name", "*.gif", "-o", "-name", "*.mp4", "-o", "-name", "*.webm", "-o", "-name", "*.mov", "-o", "-name", "*.avi", "-o", "-name", "*.mkv", ")", "-print"];
++        var cmd = ["find", wallpaperDir, "-iname", ".*", "-prune", "-o", "-type", "f", "(", "-iname", "*.jpg", "-o", "-iname", "*.jpeg", "-o", "-iname", "*.png", "-o", "-iname", "*.webp", "-o", "-iname", "*.tif", "-o", "-iname", "*.tiff", "-o", "-iname", "*.gif", "-o", "-iname", "*.mp4", "-o", "-iname", "*.webm", "-o", "-iname", "*.mov", "-o", "-iname", "*.avi", "-o", "-iname", "*.mkv", ")", "-print"];
+         scanWallpapers.command = cmd;
+         scanWallpapers.running = true;
+ 
+@@ -761,7 +761,7 @@ PanelWindow {
+                         directoryWatcher.reload();
+ 
+                         // Perform initial wallpaper scan
+-                        var cmd = ["find", wallPath, "-name", ".*", "-prune", "-o", "-type", "f", "(", "-name", "*.jpg", "-o", "-name", "*.jpeg", "-o", "-name", "*.png", "-o", "-name", "*.webp", "-o", "-name", "*.tif", "-o", "-name", "*.tiff", "-o", "-name", "*.gif", "-o", "-name", "*.mp4", "-o", "-name", "*.webm", "-o", "-name", "*.mov", "-o", "-name", "*.avi", "-o", "-name", "*.mkv", ")", "-print"];
++                        var cmd = ["find", wallPath, "-iname", ".*", "-prune", "-o", "-type", "f", "(", "-iname", "*.jpg", "-o", "-iname", "*.jpeg", "-o", "-iname", "*.png", "-o", "-iname", "*.webp", "-o", "-iname", "*.tif", "-o", "-iname", "*.tiff", "-o", "-iname", "*.gif", "-o", "-iname", "*.mp4", "-o", "-iname", "*.webm", "-o", "-iname", "*.mov", "-o", "-iname", "*.avi", "-o", "-iname", "*.mkv", ")", "-print"];
+                         scanWallpapers.command = cmd;
+                         scanWallpapers.running = true;
+                         wallpaper.scanSubfolders();
+@@ -916,7 +916,7 @@ PanelWindow {
+     Process {
+         id: scanSubfoldersProcess
+         running: false
+-        command: wallpaperDir ? ["find", wallpaperDir, "-mindepth", "1", "-name", ".*", "-prune", "-o", "-type", "d", "-print"] : []
++        command: wallpaperDir ? ["find", wallpaperDir, "-mindepth", "1", "-iname", ".*", "-prune", "-o", "-type", "d", "-print"] : []
+ 
+         stdout: StdioCollector {
+             onStreamFinished: {
+@@ -1036,7 +1036,7 @@ PanelWindow {
+     Process {
+         id: scanWallpapers
+         running: false
+-        command: wallpaperDir ? ["find", wallpaperDir, "-name", ".*", "-prune", "-o", "-type", "f", "(", "-name", "*.jpg", "-o", "-name", "*.jpeg", "-o", "-name", "*.png", "-o", "-name", "*.webp", "-o", "-name", "*.tif", "-o", "-name", "*.tiff", "-o", "-name", "*.gif", "-o", "-name", "*.mp4", "-o", "-name", "*.webm", "-o", "-name", "*.mov", "-o", "-name", "*.avi", "-o", "-name", "*.mkv", ")", "-print"] : []
++        command: wallpaperDir ? ["find", wallpaperDir, "-iname", ".*", "-prune", "-o", "-type", "f", "(", "-iname", "*.jpg", "-o", "-iname", "*.jpeg", "-o", "-iname", "*.png", "-o", "-iname", "*.webp", "-o", "-iname", "*.tif", "-o", "-iname", "*.tiff", "-o", "-iname", "*.gif", "-o", "-iname", "*.mp4", "-o", "-iname", "*.webm", "-o", "-iname", "*.mov", "-o", "-iname", "*.avi", "-o", "-iname", "*.mkv", ")", "-print"] : []
+ 
+         onRunningChanged: {
+             if (running && wallpaperDir === "") {
+@@ -1115,7 +1115,7 @@ PanelWindow {
+     Process {
+         id: scanFallback
+         running: false
+-        command: ["find", fallbackDir, "-name", ".*", "-prune", "-o", "-type", "f", "(", "-name", "*.jpg", "-o", "-name", "*.jpeg", "-o", "-name", "*.png", "-o", "-name", "*.webp", "-o", "-name", "*.tif", "-o", "-name", "*.tiff", "-o", "-name", "*.gif", "-o", "-name", "*.mp4", "-o", "-name", "*.webm", "-o", "-name", "*.mov", "-o", "-name", "*.avi", "-o", "-name", "*.mkv", ")", "-print"]
++        command: ["find", fallbackDir, "-iname", ".*", "-prune", "-o", "-type", "f", "(", "-iname", "*.jpg", "-o", "-iname", "*.jpeg", "-o", "-iname", "*.png", "-o", "-iname", "*.webp", "-o", "-iname", "*.tif", "-o", "-iname", "*.tiff", "-o", "-iname", "*.gif", "-o", "-iname", "*.mp4", "-o", "-iname", "*.webm", "-o", "-iname", "*.mov", "-o", "-iname", "*.avi", "-o", "-iname", "*.mkv", ")", "-print"]
+ 
+         stdout: StdioCollector {
+             onStreamFinished: {
