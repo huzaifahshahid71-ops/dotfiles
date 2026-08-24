@@ -103,6 +103,14 @@ if [[ -d "$HOME/.config/ambxst" ]]; then
         "$DEST/ambxst/config/"
 fi
 
+# Ambxst keeps the selected wallpaper directory in its cache tree. Preserve
+# only this small portable state file, not thumbnails or other caches.
+if [[ -f "$HOME/.cache/ambxst/wallpapers.json" ]]; then
+    log "Backing up Ambxst wallpaper directory state"
+    cp -a "$HOME/.cache/ambxst/wallpapers.json" \
+        "$DEST/ambxst/wallpapers.json"
+fi
+
 if [[ -d "$HOME/.config/desktop-switcher" ]]; then
     log "Backing up desktop-switcher theme"
     rsync -a --delete "${RSYNC_EXCLUDES[@]}" \
@@ -156,6 +164,8 @@ fi
 if [[ -d "$HOME/.local/src/ambxst/.git" ]]; then
     git -C "$HOME/.local/src/ambxst" rev-parse HEAD \
         > "$DEST/versions/ambxst.commit"
+    git -C "$HOME/.local/src/ambxst" diff --binary \
+        > "$DEST/versions/ambxst-local.patch"
 fi
 
 if [[ -f "$HOME/.config/desktop-profile/active" ]]; then
