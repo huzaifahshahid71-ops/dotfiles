@@ -1,6 +1,6 @@
 # Huzaifah's Hyprland Dual-Rice Dotfiles
 
-A complete Hyprland customization built around **Caelestia** and **end4-pC**, with a one-command installer, a Frieren theme, and a desktop-profile switcher.
+A complete Hyprland customization built around **Caelestia** and **end4-pC**, with a one-command installer, a Frieren SDDM theme, and a desktop-profile switcher.
 
 This repository is for people who already have an **Arch/CachyOS-family Linux installation** and want the desktop customization. It does **not** contain an operating-system installation guide.
 
@@ -12,15 +12,17 @@ The default installer sets up the full desktop automatically:
 - ◈ **end4-pC** rice based on pctrade/end4-pC
 - saved end4 widget and top-bar layout
 - **125% end4 display scale** from the captured Hyprland profile
-- **Frieren desktop wallpaper**
 - **Frieren SDDM login theme**
 - `SUPER + SHIFT + D` desktop-profile switcher
 - polished Fuzzel profile selector
 - album-art fixes for Base64 MPRIS artwork in end4-pC
 - desktop media widget artwork support
+- search-only end4 launcher with the workspace grid hidden
 - Caelestia desktop lyrics / visualiser configuration
 - background-music service and Favorites playlist metadata when present
 - pinned end4/end4-pC revisions so restores are reproducible
+
+**The installer does not replace your desktop wallpaper.**
 
 The two desktop profiles are isolated from each other. Switching does not mix their Hyprland configs; the selected profile becomes active on the next login.
 
@@ -48,7 +50,7 @@ With **no flags**, `install.sh` automatically installs:
 Huzaifah Desktop
 ├── ✦ Caelestia
 ├── ◈ end4-pC
-├── 🖼 Frieren wallpaper
+├── 🔎 Search-only end4 launcher
 ├── 🌙 Frieren SDDM theme
 ├── ⇄ SUPER + SHIFT + D switcher
 └── end4-pC album-art patches
@@ -91,7 +93,7 @@ The default command installs the full customization. These flags are available w
 | --- | --- |
 | `--customization` | Full customization; same as no flags |
 | `--dual-rice` | Full customization alias |
-| `--dual-rice-only` | Caelestia + end4-pC + wallpaper, without changing SDDM theme |
+| `--dual-rice-only` | Caelestia + end4-pC without changing SDDM |
 | `--no-sddm-theme` | Same as `--dual-rice-only` |
 | `--sddm-theme-only` | Install only the Frieren SDDM theme |
 | `--status` | Show system-setup status |
@@ -116,21 +118,21 @@ These are **never run automatically**:
 
 They exist for my own hardware/setup workflows and should only be used when you know you want them.
 
-## 🖼 Frieren theme and wallpaper
+## 🌙 Frieren SDDM theme
 
-The repository already contains the Frieren asset used by the SDDM theme:
+The repository contains the Frieren theme used for the login screen under:
+
+```text
+machine/sddm/themes/sddm-frieren-theme/
+```
+
+The image at:
 
 ```text
 machine/sddm/themes/sddm-frieren-theme/Backgrounds/frieren.jpg
 ```
 
-During the normal customization install it is also copied to:
-
-```text
-~/Pictures/Wallpapers/frieren.jpg
-```
-
-The end4-pC restored configuration points to this portable per-user path, and the Caelestia wallpaper directory is rewritten to the current user's `~/Pictures/Wallpapers` instead of retaining my username.
+is simply an asset **inside the SDDM theme**. It is not installed as your desktop wallpaper.
 
 ## 🎵 end4-pC album-art fix
 
