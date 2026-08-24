@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+set -u
+
+TITLE="Huzaifah Triple-Rice Offline Installer"
+APPDIR="$(cd "$(dirname "$0")" && pwd)"
+PAYLOAD="$APPDIR/usr/lib/huzaifah-offline"
+
+is_arch_family() {
+    [[ -r /etc/os-release ]] || return 1
+    . /etc/os-release
+    [[ "${ID:-}" == "arch" || "${ID:-}" == "cachyos" || "${ID_LIKE:-}" == *arch* ]]
+}
+
+find_gui() {
+    if command -v zenity >/dev/null 2>&1; then echo zenity; return; fi
+    if command -v kdialog >/dev/null 2>&1; then echo kdialog; return; fi
+    if command -v yad >/dev/null 2>&1; then echo yad; return; fi
+    echo none
+}
+
+show_error() {
+    local gui="$1" msg="$2"
+    case "$gui" in
+        zenity) zenity --error --title="$TITLE" --width=560 --text="$msg" ;;
+        kdialog) kdialog --error "$msg" --title "$TITLE" ;;
+        yad) yad --error --title="$TITLE" --width=560 --text="$msg" ;;
+        *) printf '%s: %s\n' "$TITLE" "$msg" >&2 ;;
+    esac
+}
+
+show_info() {
+    local gui="$1" msg="$2"
+    case "$gui" in
+        zenity) zenity --info --title="$TITLE" --width=560 --text="$msg" ;;
+        kdialog) kdialog --msgbox "$msg" --title "$TITLE" ;;
+        yad) yad --info --title="$TITLE" --width=560 --text="$msg" ;;
+        *) printf '%s\n' "$msg" ;;
+    esac
+}
+
+confirm_install() {
+    local gui="$1"
+    local msg='<b>Install Huzaifah Triple-Rice — OFFLINE Edition?</b>\n\n✦ Caelestia\n◈ end4-pC\n◆ Ambxst + axctl\n⇄ SUPER + SHIFT + D switcher\n🌙 Frieren SDDM login theme\n\n<b>No internet connection is required.</b> All packages and source snapshots are inside this AppImage.\n\nThe installer may install or downgrade bundled packages so the snapshot stays internally compatible.\n\nYour desktop wallpaper is left unchanged.\n\nRequires an x86_64 Arch/CachyOS-family system and sudo privileges.'
+    case "$gui" in
+        zenity) zenity --question --title="$TITLE" --width=600 --ok-label="Install Offline Snapshot" --cancel-label="Cancel" --text="$msg" ;;
+        kdialog) kdialog --yesno "Install Huzaifah Triple-Rice OFFLINE Edition?\n\nCaelestia + end4-pC + Ambxst + Frieren SDDM\nNo internet required.\n\nBundled package versions may replace newer/older host versions." --title "$TITLE" ;;
+        yad) yad --question --title="$TITLE" --width=600 --button="Install Offline Snapshot:0" --button="Cancel:1" --text="$msg" ;;
+        *) return 0 ;;
+    esac
+}
+
+find_terminal() {
+    local candidates=()
+    [[ -n "${TERMINAL:-}" ]] && candidates+=("$TERMINAL")
+    candidates+=(foot kitty alacritty konsole wezterm gnome-terminal xfce4-terminal xterm)
+    local t
+    for t in "${candidates[@]}"; do
+        command -v "$t" >/dev/null 2>&1 && { echo "$t"; return 0; }
+    done
+    return 1
+}
+
+run_terminal() {
+    local terminal="$1" script="$2"
+    case "$terminal" in
+        foot) foot -e bash "$script" ;;
+        kitty) kitty bash "$script" ;;
+        alacritty) alacritty -e bash "$script" ;;
+        konsole) konsole -e bash "$script" ;;
+        wezterm) wezterm start --always-new-process -- bash "$script" ;;
+        gnome-terminal) gnome-terminal --wait -- bash "$script" ;;
+        xfce4-terminal) xfce4-terminal --disable-server -x bash "$script" ;;
+        xterm) xterm -e bash "$script" ;;
+        *) "$terminal" -e bash "$script" ;;
+    esac
+}
+
+main() {
+    local gui terminal tmp status_file
+    gui="$(find_gui)"
+
+    is_arch_family || { show_error "$gui" "This installer supports Arch/CachyOS-family systems only."; exit 1; }
+    [[ "$(uname -m)" == "x86_64" ]] || { show_error "$gui" "This offline build targets x86_64 systems only."; exit 1; }
+    [[ -x "$PAYLOAD/offline-install.sh" ]] || { show_error "$gui" "The embedded offline installation engine is missing."; exit 1; }
+
+    confirm_install "$gui" || exit 0
+
+    if ! terminal="$(find_terminal)"; then
+        show_error "$gui" "No supported terminal emulator was found."
+        exit 1
+    fi
+
+    status_file="$(mktemp)"
+    tmp="$(mktemp --suffix=.sh)"
+    cat > "$tmp" <<EOF2
+#!/usr/bin/env bash
+STATUS_FILE=$(printf '%q' "$status_file")
+PAYLOAD=$(printf '%q' "$PAYLOAD")
+clear 2>/dev/null || true
+printf '\n  Huzaifah Triple-Rice OFFLINE Installer\n'
+printf '  =====================================\n\n'
+printf '  ✦ Caelestia\n  ◈ end4-pC\n  ◆ Ambxst + axctl\n  🌙 Frieren SDDM\n  ⇄ SUPER + SHIFT + D switcher\n\n'
+printf '  Network required: NO\n\n'
+"\$PAYLOAD/offline-install.sh" "\$PAYLOAD"
+rc=\$?
+echo "\$rc" > "\$STATUS_FILE"
+printf '\n'
+if [[ \$rc -eq 0 ]]; then
+    printf '✓ Offline triple-rice installation completed successfully.\n'
+else
+    printf '✗ Installation exited with status %s.\n' "\$rc"
+fi
+printf '\n'
+read -r -p 'Press Enter to close this window...'
+exit "\$rc"
+EOF2
+    chmod +x "$tmp"
+
+    run_terminal "$terminal" "$tmp" || true
+    local rc=1
+    [[ -s "$status_file" ]] && read -r rc < "$status_file" || true
+    rm -f "$tmp" "$status_file"
+
+    if [[ "$rc" == "0" ]]; then
+        show_info "$gui" "Offline triple-rice installation completed.\n\nNo internet connection was used.\n\nLog out and back into Hyprland when ready.\nUse SUPER + SHIFT + D to switch profiles."
+    else
+        show_error "$gui" "The offline installer did not complete successfully. Review the terminal output for details."
+    fi
+}
+
+main "$@"
