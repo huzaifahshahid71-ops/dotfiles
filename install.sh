@@ -66,8 +66,7 @@ install_dual_rice() {
     log "Installing Huzaifah dual-rice desktop"
     printf '  ✦ Caelestia\n'
     printf '  ◈ end4-pC\n'
-    printf '  ⇄ SUPER + SHIFT + D profile switcher\n'
-    printf '  🖼 Frieren desktop wallpaper\n\n'
+    printf '  ⇄ SUPER + SHIFT + D profile switcher\n\n'
 
     "$restore"
     configure_end4_search_only
@@ -78,7 +77,7 @@ install_frieren_sddm_theme() {
     [[ -f "$setup" ]] || die "Missing system setup helper: $setup"
     chmod +x "$setup"
 
-    log "Installing Frieren SDDM theme"
+    log "Installing Frieren SDDM login theme"
     "$setup" sddm-theme
 }
 
@@ -92,10 +91,10 @@ full_customization() {
     printf '  ✦ Caelestia configuration\n'
     printf '  ◈ end4-pC configuration and saved album-art fixes\n'
     printf '  🔎 end4 search-only launcher (workspace grid hidden)\n'
-    printf '  🖼 Frieren desktop wallpaper\n'
     printf '  🌙 Frieren SDDM login theme\n'
     printf '  ⇄ SUPER + SHIFT + D desktop switcher\n'
-    printf '\nLog out and back into Hyprland when the installer finishes.\n'
+    printf '\nYour desktop wallpaper is not changed by the installer.\n'
+    printf 'Log out and back into Hyprland when the installer finishes.\n'
 }
 
 usage() {
@@ -110,17 +109,18 @@ Default (no options):
     - end4-pC rice
     - saved end4 widget/bar layout
     - search-only end4 launcher (workspace overview hidden)
-    - Frieren desktop wallpaper
-    - Frieren SDDM theme
+    - Frieren SDDM login theme
     - SUPER + SHIFT + D rice switcher
     - saved local end4-pC album-art fixes
+
+  Desktop wallpaper is left unchanged.
 
 Customization options:
   --customization     Full customization (same as no options)
   --dual-rice         Full customization (alias)
-  --dual-rice-only    Install Caelestia + end4-pC without touching SDDM
-  --sddm-theme-only   Install only the Frieren SDDM theme
-  --no-sddm-theme     Install dual-rice + wallpaper, but skip the SDDM theme
+  --dual-rice-only    Install Caelestia + end4-pC without changing SDDM
+  --sddm-theme-only   Install only the Frieren SDDM login theme
+  --no-sddm-theme     Install the dual-rice setup but skip the SDDM theme
 
 Optional machine-specific extras (never run automatically):
   --asus              Generic ASUS support
