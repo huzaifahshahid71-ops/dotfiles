@@ -1,0 +1,25 @@
+name: Validate Offline Installer
+
+on:
+  push:
+    paths:
+      - 'installer-appimage-offline/**'
+      - 'scripts/resolve-offline-closure.py'
+      - '.github/workflows/lint-offline-installer.yml'
+  pull_request:
+    paths:
+      - 'installer-appimage-offline/**'
+      - 'scripts/resolve-offline-closure.py'
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate shell syntax
+        run: |
+          bash -n installer-appimage-offline/AppRun
+          bash -n installer-appimage-offline/build.sh
+          bash -n installer-appimage-offline/install-offline.sh
+      - name: Validate Python syntax
+        run: python3 -m py_compile scripts/resolve-offline-closure.py
