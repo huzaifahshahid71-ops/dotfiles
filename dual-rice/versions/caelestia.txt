@@ -1,0 +1,15 @@
+Packages:
+    dim-caelestia-shell-git  r3042.b125e28-1
+    caelestia-cli            1.1.2-1
+    quickshell-git           0.3.1.r1.g0fed22a-1
+
+Dots:
+    Commit: 2c9db39 (refactor: opaque game tag)
+    Components: hypr, fish, foot, fastfetch, btop, micro, thunar, starship, firefox, gtk, qt, auth, network, bluetooth, pipewire, clipboard, fonts, tools, spotify, vscodium, vscode, zed, discord, todoist, uwsm, zen
+    AUR helper: paru
+
+Shell:
+    caelestia-shell , revision b125e287, distributed by: AUR (package: dim-caelestia-shell-git)
+
+Quickshell:
+    Quickshell 0.3.1 (revision 0fed22a2c47d9568ddf13cf61586b3f2ac4378a2, distributed by AUR (package: quickshell-git))

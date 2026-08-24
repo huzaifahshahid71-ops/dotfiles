@@ -1,0 +1,13 @@
+[Unit]
+Description=Background music player with automatic resume
+After=pipewire.service
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/background-music
+ExecStop=%h/.local/bin/background-music-stop
+TimeoutStopSec=15
+Restart=no
+
+[Install]
+WantedBy=default.target

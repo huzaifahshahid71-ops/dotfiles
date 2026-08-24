@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -e
+
+ROOT="$HOME/.local/share/desktop-profiles"
+HYPR="$HOME/.config/hypr"
+
+rm -f "$HYPR"
+ln -s "$ROOT/caelestia/hypr" "$HYPR"
+
+mkdir -p "$HOME/.config/desktop-profile"
+echo "caelestia" > "$HOME/.config/desktop-profile/active"
+
+echo "✓ Caelestia restored"
+echo "Hyprland -> $(readlink -f "$HYPR")"

@@ -1,0 +1,219 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+ROOT="$HOME/.local/share/desktop-profiles"
+ACTIVE_DIR="$HOME/.config/desktop-profile"
+ACTIVE_FILE="$ACTIVE_DIR/active"
+HYPR_LINK="$HOME/.config/hypr"
+FUZZEL_CFG="$HOME/.config/desktop-switcher/fuzzel.ini"
+
+mkdir -p "$ACTIVE_DIR"
+
+die() {
+    notify-send "Desktop Switcher" "$*" 2>/dev/null || true
+    echo "desktop-switch: $*" >&2
+    exit 1
+}
+
+profile_target() {
+    case "$1" in
+        caelestia)
+            printf '%s\n' "$ROOT/caelestia/hypr"
+            ;;
+        end4)
+            printf '%s\n' "$ROOT/end4/hypr"
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+pretty_name() {
+    case "$1" in
+        caelestia) echo "Caelestia" ;;
+        end4) echo "end4-pC" ;;
+        *) echo "$1" ;;
+    esac
+}
+
+current_profile() {
+    if [ -f "$ACTIVE_FILE" ]; then
+        cat "$ACTIVE_FILE"
+        return
+    fi
+
+    if [ -L "$HYPR_LINK" ]; then
+        case "$(readlink -f "$HYPR_LINK")" in
+            "$ROOT/caelestia/hypr")
+                echo "caelestia"
+                ;;
+            "$ROOT/end4/hypr")
+                echo "end4"
+                ;;
+            *)
+                echo "unknown"
+                ;;
+        esac
+    else
+        echo "unknown"
+    fi
+}
+
+switch_profile() {
+    local profile="$1"
+    local target
+    local tmp
+
+    target="$(profile_target "$profile")" ||
+        die "Unknown profile: $profile"
+
+    [ -d "$target" ] ||
+        die "Profile directory missing: $target"
+
+    [ -f "$target/hyprland.lua" ] ||
+        die "hyprland.lua missing from $target"
+
+    if [ -e "$HYPR_LINK" ] && [ ! -L "$HYPR_LINK" ]; then
+        die "$HYPR_LINK is not a symlink. Refusing to modify it."
+    fi
+
+    tmp="$HOME/.config/.hypr-profile-switch.$$"
+
+    rm -f "$tmp"
+    ln -s "$target" "$tmp"
+    mv -Tf "$tmp" "$HYPR_LINK"
+
+    printf '%s\n' "$profile" > "$ACTIVE_FILE"
+
+    notify-send \
+        "Desktop Profile" \
+        "$(pretty_name "$profile") selected" \
+        2>/dev/null || true
+}
+
+gui_choose_profile() {
+    command -v fuzzel >/dev/null ||
+        die "Fuzzel is not installed"
+
+    local current
+    local caelestia_label
+    local end4_label
+    local choice
+
+    current="$(current_profile)"
+
+    if [ "$current" = "caelestia" ]; then
+        caelestia_label="✓  ✦  Caelestia        ACTIVE"
+        end4_label="   ◈  end4-pC"
+    elif [ "$current" = "end4" ]; then
+        caelestia_label="   ✦  Caelestia"
+        end4_label="✓  ◈  end4-pC          ACTIVE"
+    else
+        caelestia_label="   ✦  Caelestia"
+        end4_label="   ◈  end4-pC"
+    fi
+
+    choice="$(
+        printf '%s\n' \
+            "$caelestia_label" \
+            "$end4_label" |
+        fuzzel \
+            --config="$FUZZEL_CFG" \
+            --dmenu \
+            --prompt='  Desktop  ❯  ' \
+            --mesg="Current profile: $(pretty_name "$current")"
+    )" || exit 0
+
+    case "$choice" in
+        *Caelestia*)
+            echo "caelestia"
+            ;;
+        *end4-pC*)
+            echo "end4"
+            ;;
+        *)
+            exit 0
+            ;;
+    esac
+}
+
+confirm_switch() {
+    local selected="$1"
+    local current="$2"
+    local choice
+
+    if [ "$selected" = "$current" ]; then
+        notify-send \
+            "Desktop Profile" \
+            "$(pretty_name "$selected") is already active" \
+            2>/dev/null || true
+        exit 0
+    fi
+
+    choice="$(
+        printf '%s\n' \
+            "⚡  Switch to $(pretty_name "$selected") now" \
+            "←   Cancel" |
+        fuzzel \
+            --config="$FUZZEL_CFG" \
+            --dmenu \
+            --prompt='  Confirm  ❯  ' \
+            --mesg="$(pretty_name "$current")  →  $(pretty_name "$selected")"
+    )" || exit 0
+
+    case "$choice" in
+        *Switch*)
+            switch_profile "$selected"
+
+            notify-send \
+                "Desktop Switcher" \
+                "Logging out…" \
+                2>/dev/null || true
+
+            sleep 1
+
+            hyprctl dispatch 'hl.dsp.exit()'
+            ;;
+        *)
+            exit 0
+            ;;
+    esac
+}
+
+case "${1:-}" in
+
+    status)
+        echo "Active profile: $(current_profile)"
+        echo "Hyprland target: $(readlink -f "$HYPR_LINK" 2>/dev/null || echo unknown)"
+        ;;
+
+    caelestia|end4)
+        selected="$1"
+
+        switch_profile "$selected"
+
+        if [ "${2:-}" = "--now" ]; then
+            sleep 1
+            hyprctl dispatch 'hl.dsp.exit()'
+        fi
+        ;;
+
+    "")
+        current="$(current_profile)"
+        selected="$(gui_choose_profile)"
+        confirm_switch "$selected" "$current"
+        ;;
+
+    *)
+        echo "Usage:"
+        echo "  desktop-switch"
+        echo "  desktop-switch status"
+        echo "  desktop-switch caelestia"
+        echo "  desktop-switch end4"
+        echo "  desktop-switch caelestia --now"
+        echo "  desktop-switch end4 --now"
+        exit 1
+        ;;
+esac
