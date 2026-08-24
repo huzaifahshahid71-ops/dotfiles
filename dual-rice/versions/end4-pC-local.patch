@@ -1,0 +1,22 @@
+diff --git a/modules/common/widgets/Player.qml b/modules/common/widgets/Player.qml
+index 16a966f..665480c 100644
+--- a/modules/common/widgets/Player.qml
++++ b/modules/common/widgets/Player.qml
+@@ -32,7 +32,7 @@ Item {
+ 
+     property string displayedArtFilePath: {
+         if (!root.downloaded) return ""
+-        if (root.artUrl.startsWith("file://")) return root.artUrl
++        if (root.artUrl.startsWith("file://") || root.artUrl.startsWith("data:image/")) return root.artUrl
+         return Qt.resolvedUrl(artFilePath)
+     }
+ 
+@@ -54,7 +54,7 @@ Item {
+             return
+         }
+ 
+-        if (root.artUrl.startsWith("file://")) {
++        if (root.artUrl.startsWith("file://") || root.artUrl.startsWith("data:image/")) {
+             root.downloaded = true
+             return
+         }
