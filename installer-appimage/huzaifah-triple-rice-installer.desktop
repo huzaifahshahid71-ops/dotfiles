@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Huzaifah Triple-Rice Installer
+Comment=Install Caelestia, end4-pC and Ambxst with the Frieren SDDM theme
+Exec=AppRun
+Icon=huzaifah-triple-rice-installer
+Terminal=false
+Categories=System;Settings;
+StartupNotify=true
