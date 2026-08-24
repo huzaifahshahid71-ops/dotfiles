@@ -7,6 +7,9 @@ PROFILE_ROOT="$HOME/.local/share/desktop-profiles"
 BACKUP_ROOT="$HOME/.local/share/desktop-profile-backups"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 BACKUP="$BACKUP_ROOT/dual-rice-restore-$STAMP"
+FRIEREN_SRC="$REPO_ROOT/machine/sddm/themes/sddm-frieren-theme/Backgrounds/frieren.jpg"
+WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
+FRIEREN_DST="$WALLPAPER_DIR/frieren.jpg"
 
 log()  { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 ok()   { printf '\033[1;32m✓\033[0m %s\n' "$*"; }
@@ -54,15 +57,26 @@ clone_pinned() {
     fi
 }
 
+rewrite_home_paths_json() {
+    local file="$1" tmp
+    [[ -f "$file" ]] || return 0
+    jq empty "$file" >/dev/null 2>&1 || return 0
+    tmp="$(mktemp)"
+    jq --arg home "$HOME" '
+      walk(if type == "string"
+           then sub("^/home/[^/]+/"; ($home + "/"))
+           else . end)
+    ' "$file" > "$tmp"
+    mv "$tmp" "$file"
+}
+
 is_arch_family || die "This restore currently supports Arch/CachyOS only"
 [[ -d "$SRC/profiles/caelestia/hypr" ]] || die "Missing backed-up Caelestia profile. Run backup-dual-rice.sh first."
 [[ -d "$SRC/profiles/end4/hypr" ]] || die "Missing backed-up end4 profile. Run backup-dual-rice.sh first."
 [[ -f "$SRC/profiles/caelestia/hypr/hyprland.lua" ]] || die "Backed-up Caelestia hyprland.lua missing"
 [[ -f "$SRC/profiles/end4/hypr/hyprland.lua" ]] || die "Backed-up end4 hyprland.lua missing"
 
-# Never use pacman -Sy by itself on Arch-family systems: that can create a
-# partial-upgrade state. Bring the system fully current before installing the
-# mixed repo/AUR dependency set.
+# Never use pacman -Sy by itself on Arch-family systems.
 log "Updating the system before dual-rice restore"
 sudo pacman -Syu
 
@@ -72,6 +86,13 @@ log "Installing dual-rice dependencies"
 paru -S --needed \
     git \
     rsync \
+    jq \
+    fish \
+    stow \
+    foot \
+    kitty \
+    mpv \
+    mpv-mpris \
     fuzzel \
     hyprland \
     hypridle \
@@ -106,10 +127,17 @@ log "Creating safety backup before profile restore"
 mkdir -p "$BACKUP"
 backup_path "$HOME/.config/hypr" "hypr"
 backup_path "$HOME/.config/caelestia" "caelestia"
+backup_path "$HOME/.config/illogical-impulse" "illogical-impulse"
 backup_path "$HOME/.config/desktop-switcher" "desktop-switcher"
 backup_path "$PROFILE_ROOT" "desktop-profiles"
 backup_path "$HOME/.local/bin/desktop-switch" "desktop-switch"
 backup_path "$HOME/.local/bin/recover-caelestia" "recover-caelestia"
+backup_path "$FRIEREN_DST" "frieren-wallpaper.jpg"
+
+log "Installing Frieren desktop wallpaper"
+[[ -f "$FRIEREN_SRC" ]] || die "Frieren wallpaper asset is missing: $FRIEREN_SRC"
+mkdir -p "$WALLPAPER_DIR"
+cp -a "$FRIEREN_SRC" "$FRIEREN_DST"
 
 log "Restoring both Hyprland profiles"
 mkdir -p "$PROFILE_ROOT/caelestia/hypr" "$PROFILE_ROOT/end4/hypr"
@@ -120,6 +148,29 @@ if [[ -d "$SRC/caelestia" ]]; then
     log "Restoring Caelestia user configuration"
     mkdir -p "$HOME/.config/caelestia"
     rsync -a --delete "$SRC/caelestia/" "$HOME/.config/caelestia/"
+    rewrite_home_paths_json "$HOME/.config/caelestia/shell.json"
+    if [[ -f "$HOME/.config/caelestia/shell.json" ]]; then
+        tmp="$(mktemp)"
+        jq --arg dir "$WALLPAPER_DIR" '.paths = (.paths // {}) | .paths.wallpaperDir = $dir' \
+            "$HOME/.config/caelestia/shell.json" > "$tmp"
+        mv "$tmp" "$HOME/.config/caelestia/shell.json"
+    fi
+fi
+
+if [[ -f "$SRC/end4/config.json" ]]; then
+    log "Restoring end4-pC widget and bar layout"
+    mkdir -p "$HOME/.config/illogical-impulse"
+    cp -a "$SRC/end4/config.json" "$HOME/.config/illogical-impulse/config.json"
+    rewrite_home_paths_json "$HOME/.config/illogical-impulse/config.json"
+    tmp="$(mktemp)"
+    jq --arg wallpaper "$FRIEREN_DST" '
+        .background = (.background // {})
+        | .background.wallpaperPath = $wallpaper
+        | .background.thumbnailPath = ""
+    ' "$HOME/.config/illogical-impulse/config.json" > "$tmp"
+    mv "$tmp" "$HOME/.config/illogical-impulse/config.json"
+else
+    warn "No backed-up end4 config.json yet; end4 will use its defaults until a fresh dual-rice backup is pushed."
 fi
 
 if [[ -d "$SRC/desktop-switcher" ]]; then
@@ -168,12 +219,15 @@ if [[ -f "$SRC/systemd/user/background-music.service" ]]; then
     mkdir -p "$HOME/.config/systemd/user"
     cp -a "$SRC/systemd/user/background-music.service" \
         "$HOME/.config/systemd/user/background-music.service"
+    sed -Ei "s#/home/[^/]+/#$HOME/#g" "$HOME/.config/systemd/user/background-music.service" || true
 fi
 
 if compgen -G "$SRC/music/*.m3u8" >/dev/null; then
     mkdir -p "$HOME/Music"
     for playlist in "$SRC"/music/*.m3u8; do
-        cp -a "$playlist" "$HOME/Music/$(basename "$playlist")"
+        dest="$HOME/Music/$(basename "$playlist")"
+        cp -a "$playlist" "$dest"
+        sed -Ei "s#/home/[^/]+/#$HOME/#g" "$dest" || true
     done
 fi
 
@@ -199,9 +253,13 @@ if [[ -f "$HOME/.config/systemd/user/background-music.service" ]]; then
 fi
 
 ok "Dual-rice restore complete"
+printf '\nInstalled:\n'
+printf '  ✦ Caelestia profile\n'
+printf '  ◈ end4-pC profile + saved local patches\n'
+printf '  ⇄ SUPER + SHIFT + D desktop switcher\n'
+printf '  🖼 Frieren wallpaper: %s\n' "$FRIEREN_DST"
 printf '\nActive profile: %s\n' "$active"
 printf 'Hyprland target: %s\n' "$(readlink -f "$HOME/.config/hypr")"
 printf 'Safety backup: %s\n' "$BACKUP"
 printf '\nLog out and back into Hyprland to start the restored profile.\n'
-printf 'Switcher: SUPER + SHIFT + D\n'
 printf 'Emergency recovery: ~/.local/bin/recover-caelestia\n'
