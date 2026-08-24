@@ -7,9 +7,6 @@ PROFILE_ROOT="$HOME/.local/share/desktop-profiles"
 BACKUP_ROOT="$HOME/.local/share/desktop-profile-backups"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 BACKUP="$BACKUP_ROOT/dual-rice-restore-$STAMP"
-FRIEREN_SRC="$REPO_ROOT/machine/sddm/themes/sddm-frieren-theme/Backgrounds/frieren.jpg"
-WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
-FRIEREN_DST="$WALLPAPER_DIR/frieren.jpg"
 
 log()  { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 ok()   { printf '\033[1;32m✓\033[0m %s\n' "$*"; }
@@ -132,12 +129,6 @@ backup_path "$HOME/.config/desktop-switcher" "desktop-switcher"
 backup_path "$PROFILE_ROOT" "desktop-profiles"
 backup_path "$HOME/.local/bin/desktop-switch" "desktop-switch"
 backup_path "$HOME/.local/bin/recover-caelestia" "recover-caelestia"
-backup_path "$FRIEREN_DST" "frieren-wallpaper.jpg"
-
-log "Installing Frieren desktop wallpaper"
-[[ -f "$FRIEREN_SRC" ]] || die "Frieren wallpaper asset is missing: $FRIEREN_SRC"
-mkdir -p "$WALLPAPER_DIR"
-cp -a "$FRIEREN_SRC" "$FRIEREN_DST"
 
 log "Restoring both Hyprland profiles"
 mkdir -p "$PROFILE_ROOT/caelestia/hypr" "$PROFILE_ROOT/end4/hypr"
@@ -149,12 +140,6 @@ if [[ -d "$SRC/caelestia" ]]; then
     mkdir -p "$HOME/.config/caelestia"
     rsync -a --delete "$SRC/caelestia/" "$HOME/.config/caelestia/"
     rewrite_home_paths_json "$HOME/.config/caelestia/shell.json"
-    if [[ -f "$HOME/.config/caelestia/shell.json" ]]; then
-        tmp="$(mktemp)"
-        jq --arg dir "$WALLPAPER_DIR" '.paths = (.paths // {}) | .paths.wallpaperDir = $dir' \
-            "$HOME/.config/caelestia/shell.json" > "$tmp"
-        mv "$tmp" "$HOME/.config/caelestia/shell.json"
-    fi
 fi
 
 if [[ -f "$SRC/end4/config.json" ]]; then
@@ -162,13 +147,6 @@ if [[ -f "$SRC/end4/config.json" ]]; then
     mkdir -p "$HOME/.config/illogical-impulse"
     cp -a "$SRC/end4/config.json" "$HOME/.config/illogical-impulse/config.json"
     rewrite_home_paths_json "$HOME/.config/illogical-impulse/config.json"
-    tmp="$(mktemp)"
-    jq --arg wallpaper "$FRIEREN_DST" '
-        .background = (.background // {})
-        | .background.wallpaperPath = $wallpaper
-        | .background.thumbnailPath = ""
-    ' "$HOME/.config/illogical-impulse/config.json" > "$tmp"
-    mv "$tmp" "$HOME/.config/illogical-impulse/config.json"
 else
     warn "No backed-up end4 config.json yet; end4 will use its defaults until a fresh dual-rice backup is pushed."
 fi
@@ -257,7 +235,7 @@ printf '\nInstalled:\n'
 printf '  ✦ Caelestia profile\n'
 printf '  ◈ end4-pC profile + saved local patches\n'
 printf '  ⇄ SUPER + SHIFT + D desktop switcher\n'
-printf '  🖼 Frieren wallpaper: %s\n' "$FRIEREN_DST"
+printf '\nDesktop wallpaper is not changed by this restore.\n'
 printf '\nActive profile: %s\n' "$active"
 printf 'Hyprland target: %s\n' "$(readlink -f "$HOME/.config/hypr")"
 printf 'Safety backup: %s\n' "$BACKUP"
