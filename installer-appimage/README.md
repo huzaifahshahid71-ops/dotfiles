@@ -28,7 +28,9 @@ The launcher uses Zenity, KDialog, or Yad when one is already installed. On Arch
 
 GitHub Actions builds the release AppImage with `appimagetool`. The generated release contains both the raw `.AppImage` and a `.tar.gz` copy that preserves the executable bit when extracted.
 
-Published release tag: `triple-rice-installer-v1.0.0`.
+Current release tag: `triple-rice-installer-v1.0.1`.
+
+v1.0.1 fixes the online-launcher execution path so a failed `install.sh` download cannot be mistaken for a successful installation. The launcher downloads the script to a temporary file, syntax-checks it, then runs it.
 
 If a browser strips the executable permission from the raw AppImage, enable **Allow executing file as program** in your file manager or run:
 
