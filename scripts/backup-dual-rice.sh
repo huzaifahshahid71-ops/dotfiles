@@ -15,13 +15,12 @@ usage() {
     cat <<'EOF'
 Usage: ./scripts/backup-dual-rice.sh [--push]
 
-Backs up the currently working Caelestia + end4-pC dual-rice setup into
-this dotfiles repository. With --push, the script also commits and pushes
-the generated dual-rice snapshot.
+Backs up the currently working Caelestia + end4-pC + Ambxst triple-rice
+setup into this dotfiles repository. The historical dual-rice directory and
+script names are kept for compatibility.
 
-The snapshot includes the end4 user layout from
-~/.config/illogical-impulse/config.json, but deliberately excludes caches,
-SSH keys, .env files and obvious credential files.
+With --push, the script also commits and pushes the generated snapshot.
+Caches, SSH keys, .env files and obvious credential files are excluded.
 EOF
 }
 
@@ -36,17 +35,20 @@ done
 command -v git >/dev/null 2>&1 || die "git is required"
 command -v rsync >/dev/null 2>&1 || die "rsync is required"
 [[ -d "$REPO_ROOT/.git" ]] || die "$REPO_ROOT is not a Git repository"
-[[ -d "$PROFILE_ROOT/caelestia/hypr" ]] || die "Caelestia profile not found"
-[[ -d "$PROFILE_ROOT/end4/hypr" ]] || die "end4 profile not found"
-[[ -f "$PROFILE_ROOT/caelestia/hypr/hyprland.lua" ]] || die "Caelestia hyprland.lua missing"
-[[ -f "$PROFILE_ROOT/end4/hypr/hyprland.lua" ]] || die "end4 hyprland.lua missing"
 
-log "Preparing dual-rice snapshot"
+for profile in caelestia end4 ambxst; do
+    [[ -d "$PROFILE_ROOT/$profile/hypr" ]] || die "$profile profile not found"
+    [[ -f "$PROFILE_ROOT/$profile/hypr/hyprland.lua" ]] || die "$profile hyprland.lua missing"
+done
+
+log "Preparing triple-rice snapshot"
 mkdir -p \
     "$DEST/profiles/caelestia/hypr" \
     "$DEST/profiles/end4/hypr" \
+    "$DEST/profiles/ambxst/hypr" \
     "$DEST/caelestia" \
     "$DEST/end4" \
+    "$DEST/ambxst/config" \
     "$DEST/desktop-switcher" \
     "$DEST/bin" \
     "$DEST/systemd/user" \
@@ -74,15 +76,12 @@ RSYNC_EXCLUDES=(
     --exclude='*secret*'
 )
 
-log "Backing up Caelestia Hyprland profile"
-rsync -a --delete "${RSYNC_EXCLUDES[@]}" \
-    "$PROFILE_ROOT/caelestia/hypr/" \
-    "$DEST/profiles/caelestia/hypr/"
-
-log "Backing up end4 Hyprland profile"
-rsync -a --delete "${RSYNC_EXCLUDES[@]}" \
-    "$PROFILE_ROOT/end4/hypr/" \
-    "$DEST/profiles/end4/hypr/"
+for profile in caelestia end4 ambxst; do
+    log "Backing up $profile Hyprland profile"
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" \
+        "$PROFILE_ROOT/$profile/hypr/" \
+        "$DEST/profiles/$profile/hypr/"
+done
 
 if [[ -d "$HOME/.config/caelestia" ]]; then
     log "Backing up Caelestia user configuration"
@@ -95,6 +94,13 @@ if [[ -f "$HOME/.config/illogical-impulse/config.json" ]]; then
     log "Backing up end4 widget/bar layout"
     cp -a "$HOME/.config/illogical-impulse/config.json" \
         "$DEST/end4/config.json"
+fi
+
+if [[ -d "$HOME/.config/ambxst" ]]; then
+    log "Backing up Ambxst user configuration"
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" \
+        "$HOME/.config/ambxst/" \
+        "$DEST/ambxst/config/"
 fi
 
 if [[ -d "$HOME/.config/desktop-switcher" ]]; then
@@ -130,6 +136,8 @@ pacman -Qqm | sort > "$DEST/packages/aur-foreign.txt"
 hyprctl version > "$DEST/versions/hyprland.txt" 2>&1 || true
 qs --version > "$DEST/versions/quickshell.txt" 2>&1 || true
 caelestia --version > "$DEST/versions/caelestia.txt" 2>&1 || true
+ambxst version > "$DEST/versions/ambxst.txt" 2>&1 || true
+axctl --version > "$DEST/versions/axctl.txt" 2>&1 || true
 
 if [[ -d "$HOME/.config/quickshell/end4-pC/.git" ]]; then
     git -C "$HOME/.config/quickshell/end4-pC" rev-parse HEAD \
@@ -145,12 +153,18 @@ if [[ -d "$HOME/.local/src/end4-dots/.git" ]]; then
         > "$DEST/versions/end4-dots-local.patch"
 fi
 
+if [[ -d "$HOME/.local/src/ambxst/.git" ]]; then
+    git -C "$HOME/.local/src/ambxst" rev-parse HEAD \
+        > "$DEST/versions/ambxst.commit"
+fi
+
 if [[ -f "$HOME/.config/desktop-profile/active" ]]; then
     cp -a "$HOME/.config/desktop-profile/active" "$DEST/state/active"
 elif [[ -L "$HOME/.config/hypr" ]]; then
     case "$(readlink -f "$HOME/.config/hypr")" in
         "$PROFILE_ROOT/caelestia/hypr") printf '%s\n' caelestia > "$DEST/state/active" ;;
         "$PROFILE_ROOT/end4/hypr") printf '%s\n' end4 > "$DEST/state/active" ;;
+        "$PROFILE_ROOT/ambxst/hypr") printf '%s\n' ambxst > "$DEST/state/active" ;;
         *) printf '%s\n' caelestia > "$DEST/state/active" ;;
     esac
 else
@@ -175,14 +189,14 @@ if [[ -n "$secret_hits" ]]; then
     [[ "$PUSH" -eq 0 ]] || die "Refusing --push until the flagged files are reviewed"
 fi
 
-ok "Dual-rice snapshot updated at $DEST"
+ok "Triple-rice snapshot updated at $DEST"
 printf '\nSnapshot size:\n'
 du -sh "$DEST"
 printf '\nGit changes:\n'
 git -C "$REPO_ROOT" status --short -- dual-rice scripts/backup-dual-rice.sh scripts/restore-dual-rice.sh
 
 if (( PUSH )); then
-    log "Committing dual-rice snapshot"
+    log "Committing triple-rice snapshot"
     git -C "$REPO_ROOT" add -- \
         dual-rice \
         scripts/backup-dual-rice.sh \
@@ -193,9 +207,9 @@ if (( PUSH )); then
         exit 0
     fi
 
-    git -C "$REPO_ROOT" commit -m "Backup working Caelestia and end4 dual-rice setup"
+    git -C "$REPO_ROOT" commit -m "Backup working Caelestia end4 and Ambxst triple-rice setup"
     git -C "$REPO_ROOT" push
-    ok "Dual-rice backup pushed to GitHub"
+    ok "Triple-rice backup pushed to GitHub"
 else
     printf '\nReview the changes, then run:\n'
     printf '  %s --push\n' "$0"
