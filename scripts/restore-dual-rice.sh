@@ -6,7 +6,7 @@ SRC="$REPO_ROOT/dual-rice"
 PROFILE_ROOT="$HOME/.local/share/desktop-profiles"
 BACKUP_ROOT="$HOME/.local/share/desktop-profile-backups"
 STAMP="$(date +%Y%m%d-%H%M%S)"
-BACKUP="$BACKUP_ROOT/dual-rice-restore-$STAMP"
+BACKUP="$BACKUP_ROOT/triple-rice-restore-$STAMP"
 
 log()  { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 ok()   { printf '\033[1;32m✓\033[0m %s\n' "$*"; }
@@ -67,21 +67,60 @@ rewrite_home_paths_json() {
     mv "$tmp" "$file"
 }
 
+install_axctl() {
+    if command -v axctl >/dev/null 2>&1; then
+        log "axctl already installed: $(axctl --version 2>/dev/null || true)"
+        return
+    fi
+
+    log "Installing axctl"
+    curl -fsSL https://raw.githubusercontent.com/Axenide/axctl/main/install.sh | bash
+    command -v axctl >/dev/null 2>&1 || die "axctl installation failed"
+}
+
+install_ambxst_launcher() {
+    mkdir -p "$HOME/.local/bin"
+
+    cat > "$HOME/.local/bin/ambxst" <<'EOF'
+#!/usr/bin/env bash
+export PATH="$HOME/.local/bin:$PATH"
+export QML2_IMPORT_PATH="$HOME/.local/lib/qml:${QML2_IMPORT_PATH:-}"
+export QML_IMPORT_PATH="$QML2_IMPORT_PATH"
+exec "$HOME/.local/src/ambxst/cli.sh" "$@"
+EOF
+    chmod +x "$HOME/.local/bin/ambxst"
+
+    # Ambxst's generated Hyprland config launches `ambxst` by name. Keep a
+    # system PATH shim as well as the user-local launcher so SDDM sessions can
+    # always resolve it regardless of shell-specific PATH settings.
+    sudo tee /usr/local/bin/ambxst >/dev/null <<'EOF'
+#!/usr/bin/env bash
+exec "$HOME/.local/bin/ambxst" "$@"
+EOF
+    sudo chmod +x /usr/local/bin/ambxst
+
+    if command -v fish >/dev/null 2>&1; then
+        fish -c 'fish_add_path ~/.local/bin' >/dev/null 2>&1 || true
+    fi
+}
+
 is_arch_family || die "This restore currently supports Arch/CachyOS only"
-[[ -d "$SRC/profiles/caelestia/hypr" ]] || die "Missing backed-up Caelestia profile. Run backup-dual-rice.sh first."
-[[ -d "$SRC/profiles/end4/hypr" ]] || die "Missing backed-up end4 profile. Run backup-dual-rice.sh first."
-[[ -f "$SRC/profiles/caelestia/hypr/hyprland.lua" ]] || die "Backed-up Caelestia hyprland.lua missing"
-[[ -f "$SRC/profiles/end4/hypr/hyprland.lua" ]] || die "Backed-up end4 hyprland.lua missing"
+for profile in caelestia end4 ambxst; do
+    [[ -d "$SRC/profiles/$profile/hypr" ]] || die "Missing backed-up $profile profile. Run backup-dual-rice.sh first."
+    [[ -f "$SRC/profiles/$profile/hypr/hyprland.lua" ]] || die "Backed-up $profile hyprland.lua missing"
+done
 
 # Never use pacman -Sy by itself on Arch-family systems.
-log "Updating the system before dual-rice restore"
+log "Updating the system before triple-rice restore"
 sudo pacman -Syu
 
 ensure_paru
 
-log "Installing dual-rice dependencies"
+log "Installing triple-rice dependencies"
 paru -S --needed \
     git \
+    curl \
+    unzip \
     rsync \
     jq \
     fish \
@@ -96,6 +135,7 @@ paru -S --needed \
     hyprlock \
     hyprsunset \
     wl-clipboard \
+    wl-clip-persist \
     cliphist \
     brightnessctl \
     playerctl \
@@ -104,6 +144,7 @@ paru -S --needed \
     imagemagick \
     upower \
     hyprpicker \
+    grim \
     slurp \
     swappy \
     wf-recorder \
@@ -118,22 +159,72 @@ paru -S --needed \
     ttf-jetbrains-mono-nerd \
     dim-caelestia-shell-git \
     caelestia-cli \
-    quickshell-git
+    quickshell-git \
+    tmux \
+    network-manager-applet \
+    blueman \
+    pavucontrol \
+    ffmpeg \
+    x264 \
+    qt6-base \
+    qt6-declarative \
+    qt6-wayland \
+    qt6-svg \
+    qt6-tools \
+    qt6-imageformats \
+    qt6-multimedia \
+    qt6-shadertools \
+    libwebp \
+    libavif \
+    syntax-highlighting \
+    breeze-icons \
+    hicolor-icon-theme \
+    ddcutil \
+    sqlite \
+    wlsunset \
+    wtype \
+    zbar \
+    glib2 \
+    python-pipx \
+    zenity \
+    inetutils \
+    power-profiles-daemon \
+    python312 \
+    libnotify \
+    ttf-roboto \
+    ttf-roboto-mono \
+    ttf-dejavu \
+    ttf-liberation \
+    noto-fonts \
+    noto-fonts-cjk \
+    noto-fonts-emoji \
+    ttf-nerd-fonts-symbols \
+    gpu-screen-recorder \
+    mpvpaper \
+    gradia \
+    ttf-phosphor-icons \
+    ttf-league-gothic \
+    adw-gtk-theme
 
 log "Creating safety backup before profile restore"
 mkdir -p "$BACKUP"
 backup_path "$HOME/.config/hypr" "hypr"
 backup_path "$HOME/.config/caelestia" "caelestia"
 backup_path "$HOME/.config/illogical-impulse" "illogical-impulse"
+backup_path "$HOME/.config/ambxst" "ambxst-config"
+backup_path "$HOME/.local/share/ambxst" "ambxst-share"
+backup_path "$HOME/.local/src/ambxst" "ambxst-source"
 backup_path "$HOME/.config/desktop-switcher" "desktop-switcher"
 backup_path "$PROFILE_ROOT" "desktop-profiles"
 backup_path "$HOME/.local/bin/desktop-switch" "desktop-switch"
 backup_path "$HOME/.local/bin/recover-caelestia" "recover-caelestia"
+backup_path "$HOME/.local/bin/ambxst" "ambxst-launcher"
 
-log "Restoring both Hyprland profiles"
-mkdir -p "$PROFILE_ROOT/caelestia/hypr" "$PROFILE_ROOT/end4/hypr"
-rsync -a --delete "$SRC/profiles/caelestia/hypr/" "$PROFILE_ROOT/caelestia/hypr/"
-rsync -a --delete "$SRC/profiles/end4/hypr/" "$PROFILE_ROOT/end4/hypr/"
+log "Restoring all three Hyprland profiles"
+for profile in caelestia end4 ambxst; do
+    mkdir -p "$PROFILE_ROOT/$profile/hypr"
+    rsync -a --delete "$SRC/profiles/$profile/hypr/" "$PROFILE_ROOT/$profile/hypr/"
+done
 
 if [[ -d "$SRC/caelestia" ]]; then
     log "Restoring Caelestia user configuration"
@@ -148,7 +239,13 @@ if [[ -f "$SRC/end4/config.json" ]]; then
     cp -a "$SRC/end4/config.json" "$HOME/.config/illogical-impulse/config.json"
     rewrite_home_paths_json "$HOME/.config/illogical-impulse/config.json"
 else
-    warn "No backed-up end4 config.json yet; end4 will use its defaults until a fresh dual-rice backup is pushed."
+    warn "No backed-up end4 config.json yet; end4 will use its defaults until a fresh backup is pushed."
+fi
+
+if [[ -d "$SRC/ambxst/config" ]] && find "$SRC/ambxst/config" -mindepth 1 -print -quit | grep -q .; then
+    log "Restoring Ambxst user configuration"
+    mkdir -p "$HOME/.config/ambxst"
+    rsync -a --delete "$SRC/ambxst/config/" "$HOME/.config/ambxst/"
 fi
 
 if [[ -d "$SRC/desktop-switcher" ]]; then
@@ -192,6 +289,27 @@ if [[ -f "$SRC/versions/end4-dots-local.patch" ]]; then
         warn "Could not reapply saved end4-dots local patch"
 fi
 
+log "Installing pinned Ambxst source"
+clone_pinned \
+    https://github.com/Axenide/Ambxst.git \
+    "$HOME/.local/src/ambxst" \
+    "$SRC/versions/ambxst.commit"
+chmod +x "$HOME/.local/src/ambxst/cli.sh"
+install_ambxst_launcher
+install_axctl
+
+# Drop generated compositor files from a previous install. The isolated Ambxst
+# profile has a first-boot fallback that launches Ambxst directly; Ambxst then
+# regenerates these files through axctl from the restored JSON configuration.
+mkdir -p "$HOME/.local/share/ambxst"
+rm -f \
+    "$HOME/.local/share/ambxst/hyprland.lua" \
+    "$HOME/.local/share/ambxst/hyprland.conf" \
+    "$HOME/.local/share/ambxst/axctl.toml"
+
+# Creates any missing default Ambxst config files without launching the shell.
+"$HOME/.local/bin/ambxst" version >/dev/null 2>&1 || true
+
 if [[ -f "$SRC/systemd/user/background-music.service" ]]; then
     log "Restoring background music service"
     mkdir -p "$HOME/.config/systemd/user"
@@ -215,7 +333,7 @@ if [[ -f "$SRC/state/active" ]]; then
     active="$(tr -d '[:space:]' < "$SRC/state/active")"
 fi
 case "$active" in
-    caelestia|end4) ;;
+    caelestia|end4|ambxst) ;;
     *) warn "Unknown saved active profile '$active'; defaulting to Caelestia"; active="caelestia" ;;
 esac
 
@@ -230,10 +348,11 @@ if [[ -f "$HOME/.config/systemd/user/background-music.service" ]]; then
     systemctl --user enable background-music.service 2>/dev/null || true
 fi
 
-ok "Dual-rice restore complete"
+ok "Triple-rice restore complete"
 printf '\nInstalled:\n'
 printf '  ✦ Caelestia profile\n'
 printf '  ◈ end4-pC profile + saved local patches\n'
+printf '  ◆ Ambxst profile + axctl integration\n'
 printf '  ⇄ SUPER + SHIFT + D desktop switcher\n'
 printf '\nDesktop wallpaper is not changed by this restore.\n'
 printf '\nActive profile: %s\n' "$active"
