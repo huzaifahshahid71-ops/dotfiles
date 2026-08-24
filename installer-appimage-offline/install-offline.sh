@@ -82,6 +82,9 @@ EOF
     mapfile -t targets < <(grep -Ev '^[[:space:]]*(#|$)' "$TARGETS_FILE" | sort -u)
     ((${#targets[@]})) || die "Offline target package list is empty"
 
+    log "Refreshing the bundled local pacman repository database"
+    sudo pacman --config "$conf" -Syy --noconfirm
+
     log "Installing ${#targets[@]} direct targets from the bundled local pacman repository"
     printf '    No internet connection is used in this step.\n'
     sudo pacman --config "$conf" -S --needed --noconfirm "${targets[@]}"
