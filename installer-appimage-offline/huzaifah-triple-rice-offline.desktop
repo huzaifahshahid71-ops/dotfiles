@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Huzaifah Triple-Rice Offline Installer
+Comment=Install Caelestia, end4-pC, Ambxst and Frieren SDDM without internet
+Exec=AppRun
+Icon=huzaifah-triple-rice-offline
+Terminal=false
+Categories=System;Settings;
+StartupNotify=true
