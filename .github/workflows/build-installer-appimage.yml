@@ -108,3 +108,27 @@ jobs:
               --title "$TITLE" \
               --notes-file dist/RELEASE_NOTES.md
           fi
+
+      - name: Record successful release
+        run: |
+          set -euo pipefail
+          mkdir -p release-status
+          cat > release-status/triple-rice-installer-v1.0.0.txt <<EOF
+          Release: Huzaifah Triple-Rice Installer v1.0.0
+          Tag: triple-rice-installer-v1.0.0
+          Built from: $GITHUB_SHA
+          Workflow run: $GITHUB_RUN_ID
+          Published: $(date --iso-8601=seconds)
+          Assets:
+            Huzaifah-Triple-Rice-Installer-x86_64.AppImage
+            Huzaifah-Triple-Rice-Installer-x86_64.tar.gz
+            SHA256SUMS.txt
+          EOF
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin main
+          git add release-status/triple-rice-installer-v1.0.0.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "Record AppImage installer release"
+            git push origin HEAD:main
+          fi
