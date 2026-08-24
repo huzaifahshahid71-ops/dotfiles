@@ -174,6 +174,7 @@ backup_path "$HOME/.config/illogical-impulse" "illogical-impulse"
 backup_path "$HOME/.config/ambxst" "ambxst-config"
 backup_path "$HOME/.local/share/ambxst" "ambxst-share"
 backup_path "$HOME/.local/src/ambxst" "ambxst-source"
+backup_path "$HOME/.cache/ambxst/wallpapers.json" "ambxst-wallpapers.json"
 backup_path "$HOME/.config/desktop-switcher" "desktop-switcher"
 backup_path "$PROFILE_ROOT" "desktop-profiles"
 backup_path "$HOME/.local/bin/desktop-switch" "desktop-switch"
@@ -206,6 +207,13 @@ if [[ -d "$SRC/ambxst/config" ]] && find "$SRC/ambxst/config" -mindepth 1 -print
     log "Restoring Ambxst user configuration"
     mkdir -p "$HOME/.config/ambxst"
     rsync -a --delete "$SRC/ambxst/config/" "$HOME/.config/ambxst/"
+fi
+
+if [[ -f "$SRC/ambxst/wallpapers.json" ]]; then
+    log "Restoring Ambxst wallpaper directory state"
+    mkdir -p "$HOME/.cache/ambxst"
+    cp -a "$SRC/ambxst/wallpapers.json" "$HOME/.cache/ambxst/wallpapers.json"
+    rewrite_home_paths_json "$HOME/.cache/ambxst/wallpapers.json"
 fi
 
 if [[ -d "$SRC/desktop-switcher" ]]; then
@@ -245,6 +253,11 @@ fi
 log "Installing pinned Ambxst source"
 clone_pinned https://github.com/Axenide/Ambxst.git \
     "$HOME/.local/src/ambxst" "$SRC/versions/ambxst.commit"
+
+if [[ -f "$SRC/versions/ambxst-local.patch" ]]; then
+    git -C "$HOME/.local/src/ambxst" apply "$SRC/versions/ambxst-local.patch" || warn "Could not reapply saved Ambxst local patch"
+fi
+
 chmod +x "$HOME/.local/src/ambxst/cli.sh"
 install_ambxst_launcher
 install_axctl
@@ -298,7 +311,7 @@ ok "Triple-rice restore complete"
 printf '\nInstalled:\n'
 printf '  ✦ Caelestia profile\n'
 printf '  ◈ end4-pC profile + saved local patches\n'
-printf '  ◆ Ambxst profile + pinned axctl integration\n'
+printf '  ◆ Ambxst profile + saved local patches + pinned axctl integration\n'
 printf '  ⇄ SUPER + SHIFT + D desktop switcher\n'
 printf '\nDesktop wallpaper is not changed by this restore.\n'
 printf '\nActive profile: %s\n' "$active"
