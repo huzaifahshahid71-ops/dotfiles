@@ -57,15 +57,16 @@ configure_end4_search_only() {
     ok "end4 launcher set to search-only mode (workspace overview hidden)"
 }
 
-install_dual_rice() {
+install_triple_rice() {
     local restore="$DOTFILES_DIR/scripts/restore-dual-rice.sh"
-    [[ -f "$restore" ]] || die "Missing dual-rice restore script: $restore"
+    [[ -f "$restore" ]] || die "Missing triple-rice restore script: $restore"
     chmod +x "$restore"
 
     printf '\n'
-    log "Installing Huzaifah dual-rice desktop"
+    log "Installing Huzaifah triple-rice desktop"
     printf '  ✦ Caelestia\n'
     printf '  ◈ end4-pC\n'
+    printf '  ◆ Ambxst\n'
     printf '  ⇄ SUPER + SHIFT + D profile switcher\n\n'
 
     "$restore"
@@ -82,7 +83,7 @@ install_frieren_sddm_theme() {
 }
 
 full_customization() {
-    install_dual_rice
+    install_triple_rice
     install_frieren_sddm_theme
 
     printf '\n'
@@ -90,9 +91,10 @@ full_customization() {
     printf '\nIncluded:\n'
     printf '  ✦ Caelestia configuration\n'
     printf '  ◈ end4-pC configuration and saved album-art fixes\n'
+    printf '  ◆ Ambxst configuration with axctl integration\n'
     printf '  🔎 end4 search-only launcher (workspace grid hidden)\n'
     printf '  🌙 Frieren SDDM login theme\n'
-    printf '  ⇄ SUPER + SHIFT + D desktop switcher\n'
+    printf '  ⇄ SUPER + SHIFT + D triple-rice switcher\n'
     printf '\nYour desktop wallpaper is not changed by the installer.\n'
     printf 'Log out and back into Hyprland when the installer finishes.\n'
 }
@@ -107,31 +109,36 @@ Default (no options):
   Install the complete customization automatically:
     - Caelestia rice
     - end4-pC rice
+    - Ambxst rice + axctl integration
     - saved end4 widget/bar layout
     - search-only end4 launcher (workspace overview hidden)
     - Frieren SDDM login theme
-    - SUPER + SHIFT + D rice switcher
+    - SUPER + SHIFT + D triple-rice switcher
     - saved local end4-pC album-art fixes
 
   Desktop wallpaper is left unchanged.
 
 Customization options:
-  --customization     Full customization (same as no options)
-  --dual-rice         Full customization (alias)
-  --dual-rice-only    Install Caelestia + end4-pC without changing SDDM
-  --sddm-theme-only   Install only the Frieren SDDM login theme
-  --no-sddm-theme     Install the dual-rice setup but skip the SDDM theme
+  --customization      Full customization (same as no options)
+  --triple-rice        Full customization alias
+  --triple-rice-only   Install all three rices without changing SDDM
+  --sddm-theme-only    Install only the Frieren SDDM login theme
+  --no-sddm-theme      Install the triple-rice setup but skip SDDM
+
+Compatibility aliases:
+  --dual-rice          Same as --triple-rice
+  --dual-rice-only     Same as --triple-rice-only
 
 Optional machine-specific extras (never run automatically):
-  --asus              Generic ASUS support
-  --g16               Zephyrus G16-specific safe extras
-  --refind            Configure rEFInd for this machine
-  --refresh           Enable captured refresh-rate automation after checks
-  --hibernate         Configure Btrfs hibernation swap
-  --status            Show system-setup status
+  --asus               Generic ASUS support
+  --g16                Zephyrus G16-specific safe extras
+  --refind             Configure rEFInd for this machine
+  --refresh            Enable captured refresh-rate automation after checks
+  --hibernate          Configure Btrfs hibernation swap
+  --status             Show system-setup status
 
 Other:
-  --help, -h          Show this help
+  --help, -h           Show this help
 
 This repository customizes an existing Arch/CachyOS-family installation.
 It does not install an operating system.
@@ -142,14 +149,12 @@ main() {
     ensure_repo "$@"
     is_arch_family || die "This customization currently supports Arch/CachyOS-family systems only."
 
-    # The public one-command installer intentionally defaults to the complete
-    # visual setup. Machine-specific changes remain explicit flags.
     if (($# == 0)); then
         full_customization
         return
     fi
 
-    local do_dual=0
+    local do_rice=0
     local do_theme=0
     local do_asus=0
     local do_g16=0
@@ -160,12 +165,12 @@ main() {
 
     while (($#)); do
         case "$1" in
-            --customization|--dual-rice|--base|--all)
-                do_dual=1
+            --customization|--triple-rice|--dual-rice|--base|--all)
+                do_rice=1
                 do_theme=1
                 ;;
-            --dual-rice-only|--no-sddm-theme)
-                do_dual=1
+            --triple-rice-only|--dual-rice-only|--no-sddm-theme)
+                do_rice=1
                 do_theme=0
                 ;;
             --sddm-theme|--sddm-theme-only)
@@ -201,7 +206,7 @@ main() {
         shift
     done
 
-    (( do_dual )) && install_dual_rice
+    (( do_rice )) && install_triple_rice
     (( do_theme )) && install_frieren_sddm_theme
 
     if (( do_asus && ! do_g16 )); then
