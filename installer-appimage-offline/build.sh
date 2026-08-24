@@ -39,12 +39,13 @@ Default builder behaviour:
   1. Fully updates the Arch/CachyOS build machine.
   2. Installs any direct triple-rice packages missing from the build machine.
   3. Resolves the exact installed dependency closure, including virtual providers.
-  4. Ensures every foreign/AUR package has a real package archive.
-  5. Downloads every official package archive into an embedded local pacman repo.
-  6. Bundles current local end4-dots, end4-pC, Ambxst and axctl.
-  7. Bundles the current dotfiles working tree and Frieren SDDM assets.
-  8. Validates that every package in the dependency closure is present.
-  9. Builds one x86_64 AppImage in ./dist.
+  4. Rebuilds AUR packages in the closure against the current system libraries.
+  5. Ensures every foreign/AUR package has a real package archive.
+  6. Downloads every official package archive into an embedded local pacman repo.
+  7. Bundles current local end4-dots, end4-pC, Ambxst and axctl.
+  8. Bundles the current dotfiles working tree and Frieren SDDM assets.
+  9. Validates that every package in the dependency closure is present.
+ 10. Builds one x86_64 AppImage in ./dist.
 
 The build step needs internet. The resulting AppImage does not.
 Expect several GB of temporary disk usage while building even though the final
@@ -159,6 +160,40 @@ split_closure() {
     done < "$CLOSURE_FILE"
 }
 
+rebuild_aur_closure() {
+    resolve_closure
+    split_closure
+
+    local pkg ver archive
+    local aur_packages=()
+    local local_only=()
+
+    while IFS= read -r pkg; do
+        [[ -n "$pkg" ]] || continue
+        if paru -Si --aur "$pkg" >/dev/null 2>&1; then
+            aur_packages+=("$pkg")
+        else
+            ver="$(package_version "$pkg")"
+            if archive="$(find_exact_archive "$pkg" "$ver")"; then
+                local_only+=("$pkg")
+            else
+                die "Foreign package '$pkg' is not available from the AUR and its exact local archive is missing"
+            fi
+        fi
+    done < "$BUILD/foreign.txt"
+
+    if ((${#local_only[@]})); then
+        log "Keeping ${#local_only[@]} non-AUR foreign package archive(s) exactly as installed"
+        printf '  %s\n' "${local_only[@]}"
+    fi
+
+    if ((${#aur_packages[@]})); then
+        log "Rebuilding ${#aur_packages[@]} AUR package(s) against the updated host libraries"
+        printf '  %s\n' "${aur_packages[@]}"
+        paru -S --rebuild=all --noconfirm --skipreview --nocheck --sudoloop "${aur_packages[@]}"
+    fi
+}
+
 ensure_foreign_archives() {
     local pass=1 pkg ver archive
     while (( pass <= 3 )); do
@@ -177,7 +212,7 @@ ensure_foreign_archives() {
             return 0
         fi
 
-        log "Rebuilding ${#missing[@]} foreign/AUR package(s) whose exact archives are missing (pass $pass)"
+        log "Rebuilding ${#missing[@]} foreign/AUR package(s) whose exact archives are still missing (pass $pass)"
         printf '  %s\n' "${missing[@]}"
 
         local rebuildable=()
@@ -265,7 +300,7 @@ is_arch_family || die "Build the offline image on an Arch/CachyOS-family x86_64 
 [[ -d "$AMBXST_SOURCE" ]] || die "Ambxst source not found at $AMBXST_SOURCE"
 [[ -n "$AXCTL_SOURCE" && -x "$AXCTL_SOURCE" ]] || die "axctl binary not found; set AXCTL_SOURCE if necessary"
 
-for cmd in python3 git curl rsync jq sha256sum find tar zstd; do
+for cmd in python3 git curl rsync jq sha256sum find tar zstd repo-add; do
     command -v "$cmd" >/dev/null 2>&1 || die "$cmd is required"
 done
 
@@ -300,6 +335,7 @@ split_closure
 printf '  Initial closure: %s packages (%s official, %s foreign/AUR)\n' \
     "$(wc -l < "$CLOSURE_FILE")" "$(wc -l < "$BUILD/official.txt")" "$(wc -l < "$BUILD/foreign.txt")"
 
+rebuild_aur_closure
 ensure_foreign_archives
 resolve_closure
 split_closure
