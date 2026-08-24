@@ -68,14 +68,52 @@ rewrite_home_paths_json() {
 }
 
 install_axctl() {
+    local version_file="$SRC/versions/axctl.txt"
+    local desired=""
+    local current=""
+    local arch asset url tmp
+
+    if [[ -f "$version_file" ]]; then
+        desired="$(grep -Eo 'v?[0-9]+(\.[0-9]+)+' "$version_file" | head -n1 || true)"
+        desired="${desired#v}"
+    fi
+
     if command -v axctl >/dev/null 2>&1; then
-        log "axctl already installed: $(axctl --version 2>/dev/null || true)"
+        current="$(axctl --version 2>/dev/null | grep -Eo 'v?[0-9]+(\.[0-9]+)+' | head -n1 || true)"
+        current="${current#v}"
+        if [[ -z "$desired" || "$current" == "$desired" ]]; then
+            log "axctl already installed: $(axctl --version 2>/dev/null || true)"
+            return
+        fi
+        log "Replacing axctl $current with pinned $desired"
+    else
+        log "Installing axctl${desired:+ $desired}"
+    fi
+
+    if [[ -z "$desired" ]]; then
+        curl -fsSL https://raw.githubusercontent.com/Axenide/axctl/main/install.sh | bash
+        command -v axctl >/dev/null 2>&1 || die "axctl installation failed"
         return
     fi
 
-    log "Installing axctl"
-    curl -fsSL https://raw.githubusercontent.com/Axenide/axctl/main/install.sh | bash
-    command -v axctl >/dev/null 2>&1 || die "axctl installation failed"
+    arch="$(uname -m)"
+    case "$arch" in
+        x86_64) asset="axctl_linux_amd64" ;;
+        i386|i686) asset="axctl_linux_386" ;;
+        aarch64) asset="axctl_linux_arm64" ;;
+        armv7l|armv7|armv6l) asset="axctl_linux_armv7" ;;
+        *) die "Unsupported architecture for axctl: $arch" ;;
+    esac
+
+    url="https://github.com/Axenide/axctl/releases/download/v${desired}/${asset}"
+    tmp="$(mktemp)"
+    curl -fL "$url" -o "$tmp"
+    sudo install -m 0755 "$tmp" /usr/local/bin/axctl
+    rm -f "$tmp"
+
+    current="$(axctl --version 2>/dev/null | grep -Eo 'v?[0-9]+(\.[0-9]+)+' | head -n1 || true)"
+    current="${current#v}"
+    [[ "$current" == "$desired" ]] || die "Expected axctl $desired after install, got ${current:-unknown}"
 }
 
 install_ambxst_launcher() {
@@ -90,9 +128,6 @@ exec "$HOME/.local/src/ambxst/cli.sh" "$@"
 EOF
     chmod +x "$HOME/.local/bin/ambxst"
 
-    # Ambxst's generated Hyprland config launches `ambxst` by name. Keep a
-    # system PATH shim as well as the user-local launcher so SDDM sessions can
-    # always resolve it regardless of shell-specific PATH settings.
     sudo tee /usr/local/bin/ambxst >/dev/null <<'EOF'
 #!/usr/bin/env bash
 exec "$HOME/.local/bin/ambxst" "$@"
@@ -110,7 +145,6 @@ for profile in caelestia end4 ambxst; do
     [[ -f "$SRC/profiles/$profile/hypr/hyprland.lua" ]] || die "Backed-up $profile hyprland.lua missing"
 done
 
-# Never use pacman -Sy by itself on Arch-family systems.
 log "Updating the system before triple-rice restore"
 sudo pacman -Syu
 
@@ -118,93 +152,19 @@ ensure_paru
 
 log "Installing triple-rice dependencies"
 paru -S --needed \
-    git \
-    curl \
-    unzip \
-    rsync \
-    jq \
-    fish \
-    stow \
-    foot \
-    kitty \
-    mpv \
-    mpv-mpris \
-    fuzzel \
-    hyprland \
-    hypridle \
-    hyprlock \
-    hyprsunset \
-    wl-clipboard \
-    wl-clip-persist \
-    cliphist \
-    brightnessctl \
-    playerctl \
-    cava \
-    matugen-bin \
-    imagemagick \
-    upower \
-    hyprpicker \
-    grim \
-    slurp \
-    swappy \
-    wf-recorder \
-    tesseract \
-    tesseract-data-eng \
-    ydotool \
-    gnome-keyring \
-    easyeffects \
-    libqalculate \
-    qt6-positioning \
-    ttf-readex-pro \
-    ttf-jetbrains-mono-nerd \
-    dim-caelestia-shell-git \
-    caelestia-cli \
-    quickshell-git \
-    tmux \
-    network-manager-applet \
-    blueman \
-    pavucontrol \
-    ffmpeg \
-    x264 \
-    qt6-base \
-    qt6-declarative \
-    qt6-wayland \
-    qt6-svg \
-    qt6-tools \
-    qt6-imageformats \
-    qt6-multimedia \
-    qt6-shadertools \
-    libwebp \
-    libavif \
-    syntax-highlighting \
-    breeze-icons \
-    hicolor-icon-theme \
-    ddcutil \
-    sqlite \
-    wlsunset \
-    wtype \
-    zbar \
-    glib2 \
-    python-pipx \
-    zenity \
-    inetutils \
-    power-profiles-daemon \
-    python312 \
-    libnotify \
-    ttf-roboto \
-    ttf-roboto-mono \
-    ttf-dejavu \
-    ttf-liberation \
-    noto-fonts \
-    noto-fonts-cjk \
-    noto-fonts-emoji \
-    ttf-nerd-fonts-symbols \
-    gpu-screen-recorder \
-    mpvpaper \
-    gradia \
-    ttf-phosphor-icons \
-    ttf-league-gothic \
-    adw-gtk-theme
+    git curl unzip rsync jq fish stow foot kitty mpv mpv-mpris fuzzel \
+    hyprland hypridle hyprlock hyprsunset wl-clipboard wl-clip-persist cliphist \
+    brightnessctl playerctl cava matugen-bin imagemagick upower hyprpicker grim \
+    slurp swappy wf-recorder tesseract tesseract-data-eng ydotool gnome-keyring \
+    easyeffects libqalculate qt6-positioning ttf-readex-pro ttf-jetbrains-mono-nerd \
+    dim-caelestia-shell-git caelestia-cli quickshell-git tmux network-manager-applet \
+    blueman pavucontrol ffmpeg x264 qt6-base qt6-declarative qt6-wayland qt6-svg \
+    qt6-tools qt6-imageformats qt6-multimedia qt6-shadertools libwebp libavif \
+    syntax-highlighting breeze-icons hicolor-icon-theme ddcutil sqlite wlsunset \
+    wtype zbar glib2 python-pipx zenity inetutils power-profiles-daemon python312 \
+    libnotify ttf-roboto ttf-roboto-mono ttf-dejavu ttf-liberation noto-fonts \
+    noto-fonts-cjk noto-fonts-emoji ttf-nerd-fonts-symbols gpu-screen-recorder \
+    mpvpaper gradia ttf-phosphor-icons ttf-league-gothic adw-gtk-theme
 
 log "Creating safety backup before profile restore"
 mkdir -p "$BACKUP"
@@ -262,59 +222,45 @@ done
 
 log "Restoring end4-pC and illogical-impulse Quickshell sources"
 mkdir -p "$HOME/.config/quickshell" "$HOME/.local/src"
-clone_pinned \
-    https://github.com/end-4/dots-hyprland.git \
-    "$HOME/.local/src/end4-dots" \
-    "$SRC/versions/end4-dots.commit"
+clone_pinned https://github.com/end-4/dots-hyprland.git \
+    "$HOME/.local/src/end4-dots" "$SRC/versions/end4-dots.commit"
 
 rm -rf "$HOME/.config/quickshell/ii"
 if [[ -d "$HOME/.local/src/end4-dots/dots/.config/quickshell/ii" ]]; then
-    cp -a "$HOME/.local/src/end4-dots/dots/.config/quickshell/ii" \
-        "$HOME/.config/quickshell/ii"
+    cp -a "$HOME/.local/src/end4-dots/dots/.config/quickshell/ii" "$HOME/.config/quickshell/ii"
 else
     die "Pinned end4 repository does not contain quickshell/ii"
 fi
 
-clone_pinned \
-    https://github.com/pctrade/end4-pC.git \
-    "$HOME/.config/quickshell/end4-pC" \
-    "$SRC/versions/end4-pC.commit"
+clone_pinned https://github.com/pctrade/end4-pC.git \
+    "$HOME/.config/quickshell/end4-pC" "$SRC/versions/end4-pC.commit"
 
 if [[ -f "$SRC/versions/end4-pC-local.patch" ]]; then
-    git -C "$HOME/.config/quickshell/end4-pC" apply "$SRC/versions/end4-pC-local.patch" || \
-        warn "Could not reapply saved end4-pC local patch"
+    git -C "$HOME/.config/quickshell/end4-pC" apply "$SRC/versions/end4-pC-local.patch" || warn "Could not reapply saved end4-pC local patch"
 fi
 if [[ -f "$SRC/versions/end4-dots-local.patch" ]]; then
-    git -C "$HOME/.local/src/end4-dots" apply "$SRC/versions/end4-dots-local.patch" || \
-        warn "Could not reapply saved end4-dots local patch"
+    git -C "$HOME/.local/src/end4-dots" apply "$SRC/versions/end4-dots-local.patch" || warn "Could not reapply saved end4-dots local patch"
 fi
 
 log "Installing pinned Ambxst source"
-clone_pinned \
-    https://github.com/Axenide/Ambxst.git \
-    "$HOME/.local/src/ambxst" \
-    "$SRC/versions/ambxst.commit"
+clone_pinned https://github.com/Axenide/Ambxst.git \
+    "$HOME/.local/src/ambxst" "$SRC/versions/ambxst.commit"
 chmod +x "$HOME/.local/src/ambxst/cli.sh"
 install_ambxst_launcher
 install_axctl
 
-# Drop generated compositor files from a previous install. The isolated Ambxst
-# profile has a first-boot fallback that launches Ambxst directly; Ambxst then
-# regenerates these files through axctl from the restored JSON configuration.
 mkdir -p "$HOME/.local/share/ambxst"
 rm -f \
     "$HOME/.local/share/ambxst/hyprland.lua" \
     "$HOME/.local/share/ambxst/hyprland.conf" \
     "$HOME/.local/share/ambxst/axctl.toml"
 
-# Creates any missing default Ambxst config files without launching the shell.
 "$HOME/.local/bin/ambxst" version >/dev/null 2>&1 || true
 
 if [[ -f "$SRC/systemd/user/background-music.service" ]]; then
     log "Restoring background music service"
     mkdir -p "$HOME/.config/systemd/user"
-    cp -a "$SRC/systemd/user/background-music.service" \
-        "$HOME/.config/systemd/user/background-music.service"
+    cp -a "$SRC/systemd/user/background-music.service" "$HOME/.config/systemd/user/background-music.service"
     sed -Ei "s#/home/[^/]+/#$HOME/#g" "$HOME/.config/systemd/user/background-music.service" || true
 fi
 
@@ -352,7 +298,7 @@ ok "Triple-rice restore complete"
 printf '\nInstalled:\n'
 printf '  ✦ Caelestia profile\n'
 printf '  ◈ end4-pC profile + saved local patches\n'
-printf '  ◆ Ambxst profile + axctl integration\n'
+printf '  ◆ Ambxst profile + pinned axctl integration\n'
 printf '  ⇄ SUPER + SHIFT + D desktop switcher\n'
 printf '\nDesktop wallpaper is not changed by this restore.\n'
 printf '\nActive profile: %s\n' "$active"
