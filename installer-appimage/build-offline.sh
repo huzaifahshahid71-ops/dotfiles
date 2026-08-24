@@ -46,7 +46,6 @@ for x in m.extract_restore_targets():
     print(x)
 PY
 )
-# The normal installer adds SDDM after the rice restore; include it in the offline snapshot too.
 direct_targets+=(sddm)
 mapfile -t direct_targets < <(printf '%s\n' "${direct_targets[@]}" | sort -u)
 
@@ -69,8 +68,6 @@ if ((${#aur_targets[@]})); then
 fi
 
 log "Creating an empty temporary pacman database"
-# Using an empty local DB makes pacman treat the full dependency closure as missing,
-# so it downloads every required repository archive instead of only packages absent on this laptop.
 pacman -Sy --dbpath "$DBPATH" --cachedir "$PKGDIR" --logfile "$PACMAN_LOG" --noconfirm >/dev/null
 
 log "Downloading COMPLETE repository dependency closure"
@@ -94,16 +91,17 @@ find_cached_archive() {
 build_aur_archive() {
     local pkg="$1" tmp archive
     command -v paru >/dev/null 2>&1 || die "$pkg is not in repositories and no cached archive was found. Install paru or place the package archive in your pacman/paru cache."
+    command -v makepkg >/dev/null 2>&1 || die "makepkg is required to build missing AUR archive $pkg"
     tmp="$BUILD/aur-build/$pkg"
     rm -rf "$tmp"
     mkdir -p "$tmp"
-    log "Building missing AUR archive: $pkg"
+    log "Building missing AUR archive: $pkg" >&2
     (
         cd "$tmp"
         paru -G "$pkg"
         cd "$pkg"
         makepkg -s --needed --noconfirm --nocheck
-    )
+    ) >&2
     archive="$(find "$tmp/$pkg" -maxdepth 1 -type f -name '*.pkg.tar.*' ! -name '*.sig' -print -quit)"
     [[ -n "$archive" ]] || die "AUR build finished but no package archive was produced for $pkg"
     printf '%s\n' "$archive"
@@ -118,9 +116,6 @@ for pkg in "${aur_targets[@]}"; do
     cp -f "$archive" "$PKGDIR/"
 done
 
-# Read AUR runtime dependencies from their built package metadata. Any dependency
-# available in enabled repositories is resolved against the same empty pacman DB,
-# ensuring its complete repository closure is also bundled.
 aur_repo_deps=()
 unresolved_aur_deps=()
 for archive in "$PKGDIR"/*.pkg.tar.*; do
@@ -134,7 +129,6 @@ for archive in "$PKGDIR"/*.pkg.tar.*; do
         if pacman -Si "$dep" >/dev/null 2>&1; then
             aur_repo_deps+=("$dep")
         elif [[ " ${aur_targets[*]} " != *" $dep "* ]]; then
-            # Virtual dependency names are okay if a bundled package provides them.
             unresolved_aur_deps+=("$dep")
         fi
     done < <(bsdtar -xOf "$archive" .PKGINFO 2>/dev/null | sed -n 's/^depend = //p')
