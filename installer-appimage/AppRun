@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+set -u
+
+TITLE="Huzaifah Triple-Rice Installer"
+INSTALL_URL="https://raw.githubusercontent.com/huzaifahshahid71-ops/dotfiles/main/install.sh"
+
+is_arch_family() {
+    [[ -r /etc/os-release ]] || return 1
+    . /etc/os-release
+    [[ "${ID:-}" == "arch" || "${ID:-}" == "cachyos" || "${ID_LIKE:-}" == *arch* ]]
+}
+
+find_gui() {
+    if command -v zenity >/dev/null 2>&1; then echo zenity; return; fi
+    if command -v kdialog >/dev/null 2>&1; then echo kdialog; return; fi
+    if command -v yad >/dev/null 2>&1; then echo yad; return; fi
+
+    # Keep the AppImage tiny: install only the dialog helper if the desktop has none.
+    if command -v pkexec >/dev/null 2>&1 && command -v pacman >/dev/null 2>&1; then
+        pkexec pacman -S --needed --noconfirm zenity >/dev/null 2>&1 || true
+        if command -v zenity >/dev/null 2>&1; then echo zenity; return; fi
+    fi
+    echo none
+}
+
+show_error() {
+    local gui="$1" msg="$2"
+    case "$gui" in
+        zenity) zenity --error --title="$TITLE" --width=520 --text="$msg" ;;
+        kdialog) kdialog --error "$msg" --title "$TITLE" ;;
+        yad) yad --error --title="$TITLE" --width=520 --text="$msg" ;;
+        *) printf '%s\n' "$TITLE: $msg" >&2 ;;
+    esac
+}
+
+show_info() {
+    local gui="$1" msg="$2"
+    case "$gui" in
+        zenity) zenity --info --title="$TITLE" --width=520 --text="$msg" ;;
+        kdialog) kdialog --msgbox "$msg" --title "$TITLE" ;;
+        yad) yad --info --title="$TITLE" --width=520 --text="$msg" ;;
+        *) printf '%s\n' "$msg" ;;
+    esac
+}
+
+confirm_install() {
+    local gui="$1"
+    local msg='<b>Install Huzaifah Triple-Rice?</b>\n\n✦ Caelestia\n◈ end4-pC\n◆ Ambxst\n⇄ SUPER + SHIFT + D switcher\n🌙 Frieren SDDM login theme\n\nThis is an <b>online installer</b>: upstream packages and sources are downloaded during installation.\n\nYour desktop wallpaper is left unchanged.\n\nRequires an Arch/CachyOS-family system, internet access, and sudo privileges.'
+    case "$gui" in
+        zenity) zenity --question --title="$TITLE" --width=560 --ok-label="Install Everything" --cancel-label="Cancel" --text="$msg" ;;
+        kdialog) kdialog --yesno "Install Huzaifah Triple-Rice?\n\nCaelestia + end4-pC + Ambxst\nFrieren SDDM + SUPER+SHIFT+D switcher\n\nOnline installation; desktop wallpaper is not changed." --title "$TITLE" ;;
+        yad) yad --question --title="$TITLE" --width=560 --button="Install Everything:0" --button="Cancel:1" --text="$msg" ;;
+        *) return 0 ;;
+    esac
+}
+
+find_terminal() {
+    local candidates=()
+    [[ -n "${TERMINAL:-}" ]] && candidates+=("$TERMINAL")
+    candidates+=(foot kitty alacritty konsole wezterm gnome-terminal xfce4-terminal xterm)
+    local t
+    for t in "${candidates[@]}"; do
+        if command -v "$t" >/dev/null 2>&1; then
+            echo "$t"
+            return 0
+        fi
+    done
+    return 1
+}
+
+run_terminal() {
+    local terminal="$1" script="$2"
+    case "$terminal" in
+        foot) foot -e bash "$script" ;;
+        kitty) kitty bash "$script" ;;
+        alacritty) alacritty -e bash "$script" ;;
+        konsole) konsole -e bash "$script" ;;
+        wezterm) wezterm start --always-new-process -- bash "$script" ;;
+        gnome-terminal) gnome-terminal --wait -- bash "$script" ;;
+        xfce4-terminal) xfce4-terminal --disable-server -x bash "$script" ;;
+        xterm) xterm -e bash "$script" ;;
+        *) "$terminal" -e bash "$script" ;;
+    esac
+}
+
+main() {
+    local gui terminal tmp status_file
+    gui="$(find_gui)"
+
+    if ! is_arch_family; then
+        show_error "$gui" "This installer supports Arch/CachyOS-family systems only."
+        exit 1
+    fi
+
+    confirm_install "$gui" || exit 0
+
+    if ! terminal="$(find_terminal)"; then
+        show_error "$gui" "No supported terminal emulator was found. Install foot, kitty, Alacritty, Konsole, GNOME Terminal, XFCE Terminal, WezTerm, or xterm and try again."
+        exit 1
+    fi
+
+    status_file="$(mktemp)"
+    tmp="$(mktemp --suffix=.sh)"
+
+    cat > "$tmp" <<EOF2
+#!/usr/bin/env bash
+set -o pipefail
+STATUS_FILE=$(printf '%q' "$status_file")
+INSTALL_URL=$(printf '%q' "$INSTALL_URL")
+
+clear 2>/dev/null || true
+printf '\n  Huzaifah Triple-Rice Installer\n'
+printf '  ===============================\n\n'
+printf '  ✦ Caelestia\n  ◈ end4-pC\n  ◆ Ambxst\n  🌙 Frieren SDDM\n  ⇄ SUPER + SHIFT + D switcher\n\n'
+
+if ! command -v curl >/dev/null 2>&1; then
+    echo 'curl is required; installing it first...'
+    sudo pacman -S --needed curl || { echo 1 > "\$STATUS_FILE"; read -r -p 'Press Enter to close...'; exit 1; }
+fi
+
+printf 'Checking internet connection...\n'
+if ! curl -fsI --connect-timeout 10 "\$INSTALL_URL" >/dev/null; then
+    printf '\nERROR: Could not reach GitHub. Check your internet connection.\n'
+    echo 1 > "\$STATUS_FILE"
+    read -r -p 'Press Enter to close...'
+    exit 1
+fi
+
+printf '\nStarting online installation...\n\n'
+bash -c "\$(curl -fsSL \"\$INSTALL_URL\")"
+rc=\$?
+echo "\$rc" > "\$STATUS_FILE"
+
+printf '\n'
+if [[ \$rc -eq 0 ]]; then
+    printf '✓ Triple-rice installation completed successfully.\n'
+    printf '  Log out and back into Hyprland to start the installed profile.\n'
+else
+    printf '✗ Installation exited with status %s.\n' "\$rc"
+fi
+printf '\n'
+read -r -p 'Press Enter to close this window...'
+exit "\$rc"
+EOF2
+    chmod +x "$tmp"
+
+    run_terminal "$terminal" "$tmp" || true
+
+    local rc=1
+    if [[ -s "$status_file" ]]; then
+        read -r rc < "$status_file" || rc=1
+    fi
+    rm -f "$tmp" "$status_file"
+
+    if [[ "$rc" == "0" ]]; then
+        show_info "$gui" "Triple-rice installation completed.\n\nLog out and back into Hyprland to start the installed profile.\n\nUse SUPER + SHIFT + D to switch between Caelestia, end4-pC and Ambxst."
+    else
+        show_error "$gui" "The installer did not complete successfully. Review the terminal output for details."
+    fi
+}
+
+main "$@"
