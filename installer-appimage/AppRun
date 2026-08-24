@@ -126,9 +126,28 @@ if ! curl -fsI --connect-timeout 10 "\$INSTALL_URL" >/dev/null; then
     exit 1
 fi
 
-printf '\nStarting online installation...\n\n'
-bash -c "\$(curl -fsSL \"\$INSTALL_URL\")"
+printf '\nDownloading installer...\n'
+installer_file="\$(mktemp --suffix=.sh)"
+if ! curl -fsSL --connect-timeout 15 --retry 3 "\$INSTALL_URL" -o "\$installer_file"; then
+    printf '\nERROR: Failed to download install.sh from GitHub.\n'
+    rm -f "\$installer_file"
+    echo 1 > "\$STATUS_FILE"
+    read -r -p 'Press Enter to close...'
+    exit 1
+fi
+
+if ! bash -n "\$installer_file"; then
+    printf '\nERROR: Downloaded install.sh failed the shell syntax check.\n'
+    rm -f "\$installer_file"
+    echo 1 > "\$STATUS_FILE"
+    read -r -p 'Press Enter to close...'
+    exit 1
+fi
+
+printf 'Starting online installation...\n\n'
+bash "\$installer_file"
 rc=\$?
+rm -f "\$installer_file"
 echo "\$rc" > "\$STATUS_FILE"
 
 printf '\n'
