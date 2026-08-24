@@ -24,6 +24,9 @@ profile_target() {
         end4)
             printf '%s\n' "$ROOT/end4/hypr"
             ;;
+        ambxst)
+            printf '%s\n' "$ROOT/ambxst/hypr"
+            ;;
         *)
             return 1
             ;;
@@ -34,6 +37,7 @@ pretty_name() {
     case "$1" in
         caelestia) echo "Caelestia" ;;
         end4) echo "end4-pC" ;;
+        ambxst) echo "Ambxst" ;;
         *) echo "$1" ;;
     esac
 }
@@ -51,6 +55,9 @@ current_profile() {
                 ;;
             "$ROOT/end4/hypr")
                 echo "end4"
+                ;;
+            "$ROOT/ambxst/hypr")
+                echo "ambxst"
                 ;;
             *)
                 echo "unknown"
@@ -100,25 +107,32 @@ gui_choose_profile() {
     local current
     local caelestia_label
     local end4_label
+    local ambxst_label
     local choice
 
     current="$(current_profile)"
 
-    if [ "$current" = "caelestia" ]; then
-        caelestia_label="✓  ✦  Caelestia        ACTIVE"
-        end4_label="   ◈  end4-pC"
-    elif [ "$current" = "end4" ]; then
-        caelestia_label="   ✦  Caelestia"
-        end4_label="✓  ◈  end4-pC          ACTIVE"
-    else
-        caelestia_label="   ✦  Caelestia"
-        end4_label="   ◈  end4-pC"
-    fi
+    caelestia_label="   ✦  Caelestia"
+    end4_label="   ◈  end4-pC"
+    ambxst_label="   ◆  Ambxst"
+
+    case "$current" in
+        caelestia)
+            caelestia_label="✓  ✦  Caelestia        ACTIVE"
+            ;;
+        end4)
+            end4_label="✓  ◈  end4-pC          ACTIVE"
+            ;;
+        ambxst)
+            ambxst_label="✓  ◆  Ambxst           ACTIVE"
+            ;;
+    esac
 
     choice="$(
         printf '%s\n' \
             "$caelestia_label" \
-            "$end4_label" |
+            "$end4_label" \
+            "$ambxst_label" |
         fuzzel \
             --config="$FUZZEL_CFG" \
             --dmenu \
@@ -132,6 +146,9 @@ gui_choose_profile() {
             ;;
         *end4-pC*)
             echo "end4"
+            ;;
+        *Ambxst*)
+            echo "ambxst"
             ;;
         *)
             exit 0
@@ -189,7 +206,7 @@ case "${1:-}" in
         echo "Hyprland target: $(readlink -f "$HYPR_LINK" 2>/dev/null || echo unknown)"
         ;;
 
-    caelestia|end4)
+    caelestia|end4|ambxst)
         selected="$1"
 
         switch_profile "$selected"
@@ -212,8 +229,10 @@ case "${1:-}" in
         echo "  desktop-switch status"
         echo "  desktop-switch caelestia"
         echo "  desktop-switch end4"
+        echo "  desktop-switch ambxst"
         echo "  desktop-switch caelestia --now"
         echo "  desktop-switch end4 --now"
+        echo "  desktop-switch ambxst --now"
         exit 1
         ;;
 esac
