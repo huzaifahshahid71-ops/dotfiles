@@ -67,8 +67,8 @@ jobs:
             echo 'Unsafe curl-to-bash launcher pattern detected'
             exit 1
           fi
-          grep -F 'installer_file="$(mktemp --suffix=.sh)"' installer-appimage/AppRun >/dev/null
-          grep -F 'bash "$installer_file"' installer-appimage/AppRun >/dev/null
+          grep -F 'installer_file="\$(mktemp --suffix=.sh)"' installer-appimage/AppRun >/dev/null
+          grep -F 'bash "\$installer_file"' installer-appimage/AppRun >/dev/null
 
       - name: Write release notes
         run: |
