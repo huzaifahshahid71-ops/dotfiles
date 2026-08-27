@@ -1,4 +1,4 @@
-name: Build Triple-Rice Installer AppImage
+name: Build Multi-Rice Installer AppImage
 
 on:
   workflow_dispatch:
@@ -44,54 +44,62 @@ jobs:
           set -euo pipefail
           APPIMAGE_EXTRACT_AND_RUN=1 build/appimagetool-x86_64.AppImage \
             build/AppDir \
-            dist/Huzaifah-Triple-Rice-Installer-x86_64.AppImage
-          chmod +x dist/Huzaifah-Triple-Rice-Installer-x86_64.AppImage
-          tar -C dist -czf dist/Huzaifah-Triple-Rice-Installer-x86_64.tar.gz \
-            Huzaifah-Triple-Rice-Installer-x86_64.AppImage
+            dist/Huzaifah-Multi-Rice-Installer-x86_64.AppImage
+          chmod +x dist/Huzaifah-Multi-Rice-Installer-x86_64.AppImage
+          tar -C dist -czf dist/Huzaifah-Multi-Rice-Installer-x86_64.tar.gz \
+            Huzaifah-Multi-Rice-Installer-x86_64.AppImage
           sha256sum \
-            dist/Huzaifah-Triple-Rice-Installer-x86_64.AppImage \
-            dist/Huzaifah-Triple-Rice-Installer-x86_64.tar.gz \
+            dist/Huzaifah-Multi-Rice-Installer-x86_64.AppImage \
+            dist/Huzaifah-Multi-Rice-Installer-x86_64.tar.gz \
             > dist/SHA256SUMS.txt
 
       - name: Smoke-test AppImage structure and launcher
         run: |
           set -euo pipefail
-          APPIMAGE_EXTRACT_AND_RUN=1 \
-            dist/Huzaifah-Triple-Rice-Installer-x86_64.AppImage --appimage-version >/dev/null
+          rm -rf squashfs-root
+          dist/Huzaifah-Multi-Rice-Installer-x86_64.AppImage --appimage-extract >/dev/null
+          test -x squashfs-root/AppRun
           bash -n installer-appimage/AppRun
-          if grep -F 'bash -c "\$(curl' installer-appimage/AppRun >/dev/null; then
+          bash -n squashfs-root/AppRun
+          grep -F 'TITLE="Huzaifah Multi-Rice Installer"' squashfs-root/AppRun >/dev/null
+          grep -F 'DankMaterialShell' squashfs-root/AppRun >/dev/null
+          if grep -F 'bash -c "$(curl' installer-appimage/AppRun >/dev/null; then
             echo 'Unsafe curl-to-bash launcher pattern detected'
             exit 1
           fi
-          grep -F 'installer_file="\$(mktemp --suffix=.sh)"' installer-appimage/AppRun >/dev/null
-          grep -F 'bash "\$installer_file"' installer-appimage/AppRun >/dev/null
+          grep -F 'installer_file="$(mktemp --suffix=.sh)"' installer-appimage/AppRun >/dev/null
+          grep -F 'bash "$installer_file"' installer-appimage/AppRun >/dev/null
 
       - name: Write release notes
         run: |
           cat > dist/RELEASE_NOTES.md <<'EOF'
-          # Huzaifah Triple-Rice Installer v1.0.1
+          # Huzaifah Multi-Rice Installer v2.0.0
 
-          Double-click graphical installer for the Huzaifah Hyprland triple-rice setup.
+          The installer has grown from Triple-Rice into a dynamic **Multi-Rice** setup.
 
           **Installs:**
           - ✦ Caelestia
           - ◈ end4-pC
           - ◆ Ambxst with axctl integration
-          - ⇄ `SUPER + SHIFT + D` profile switcher
+          - ● DankMaterialShell (DMS 1.5.3 profile)
+          - ⇄ `SUPER + SHIFT + D` dynamic profile switcher
           - 🌙 Frieren SDDM login theme
-          - saved end4/Ambxst fixes and configuration from the dotfiles repository
+          - saved end4/Ambxst fixes and repository configuration
 
-          This AppImage is intentionally lightweight. It does **not** bundle upstream packages or rice source trees; those remain online and are downloaded by the repository's normal `install.sh` during installation.
+          **DMS integration:**
+          - DMS starts only from its own Hyprland profile (`dms run`), not as a global user service
+          - bare `SUPER` opens the DMS application launcher
+          - `SUPER + SHIFT + S` opens DMS region screenshot capture
+          - `SUPER + SHIFT + D` opens the Multi-Rice switcher
+          - Alacritty is the DMS terminal
+
+          This is the lightweight **online** AppImage. It downloads the normal repository installer and upstream packages during setup rather than embedding the full package payload.
 
           **Requirements:** x86_64 Arch/CachyOS-family Linux, internet access, sudo privileges, and a graphical desktop session.
 
-          The installer leaves your desktop wallpaper unchanged.
+          The installer does not choose or replace your desktop wallpaper. The Frieren image is used only by the SDDM login theme.
 
-          ### v1.0.1 fix
-
-          The launcher now downloads `install.sh` to a temporary file, validates its shell syntax, and executes it only after a successful download. Failed downloads can no longer be reported as successful installations.
-
-          The `.tar.gz` asset contains the same AppImage while preserving the executable bit after extraction. If your browser strips the executable permission from the raw `.AppImage`, mark it executable in your file manager or run `chmod +x` on it once.
+          The `.tar.gz` asset contains the same AppImage while preserving the executable bit after extraction. `SHA256SUMS.txt` contains checksums for both assets.
           EOF
 
       - name: Publish GitHub Release
@@ -99,20 +107,20 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG="triple-rice-installer-v1.0.1"
-          TITLE="Huzaifah Triple-Rice Installer v1.0.1"
+          TAG="multi-rice-installer-v2.0.0"
+          TITLE="Huzaifah Multi-Rice Installer v2.0.0"
 
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release edit "$TAG" --title "$TITLE" --notes-file dist/RELEASE_NOTES.md
             gh release upload "$TAG" \
-              dist/Huzaifah-Triple-Rice-Installer-x86_64.AppImage \
-              dist/Huzaifah-Triple-Rice-Installer-x86_64.tar.gz \
+              dist/Huzaifah-Multi-Rice-Installer-x86_64.AppImage \
+              dist/Huzaifah-Multi-Rice-Installer-x86_64.tar.gz \
               dist/SHA256SUMS.txt \
               --clobber
           else
             gh release create "$TAG" \
-              dist/Huzaifah-Triple-Rice-Installer-x86_64.AppImage \
-              dist/Huzaifah-Triple-Rice-Installer-x86_64.tar.gz \
+              dist/Huzaifah-Multi-Rice-Installer-x86_64.AppImage \
+              dist/Huzaifah-Multi-Rice-Installer-x86_64.tar.gz \
               dist/SHA256SUMS.txt \
               --target "$GITHUB_SHA" \
               --title "$TITLE" \
@@ -123,22 +131,22 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p release-status
-          cat > release-status/triple-rice-installer-v1.0.1.txt <<EOF
-          Release: Huzaifah Triple-Rice Installer v1.0.1
-          Tag: triple-rice-installer-v1.0.1
+          cat > release-status/multi-rice-installer-v2.0.0.txt <<EOF
+          Release: Huzaifah Multi-Rice Installer v2.0.0
+          Tag: multi-rice-installer-v2.0.0
           Built from: $GITHUB_SHA
           Workflow run: $GITHUB_RUN_ID
           Published: $(date --iso-8601=seconds)
           Assets:
-            Huzaifah-Triple-Rice-Installer-x86_64.AppImage
-            Huzaifah-Triple-Rice-Installer-x86_64.tar.gz
+            Huzaifah-Multi-Rice-Installer-x86_64.AppImage
+            Huzaifah-Multi-Rice-Installer-x86_64.tar.gz
             SHA256SUMS.txt
           EOF
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git pull --rebase origin main
-          git add release-status/triple-rice-installer-v1.0.1.txt
+          git add release-status/multi-rice-installer-v2.0.0.txt
           if ! git diff --cached --quiet; then
-            git commit -m "Record AppImage installer v1.0.1 release"
+            git commit -m "Record Multi-Rice AppImage v2.0.0 release"
             git push origin HEAD:main
           fi
