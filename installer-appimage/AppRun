@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -u
 
-TITLE="Huzaifah Triple-Rice Installer"
+TITLE="Huzaifah Multi-Rice Installer"
 INSTALL_URL="https://raw.githubusercontent.com/huzaifahshahid71-ops/dotfiles/main/install.sh"
 
 is_arch_family() {
@@ -45,10 +45,10 @@ show_info() {
 
 confirm_install() {
     local gui="$1"
-    local msg='<b>Install Huzaifah Triple-Rice?</b>\n\n✦ Caelestia\n◈ end4-pC\n◆ Ambxst\n⇄ SUPER + SHIFT + D switcher\n🌙 Frieren SDDM login theme\n\nThis is an <b>online installer</b>: upstream packages and sources are downloaded during installation.\n\nYour desktop wallpaper is left unchanged.\n\nRequires an Arch/CachyOS-family system, internet access, and sudo privileges.'
+    local msg='<b>Install Huzaifah Multi-Rice?</b>\n\n✦ Caelestia\n◈ end4-pC\n◆ Ambxst\n● DankMaterialShell\n⇄ SUPER + SHIFT + D dynamic switcher\n🌙 Frieren SDDM login theme\n\nThis is an <b>online installer</b>: upstream packages and sources are downloaded during installation.\n\nYour desktop wallpaper is left unchanged.\n\nRequires an Arch/CachyOS-family system, internet access, and sudo privileges.'
     case "$gui" in
         zenity) zenity --question --title="$TITLE" --width=560 --ok-label="Install Everything" --cancel-label="Cancel" --text="$msg" ;;
-        kdialog) kdialog --yesno "Install Huzaifah Triple-Rice?\n\nCaelestia + end4-pC + Ambxst\nFrieren SDDM + SUPER+SHIFT+D switcher\n\nOnline installation; desktop wallpaper is not changed." --title "$TITLE" ;;
+        kdialog) kdialog --yesno "Install Huzaifah Multi-Rice?\n\nCaelestia + end4-pC + Ambxst + DankMaterialShell\nFrieren SDDM + SUPER+SHIFT+D switcher\n\nOnline installation; desktop wallpaper is not changed." --title "$TITLE" ;;
         yad) yad --question --title="$TITLE" --width=560 --button="Install Everything:0" --button="Cancel:1" --text="$msg" ;;
         *) return 0 ;;
     esac
@@ -109,9 +109,9 @@ STATUS_FILE=$(printf '%q' "$status_file")
 INSTALL_URL=$(printf '%q' "$INSTALL_URL")
 
 clear 2>/dev/null || true
-printf '\n  Huzaifah Triple-Rice Installer\n'
-printf '  ===============================\n\n'
-printf '  ✦ Caelestia\n  ◈ end4-pC\n  ◆ Ambxst\n  🌙 Frieren SDDM\n  ⇄ SUPER + SHIFT + D switcher\n\n'
+printf '\n  Huzaifah Multi-Rice Installer\n'
+printf '  ==============================\n\n'
+printf '  ✦ Caelestia\n  ◈ end4-pC\n  ◆ Ambxst\n  ● DankMaterialShell\n  🌙 Frieren SDDM\n  ⇄ SUPER + SHIFT + D switcher\n\n'
 
 if ! command -v curl >/dev/null 2>&1; then
     echo 'curl is required; installing it first...'
@@ -152,7 +152,7 @@ echo "\$rc" > "\$STATUS_FILE"
 
 printf '\n'
 if [[ \$rc -eq 0 ]]; then
-    printf '✓ Triple-rice installation completed successfully.\n'
+    printf '✓ Multi-Rice installation completed successfully.\n'
     printf '  Log out and back into Hyprland to start the installed profile.\n'
 else
     printf '✗ Installation exited with status %s.\n' "\$rc"
@@ -172,7 +172,7 @@ EOF2
     rm -f "$tmp" "$status_file"
 
     if [[ "$rc" == "0" ]]; then
-        show_info "$gui" "Triple-rice installation completed.\n\nLog out and back into Hyprland to start the installed profile.\n\nUse SUPER + SHIFT + D to switch between Caelestia, end4-pC and Ambxst."
+        show_info "$gui" "Multi-Rice installation completed.\n\nLog out and back into Hyprland to start the installed profile.\n\nUse SUPER + SHIFT + D to switch between Caelestia, end4-pC, Ambxst and DankMaterialShell."
     else
         show_error "$gui" "The installer did not complete successfully. Review the terminal output for details."
     fi
