@@ -6,7 +6,7 @@ SRC="$REPO_ROOT/dual-rice"
 PROFILE_ROOT="$HOME/.local/share/desktop-profiles"
 BACKUP_ROOT="$HOME/.local/share/desktop-profile-backups"
 STAMP="$(date +%Y%m%d-%H%M%S)"
-BACKUP="$BACKUP_ROOT/triple-rice-restore-$STAMP"
+BACKUP="$BACKUP_ROOT/multi-rice-restore-$STAMP"
 
 log()  { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 ok()   { printf '\033[1;32m✓\033[0m %s\n' "$*"; }
@@ -140,31 +140,36 @@ EOF
 }
 
 is_arch_family || die "This restore currently supports Arch/CachyOS only"
-for profile in caelestia end4 ambxst; do
+for profile in caelestia end4 ambxst dms; do
     [[ -d "$SRC/profiles/$profile/hypr" ]] || die "Missing backed-up $profile profile. Run backup-dual-rice.sh first."
     [[ -f "$SRC/profiles/$profile/hypr/hyprland.lua" ]] || die "Backed-up $profile hyprland.lua missing"
 done
 
-log "Updating the system before triple-rice restore"
+log "Updating the system before Multi-Rice restore"
 sudo pacman -Syu
 
 ensure_paru
 
-log "Installing triple-rice dependencies"
+log "Installing Multi-Rice dependencies"
 paru -S --needed \
-    git curl unzip rsync jq fish stow foot kitty mpv mpv-mpris fuzzel \
+    git curl unzip rsync jq fish stow foot kitty alacritty mpv mpv-mpris fuzzel \
     hyprland hypridle hyprlock hyprsunset wl-clipboard wl-clip-persist cliphist \
     brightnessctl playerctl cava matugen-bin imagemagick upower hyprpicker grim \
     slurp swappy wf-recorder tesseract tesseract-data-eng ydotool gnome-keyring \
     easyeffects libqalculate qt6-positioning ttf-readex-pro ttf-jetbrains-mono-nerd \
-    dim-caelestia-shell-git caelestia-cli quickshell-git tmux network-manager-applet \
-    blueman pavucontrol ffmpeg x264 qt6-base qt6-declarative qt6-wayland qt6-svg \
-    qt6-tools qt6-imageformats qt6-multimedia qt6-shadertools libwebp libavif \
-    syntax-highlighting breeze-icons hicolor-icon-theme ddcutil sqlite wlsunset \
-    wtype zbar glib2 python-pipx zenity inetutils power-profiles-daemon python312 \
-    libnotify ttf-roboto ttf-roboto-mono ttf-dejavu ttf-liberation noto-fonts \
-    noto-fonts-cjk noto-fonts-emoji ttf-nerd-fonts-symbols gpu-screen-recorder \
-    mpvpaper gradia ttf-phosphor-icons ttf-league-gothic adw-gtk-theme
+    dim-caelestia-shell-git caelestia-cli quickshell-git dms-shell dms-shell-hyprland \
+    tmux network-manager-applet blueman pavucontrol ffmpeg x264 qt6-base \
+    qt6-declarative qt6-wayland qt6-svg qt6-tools qt6-imageformats qt6-multimedia \
+    qt6-shadertools libwebp libavif syntax-highlighting breeze-icons hicolor-icon-theme \
+    ddcutil sqlite wlsunset wtype zbar glib2 python-pipx zenity inetutils \
+    power-profiles-daemon python312 libnotify ttf-roboto ttf-roboto-mono ttf-dejavu \
+    ttf-liberation noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-nerd-fonts-symbols \
+    gpu-screen-recorder mpvpaper gradia ttf-phosphor-icons ttf-league-gothic \
+    adw-gtk-theme inter-font ttf-fira-code
+
+# Multi-Rice uses compositor-managed DMS startup. A global DMS user service would
+# overlap with Caelestia/end4/Ambxst, so keep it disabled.
+systemctl --user disable --now dms.service >/dev/null 2>&1 || true
 
 log "Creating safety backup before profile restore"
 mkdir -p "$BACKUP"
@@ -172,6 +177,7 @@ backup_path "$HOME/.config/hypr" "hypr"
 backup_path "$HOME/.config/caelestia" "caelestia"
 backup_path "$HOME/.config/illogical-impulse" "illogical-impulse"
 backup_path "$HOME/.config/ambxst" "ambxst-config"
+backup_path "$HOME/.config/DankMaterialShell" "dms-config"
 backup_path "$HOME/.local/share/ambxst" "ambxst-share"
 backup_path "$HOME/.local/src/ambxst" "ambxst-source"
 backup_path "$HOME/.cache/ambxst/wallpapers.json" "ambxst-wallpapers.json"
@@ -181,8 +187,8 @@ backup_path "$HOME/.local/bin/desktop-switch" "desktop-switch"
 backup_path "$HOME/.local/bin/recover-caelestia" "recover-caelestia"
 backup_path "$HOME/.local/bin/ambxst" "ambxst-launcher"
 
-log "Restoring all three Hyprland profiles"
-for profile in caelestia end4 ambxst; do
+log "Restoring all four Hyprland profiles"
+for profile in caelestia end4 ambxst dms; do
     mkdir -p "$PROFILE_ROOT/$profile/hypr"
     rsync -a --delete "$SRC/profiles/$profile/hypr/" "$PROFILE_ROOT/$profile/hypr/"
 done
@@ -214,6 +220,15 @@ if [[ -f "$SRC/ambxst/wallpapers.json" ]]; then
     mkdir -p "$HOME/.cache/ambxst"
     cp -a "$SRC/ambxst/wallpapers.json" "$HOME/.cache/ambxst/wallpapers.json"
     rewrite_home_paths_json "$HOME/.cache/ambxst/wallpapers.json"
+fi
+
+if [[ -d "$SRC/dms/config" ]] && find "$SRC/dms/config" -mindepth 1 -print -quit | grep -q .; then
+    log "Restoring DMS user configuration"
+    mkdir -p "$HOME/.config/DankMaterialShell"
+    rsync -a --delete "$SRC/dms/config/" "$HOME/.config/DankMaterialShell/"
+    while IFS= read -r json; do
+        rewrite_home_paths_json "$json"
+    done < <(find "$HOME/.config/DankMaterialShell" -type f -name '*.json' -print)
 fi
 
 if [[ -d "$SRC/desktop-switcher" ]]; then
@@ -292,7 +307,7 @@ if [[ -f "$SRC/state/active" ]]; then
     active="$(tr -d '[:space:]' < "$SRC/state/active")"
 fi
 case "$active" in
-    caelestia|end4|ambxst) ;;
+    caelestia|end4|ambxst|dms) ;;
     *) warn "Unknown saved active profile '$active'; defaulting to Caelestia"; active="caelestia" ;;
 esac
 
@@ -307,12 +322,13 @@ if [[ -f "$HOME/.config/systemd/user/background-music.service" ]]; then
     systemctl --user enable background-music.service 2>/dev/null || true
 fi
 
-ok "Triple-rice restore complete"
+ok "Multi-Rice restore complete"
 printf '\nInstalled:\n'
 printf '  ✦ Caelestia profile\n'
 printf '  ◈ end4-pC profile + saved local patches\n'
 printf '  ◆ Ambxst profile + saved local patches + pinned axctl integration\n'
-printf '  ⇄ SUPER + SHIFT + D desktop switcher\n'
+printf '  ● DankMaterialShell profile (standalone compositor-managed startup)\n'
+printf '  ⇄ SUPER + SHIFT + D dynamic desktop switcher\n'
 printf '\nDesktop wallpaper is not changed by this restore.\n'
 printf '\nActive profile: %s\n' "$active"
 printf 'Hyprland target: %s\n' "$(readlink -f "$HOME/.config/hypr")"
