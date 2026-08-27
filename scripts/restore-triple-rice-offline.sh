@@ -7,7 +7,7 @@ SOURCE_ROOT="${OFFLINE_SOURCE_ROOT:?OFFLINE_SOURCE_ROOT must point to bundled so
 PROFILE_ROOT="$HOME/.local/share/desktop-profiles"
 BACKUP_ROOT="$HOME/.local/share/desktop-profile-backups"
 STAMP="$(date +%Y%m%d-%H%M%S)"
-BACKUP="$BACKUP_ROOT/triple-rice-offline-$STAMP"
+BACKUP="$BACKUP_ROOT/multi-rice-offline-$STAMP"
 
 log()  { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 ok()   { printf '\033[1;32m✓\033[0m %s\n' "$*"; }
@@ -65,7 +65,7 @@ EOF
 
 is_arch_family || die "Offline restore supports Arch/CachyOS-family systems only"
 [[ "$(uname -m)" == "x86_64" ]] || die "This offline snapshot targets x86_64"
-for profile in caelestia end4 ambxst; do
+for profile in caelestia end4 ambxst dms; do
     [[ -f "$SRC/profiles/$profile/hypr/hyprland.lua" ]] || die "Missing backed-up $profile profile"
 done
 for source in end4-dots end4-pC ambxst; do
@@ -79,6 +79,7 @@ backup_path "$HOME/.config/hypr" hypr
 backup_path "$HOME/.config/caelestia" caelestia
 backup_path "$HOME/.config/illogical-impulse" illogical-impulse
 backup_path "$HOME/.config/ambxst" ambxst-config
+backup_path "$HOME/.config/DankMaterialShell" dms-config
 backup_path "$HOME/.local/share/ambxst" ambxst-share
 backup_path "$HOME/.local/src/ambxst" ambxst-source
 backup_path "$HOME/.cache/ambxst/wallpapers.json" ambxst-wallpapers.json
@@ -87,8 +88,8 @@ backup_path "$PROFILE_ROOT" desktop-profiles
 backup_path "$HOME/.local/bin/desktop-switch" desktop-switch
 backup_path "$HOME/.local/bin/recover-caelestia" recover-caelestia
 
-log "Restoring Caelestia, end4-pC and Ambxst profiles"
-for profile in caelestia end4 ambxst; do
+log "Restoring Caelestia, end4-pC, Ambxst and DMS profiles"
+for profile in caelestia end4 ambxst dms; do
     mkdir -p "$PROFILE_ROOT/$profile/hypr"
     rsync -a --delete "$SRC/profiles/$profile/hypr/" "$PROFILE_ROOT/$profile/hypr/"
 done
@@ -116,6 +117,15 @@ if [[ -f "$SRC/ambxst/wallpapers.json" ]]; then
     cp -a "$SRC/ambxst/wallpapers.json" "$HOME/.cache/ambxst/wallpapers.json"
     rewrite_home_paths_json "$HOME/.cache/ambxst/wallpapers.json"
 fi
+
+if [[ -d "$SRC/dms/config" ]] && find "$SRC/dms/config" -mindepth 1 -print -quit | grep -q .; then
+    mkdir -p "$HOME/.config/DankMaterialShell"
+    rsync -a --delete "$SRC/dms/config/" "$HOME/.config/DankMaterialShell/"
+    while IFS= read -r json; do
+        rewrite_home_paths_json "$json"
+    done < <(find "$HOME/.config/DankMaterialShell" -type f -name '*.json' -print)
+fi
+
 if [[ -d "$SRC/desktop-switcher" ]]; then
     mkdir -p "$HOME/.config/desktop-switcher"
     rsync -a --delete "$SRC/desktop-switcher/" "$HOME/.config/desktop-switcher/"
@@ -143,6 +153,9 @@ mkdir -p "$HOME/.local/share/ambxst"
 rm -f "$HOME/.local/share/ambxst/hyprland.lua" "$HOME/.local/share/ambxst/hyprland.conf" "$HOME/.local/share/ambxst/axctl.toml"
 "$HOME/.local/bin/ambxst" version >/dev/null 2>&1 || true
 
+# Multi-Rice launches DMS only from the DMS compositor profile.
+systemctl --user disable --now dms.service >/dev/null 2>&1 || true
+
 if [[ -f "$SRC/systemd/user/background-music.service" ]]; then
     mkdir -p "$HOME/.config/systemd/user"
     cp -a "$SRC/systemd/user/background-music.service" "$HOME/.config/systemd/user/background-music.service"
@@ -159,7 +172,7 @@ fi
 
 active="caelestia"
 [[ -f "$SRC/state/active" ]] && active="$(tr -d '[:space:]' < "$SRC/state/active")"
-case "$active" in caelestia|end4|ambxst) ;; *) active=caelestia ;; esac
+case "$active" in caelestia|end4|ambxst|dms) ;; *) active=caelestia ;; esac
 rm -rf "$HOME/.config/hypr"
 ln -s "$PROFILE_ROOT/$active/hypr" "$HOME/.config/hypr"
 mkdir -p "$HOME/.config/desktop-profile"
@@ -168,7 +181,7 @@ printf '%s\n' "$active" > "$HOME/.config/desktop-profile/active"
 systemctl --user daemon-reload 2>/dev/null || true
 [[ -f "$HOME/.config/systemd/user/background-music.service" ]] && systemctl --user enable background-music.service 2>/dev/null || true
 
-ok "Offline triple-rice restore complete"
+ok "Offline Multi-Rice restore complete"
 printf '\nInstalled from the AppImage payload with no network access:\n'
-printf '  ✦ Caelestia\n  ◈ end4-pC\n  ◆ Ambxst + axctl\n  ⇄ SUPER + SHIFT + D switcher\n'
+printf '  ✦ Caelestia\n  ◈ end4-pC\n  ◆ Ambxst + axctl\n  ● DankMaterialShell\n  ⇄ SUPER + SHIFT + D dynamic switcher\n'
 printf '\nSafety backup: %s\n' "$BACKUP"
