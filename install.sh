@@ -57,17 +57,18 @@ configure_end4_search_only() {
     ok "end4 launcher set to search-only mode (workspace overview hidden)"
 }
 
-install_triple_rice() {
+install_multi_rice() {
     local restore="$DOTFILES_DIR/scripts/restore-dual-rice.sh"
-    [[ -f "$restore" ]] || die "Missing triple-rice restore script: $restore"
+    [[ -f "$restore" ]] || die "Missing Multi-Rice restore script: $restore"
     chmod +x "$restore"
 
     printf '\n'
-    log "Installing Huzaifah triple-rice desktop"
+    log "Installing Huzaifah Multi-Rice desktop"
     printf '  ✦ Caelestia\n'
     printf '  ◈ end4-pC\n'
     printf '  ◆ Ambxst\n'
-    printf '  ⇄ SUPER + SHIFT + D profile switcher\n\n'
+    printf '  ● DankMaterialShell\n'
+    printf '  ⇄ SUPER + SHIFT + D dynamic profile switcher\n\n'
 
     "$restore"
     configure_end4_search_only
@@ -83,7 +84,7 @@ install_frieren_sddm_theme() {
 }
 
 full_customization() {
-    install_triple_rice
+    install_multi_rice
     install_frieren_sddm_theme
 
     printf '\n'
@@ -92,9 +93,10 @@ full_customization() {
     printf '  ✦ Caelestia configuration\n'
     printf '  ◈ end4-pC configuration and saved album-art fixes\n'
     printf '  ◆ Ambxst configuration with axctl integration\n'
+    printf '  ● DankMaterialShell configuration with standalone DMS startup\n'
     printf '  🔎 end4 search-only launcher (workspace grid hidden)\n'
     printf '  🌙 Frieren SDDM login theme\n'
-    printf '  ⇄ SUPER + SHIFT + D triple-rice switcher\n'
+    printf '  ⇄ SUPER + SHIFT + D dynamic Multi-Rice switcher\n'
     printf '\nYour desktop wallpaper is not changed by the installer.\n'
     printf 'Log out and back into Hyprland when the installer finishes.\n'
 }
@@ -110,24 +112,27 @@ Default (no options):
     - Caelestia rice
     - end4-pC rice
     - Ambxst rice + axctl integration
+    - DankMaterialShell rice (DMS)
     - saved end4 widget/bar layout
     - search-only end4 launcher (workspace overview hidden)
     - Frieren SDDM login theme
-    - SUPER + SHIFT + D triple-rice switcher
+    - SUPER + SHIFT + D dynamic Multi-Rice switcher
     - saved local end4-pC album-art fixes
 
   Desktop wallpaper is left unchanged.
 
 Customization options:
   --customization      Full customization (same as no options)
-  --triple-rice        Full customization alias
-  --triple-rice-only   Install all three rices without changing SDDM
+  --multi-rice         Full customization alias
+  --multi-rice-only    Install all four rices without changing SDDM
   --sddm-theme-only    Install only the Frieren SDDM login theme
-  --no-sddm-theme      Install the triple-rice setup but skip SDDM
+  --no-sddm-theme      Install the Multi-Rice setup but skip SDDM
 
 Compatibility aliases:
-  --dual-rice          Same as --triple-rice
-  --dual-rice-only     Same as --triple-rice-only
+  --triple-rice        Same as --multi-rice
+  --triple-rice-only   Same as --multi-rice-only
+  --dual-rice          Same as --multi-rice
+  --dual-rice-only     Same as --multi-rice-only
 
 Optional machine-specific extras (never run automatically):
   --asus               Generic ASUS support
@@ -165,11 +170,11 @@ main() {
 
     while (($#)); do
         case "$1" in
-            --customization|--triple-rice|--dual-rice|--base|--all)
+            --customization|--multi-rice|--triple-rice|--dual-rice|--base|--all)
                 do_rice=1
                 do_theme=1
                 ;;
-            --triple-rice-only|--dual-rice-only|--no-sddm-theme)
+            --multi-rice-only|--triple-rice-only|--dual-rice-only|--no-sddm-theme)
                 do_rice=1
                 do_theme=0
                 ;;
@@ -206,7 +211,7 @@ main() {
         shift
     done
 
-    (( do_rice )) && install_triple_rice
+    (( do_rice )) && install_multi_rice
     (( do_theme )) && install_frieren_sddm_theme
 
     if (( do_asus && ! do_g16 )); then
