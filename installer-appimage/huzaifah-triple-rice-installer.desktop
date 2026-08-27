@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
-Name=Huzaifah Triple-Rice Installer
-Comment=Install Caelestia, end4-pC and Ambxst with the Frieren SDDM theme
+Name=Huzaifah Multi-Rice Installer
+Comment=Install Caelestia, end4-pC, Ambxst and DankMaterialShell with the Frieren SDDM theme
 Exec=AppRun
 Icon=huzaifah-triple-rice-installer
 Terminal=false
