@@ -15,9 +15,9 @@ usage() {
     cat <<'EOF'
 Usage: ./scripts/backup-dual-rice.sh [--push]
 
-Backs up the currently working Caelestia + end4-pC + Ambxst triple-rice
-setup into this dotfiles repository. The historical dual-rice directory and
-script names are kept for compatibility.
+Backs up the currently working Caelestia + end4-pC + Ambxst + DankMaterialShell
+Multi-Rice setup into this dotfiles repository. The historical dual-rice path
+and script names are kept for compatibility.
 
 With --push, the script also commits and pushes the generated snapshot.
 Caches, SSH keys, .env files and obvious credential files are excluded.
@@ -36,19 +36,21 @@ command -v git >/dev/null 2>&1 || die "git is required"
 command -v rsync >/dev/null 2>&1 || die "rsync is required"
 [[ -d "$REPO_ROOT/.git" ]] || die "$REPO_ROOT is not a Git repository"
 
-for profile in caelestia end4 ambxst; do
+for profile in caelestia end4 ambxst dms; do
     [[ -d "$PROFILE_ROOT/$profile/hypr" ]] || die "$profile profile not found"
     [[ -f "$PROFILE_ROOT/$profile/hypr/hyprland.lua" ]] || die "$profile hyprland.lua missing"
 done
 
-log "Preparing triple-rice snapshot"
+log "Preparing Multi-Rice snapshot"
 mkdir -p \
     "$DEST/profiles/caelestia/hypr" \
     "$DEST/profiles/end4/hypr" \
     "$DEST/profiles/ambxst/hypr" \
+    "$DEST/profiles/dms/hypr" \
     "$DEST/caelestia" \
     "$DEST/end4" \
     "$DEST/ambxst/config" \
+    "$DEST/dms/config" \
     "$DEST/desktop-switcher" \
     "$DEST/bin" \
     "$DEST/systemd/user" \
@@ -76,7 +78,7 @@ RSYNC_EXCLUDES=(
     --exclude='*secret*'
 )
 
-for profile in caelestia end4 ambxst; do
+for profile in caelestia end4 ambxst dms; do
     log "Backing up $profile Hyprland profile"
     rsync -a --delete "${RSYNC_EXCLUDES[@]}" \
         "$PROFILE_ROOT/$profile/hypr/" \
@@ -109,6 +111,13 @@ if [[ -f "$HOME/.cache/ambxst/wallpapers.json" ]]; then
     log "Backing up Ambxst wallpaper directory state"
     cp -a "$HOME/.cache/ambxst/wallpapers.json" \
         "$DEST/ambxst/wallpapers.json"
+fi
+
+if [[ -d "$HOME/.config/DankMaterialShell" ]]; then
+    log "Backing up DMS user configuration"
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" \
+        "$HOME/.config/DankMaterialShell/" \
+        "$DEST/dms/config/"
 fi
 
 if [[ -d "$HOME/.config/desktop-switcher" ]]; then
@@ -146,6 +155,7 @@ qs --version > "$DEST/versions/quickshell.txt" 2>&1 || true
 caelestia --version > "$DEST/versions/caelestia.txt" 2>&1 || true
 ambxst version > "$DEST/versions/ambxst.txt" 2>&1 || true
 axctl --version > "$DEST/versions/axctl.txt" 2>&1 || true
+dms version > "$DEST/versions/dms.txt" 2>&1 || true
 
 if [[ -d "$HOME/.config/quickshell/end4-pC/.git" ]]; then
     git -C "$HOME/.config/quickshell/end4-pC" rev-parse HEAD \
@@ -175,6 +185,7 @@ elif [[ -L "$HOME/.config/hypr" ]]; then
         "$PROFILE_ROOT/caelestia/hypr") printf '%s\n' caelestia > "$DEST/state/active" ;;
         "$PROFILE_ROOT/end4/hypr") printf '%s\n' end4 > "$DEST/state/active" ;;
         "$PROFILE_ROOT/ambxst/hypr") printf '%s\n' ambxst > "$DEST/state/active" ;;
+        "$PROFILE_ROOT/dms/hypr") printf '%s\n' dms > "$DEST/state/active" ;;
         *) printf '%s\n' caelestia > "$DEST/state/active" ;;
     esac
 else
@@ -199,14 +210,14 @@ if [[ -n "$secret_hits" ]]; then
     [[ "$PUSH" -eq 0 ]] || die "Refusing --push until the flagged files are reviewed"
 fi
 
-ok "Triple-rice snapshot updated at $DEST"
+ok "Multi-Rice snapshot updated at $DEST"
 printf '\nSnapshot size:\n'
 du -sh "$DEST"
 printf '\nGit changes:\n'
 git -C "$REPO_ROOT" status --short -- dual-rice scripts/backup-dual-rice.sh scripts/restore-dual-rice.sh
 
 if (( PUSH )); then
-    log "Committing triple-rice snapshot"
+    log "Committing Multi-Rice snapshot"
     git -C "$REPO_ROOT" add -- \
         dual-rice \
         scripts/backup-dual-rice.sh \
@@ -217,9 +228,9 @@ if (( PUSH )); then
         exit 0
     fi
 
-    git -C "$REPO_ROOT" commit -m "Backup working Caelestia end4 and Ambxst triple-rice setup"
+    git -C "$REPO_ROOT" commit -m "Backup working Caelestia end4 Ambxst and DMS Multi-Rice setup"
     git -C "$REPO_ROOT" push
-    ok "Triple-rice backup pushed to GitHub"
+    ok "Multi-Rice backup pushed to GitHub"
 else
     printf '\nReview the changes, then run:\n'
     printf '  %s --push\n' "$0"
