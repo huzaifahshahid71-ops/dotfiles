@@ -17,20 +17,9 @@ die() {
 }
 
 profile_target() {
-    case "$1" in
-        caelestia)
-            printf '%s\n' "$ROOT/caelestia/hypr"
-            ;;
-        end4)
-            printf '%s\n' "$ROOT/end4/hypr"
-            ;;
-        ambxst)
-            printf '%s\n' "$ROOT/ambxst/hypr"
-            ;;
-        *)
-            return 1
-            ;;
-    esac
+    local target="$ROOT/$1/hypr"
+    [ -f "$target/hyprland.lua" ] || return 1
+    printf '%s\n' "$target"
 }
 
 pretty_name() {
@@ -38,56 +27,79 @@ pretty_name() {
         caelestia) echo "Caelestia" ;;
         end4) echo "end4-pC" ;;
         ambxst) echo "Ambxst" ;;
+        dms) echo "DankMaterialShell" ;;
         *) echo "$1" ;;
     esac
 }
 
+profile_icon() {
+    case "$1" in
+        caelestia) echo "✦" ;;
+        end4) echo "◈" ;;
+        ambxst) echo "◆" ;;
+        dms) echo "●" ;;
+        *) echo "○" ;;
+    esac
+}
+
+list_profiles() {
+    local preferred=(caelestia end4 ambxst dms)
+    local p dir
+
+    for p in "${preferred[@]}"; do
+        if profile_target "$p" >/dev/null 2>&1; then
+            printf '%s\n' "$p"
+        fi
+    done
+
+    for dir in "$ROOT"/*; do
+        [ -d "$dir" ] || continue
+        p="$(basename "$dir")"
+        case "$p" in
+            caelestia|end4|ambxst|dms) continue ;;
+        esac
+        if profile_target "$p" >/dev/null 2>&1; then
+            printf '%s\n' "$p"
+        fi
+    done
+}
+
 current_profile() {
+    local saved resolved
+
     if [ -f "$ACTIVE_FILE" ]; then
-        cat "$ACTIVE_FILE"
-        return
+        saved="$(cat "$ACTIVE_FILE")"
+        if profile_target "$saved" >/dev/null 2>&1; then
+            printf '%s\n' "$saved"
+            return
+        fi
     fi
 
     if [ -L "$HYPR_LINK" ]; then
-        case "$(readlink -f "$HYPR_LINK")" in
-            "$ROOT/caelestia/hypr")
-                echo "caelestia"
-                ;;
-            "$ROOT/end4/hypr")
-                echo "end4"
-                ;;
-            "$ROOT/ambxst/hypr")
-                echo "ambxst"
-                ;;
-            *)
-                echo "unknown"
-                ;;
-        esac
-    else
-        echo "unknown"
+        resolved="$(readlink -f "$HYPR_LINK" 2>/dev/null || true)"
+        if [ -n "$resolved" ] && [ "$(dirname "$resolved")" != "$resolved" ]; then
+            saved="$(basename "$(dirname "$resolved")")"
+            if [ "$resolved" = "$ROOT/$saved/hypr" ] && profile_target "$saved" >/dev/null 2>&1; then
+                printf '%s\n' "$saved"
+                return
+            fi
+        fi
     fi
+
+    echo "unknown"
 }
 
 switch_profile() {
     local profile="$1"
-    local target
-    local tmp
+    local target tmp
 
-    target="$(profile_target "$profile")" ||
-        die "Unknown profile: $profile"
-
-    [ -d "$target" ] ||
-        die "Profile directory missing: $target"
-
-    [ -f "$target/hyprland.lua" ] ||
-        die "hyprland.lua missing from $target"
+    target="$(profile_target "$profile")" || die "Unknown or incomplete profile: $profile"
 
     if [ -e "$HYPR_LINK" ] && [ ! -L "$HYPR_LINK" ]; then
         die "$HYPR_LINK is not a symlink. Refusing to modify it."
     fi
 
     tmp="$HOME/.config/.hypr-profile-switch.$$"
-
     rm -f "$tmp"
     ln -s "$target" "$tmp"
     mv -Tf "$tmp" "$HYPR_LINK"
@@ -101,59 +113,46 @@ switch_profile() {
 }
 
 gui_choose_profile() {
-    command -v fuzzel >/dev/null ||
-        die "Fuzzel is not installed"
+    command -v fuzzel >/dev/null || die "Fuzzel is not installed"
 
-    local current
-    local caelestia_label
-    local end4_label
-    local ambxst_label
-    local choice
+    local current choice p label count i
+    local -a profiles=()
+    local -a labels=()
 
     current="$(current_profile)"
 
-    caelestia_label="   ✦  Caelestia"
-    end4_label="   ◈  end4-pC"
-    ambxst_label="   ◆  Ambxst"
+    while IFS= read -r p; do
+        [ -n "$p" ] || continue
+        profiles+=("$p")
+        if [ "$p" = "$current" ]; then
+            label="✓  $(profile_icon "$p")  $(pretty_name "$p")        ACTIVE"
+        else
+            label="   $(profile_icon "$p")  $(pretty_name "$p")"
+        fi
+        labels+=("$label")
+    done < <(list_profiles)
 
-    case "$current" in
-        caelestia)
-            caelestia_label="✓  ✦  Caelestia        ACTIVE"
-            ;;
-        end4)
-            end4_label="✓  ◈  end4-pC          ACTIVE"
-            ;;
-        ambxst)
-            ambxst_label="✓  ◆  Ambxst           ACTIVE"
-            ;;
-    esac
+    count="${#profiles[@]}"
+    [ "$count" -gt 0 ] || die "No desktop profiles found under $ROOT"
 
     choice="$(
-        printf '%s\n' \
-            "$caelestia_label" \
-            "$end4_label" \
-            "$ambxst_label" |
+        printf '%s\n' "${labels[@]}" |
         fuzzel \
             --config="$FUZZEL_CFG" \
             --dmenu \
+            --lines="$count" \
             --prompt='  Desktop  ❯  ' \
             --mesg="Current profile: $(pretty_name "$current")"
     )" || exit 0
 
-    case "$choice" in
-        *Caelestia*)
-            echo "caelestia"
-            ;;
-        *end4-pC*)
-            echo "end4"
-            ;;
-        *Ambxst*)
-            echo "ambxst"
-            ;;
-        *)
-            exit 0
-            ;;
-    esac
+    for ((i = 0; i < count; i++)); do
+        if [ "$choice" = "${labels[$i]}" ]; then
+            printf '%s\n' "${profiles[$i]}"
+            return
+        fi
+    done
+
+    exit 0
 }
 
 confirm_switch() {
@@ -176,6 +175,7 @@ confirm_switch() {
         fuzzel \
             --config="$FUZZEL_CFG" \
             --dmenu \
+            --lines=2 \
             --prompt='  Confirm  ❯  ' \
             --mesg="$(pretty_name "$current")  →  $(pretty_name "$selected")"
     )" || exit 0
@@ -183,14 +183,8 @@ confirm_switch() {
     case "$choice" in
         *Switch*)
             switch_profile "$selected"
-
-            notify-send \
-                "Desktop Switcher" \
-                "Logging out…" \
-                2>/dev/null || true
-
+            notify-send "Desktop Switcher" "Logging out…" 2>/dev/null || true
             sleep 1
-
             hyprctl dispatch 'hl.dsp.exit()'
             ;;
         *)
@@ -200,21 +194,13 @@ confirm_switch() {
 }
 
 case "${1:-}" in
-
     status)
         echo "Active profile: $(current_profile)"
         echo "Hyprland target: $(readlink -f "$HYPR_LINK" 2>/dev/null || echo unknown)"
         ;;
 
-    caelestia|end4|ambxst)
-        selected="$1"
-
-        switch_profile "$selected"
-
-        if [ "${2:-}" = "--now" ]; then
-            sleep 1
-            hyprctl dispatch 'hl.dsp.exit()'
-        fi
+    list)
+        list_profiles
         ;;
 
     "")
@@ -224,15 +210,21 @@ case "${1:-}" in
         ;;
 
     *)
-        echo "Usage:"
-        echo "  desktop-switch"
-        echo "  desktop-switch status"
-        echo "  desktop-switch caelestia"
-        echo "  desktop-switch end4"
-        echo "  desktop-switch ambxst"
-        echo "  desktop-switch caelestia --now"
-        echo "  desktop-switch end4 --now"
-        echo "  desktop-switch ambxst --now"
-        exit 1
+        selected="$1"
+        profile_target "$selected" >/dev/null 2>&1 || {
+            echo "Unknown profile: $selected" >&2
+            echo "Available profiles:" >&2
+            list_profiles >&2
+            exit 1
+        }
+
+        switch_profile "$selected"
+        if [ "${2:-}" = "--now" ]; then
+            sleep 1
+            hyprctl dispatch 'hl.dsp.exit()'
+        elif [ -n "${2:-}" ]; then
+            echo "Usage: desktop-switch <profile> [--now]" >&2
+            exit 1
+        fi
         ;;
 esac
