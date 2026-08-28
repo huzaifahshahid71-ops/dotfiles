@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
-
 set -u
 
-OUTPUT="eDP-1"
-
+OUTPUT="${REFRESH_OUTPUT:-}"
 BATTERY_MODE='modeline 1125.275 2560 2568 2600 2640 1600 3534 3542 3552 -hsync -vsync'
 AC_MODE='preferred'
+OVERRIDE_FILE="${XDG_RUNTIME_DIR:-/run/user/$UID}/refresh-rate-override"
 
 exec 9>"${XDG_RUNTIME_DIR:-/run/user/$UID}/auto-refresh-rate.lock"
 flock -n 9 || exit 0
@@ -13,9 +12,20 @@ flock -n 9 || exit 0
 last_state=""
 last_verification=0
 
+find_internal_output() {
+    if [[ -n "$OUTPUT" ]]; then
+        printf '%s\n' "$OUTPUT"
+        return
+    fi
+    hyprctl -j monitors 2>/dev/null |
+        jq -r '(map(select(.name | startswith("eDP-"))) | first | .name) // (first | .name) // empty'
+}
+
+OUTPUT="$(find_internal_output)"
+[[ -n "$OUTPUT" ]] || { echo "No active display found" >&2; exit 1; }
+
 get_power_state() {
     local result
-
     result="$(
         busctl --system get-property \
             org.freedesktop.UPower \
@@ -31,16 +41,17 @@ get_power_state() {
     esac
 }
 
+monitor_json() {
+    hyprctl -j monitors 2>/dev/null |
+        jq -c --arg output "$OUTPUT" '.[] | select(.name == $output)'
+}
+
 get_refresh_rate() {
-    hyprctl monitors -j 2>/dev/null |
-        jq -r --arg output "$OUTPUT" \
-            '.[] | select(.name == $output) | .refreshRate'
+    monitor_json | jq -r '.refreshRate // 0'
 }
 
 apply_mode() {
-    local state="$1"
-    local mode
-    local result
+    local state="$1" mode result mon pos scale
 
     if [[ "$state" == "battery" ]]; then
         mode="$BATTERY_MODE"
@@ -48,17 +59,22 @@ apply_mode() {
         mode="$AC_MODE"
     fi
 
+    mon="$(monitor_json)"
+    [[ -n "$mon" ]] || return 1
+    pos="$(printf '%s\n' "$mon" | jq -r '(.x|tostring) + "x" + (.y|tostring)')"
+    scale="$(printf '%s\n' "$mon" | jq -r '.scale // 1.25')"
+
     result="$(
         hyprctl eval "hl.monitor({
             output = \"$OUTPUT\",
             mode = \"$mode\",
-            position = \"0x0\",
-            scale = 1.25
+            position = \"$pos\",
+            scale = $scale
         })" 2>&1
     )"
 
     if [[ "$result" == "ok" ]]; then
-        echo "Power state: $state — refresh-rate command applied"
+        echo "Power state: $state — refresh-rate command applied on $OUTPUT"
         return 0
     fi
 
@@ -66,7 +82,7 @@ apply_mode() {
     return 1
 }
 
-echo "Automatic refresh-rate service started"
+echo "Automatic G16 refresh-rate service started on $OUTPUT"
 
 while true; do
     state="$(get_power_state)" || {
@@ -78,21 +94,25 @@ while true; do
     now="$(date +%s)"
     should_apply=false
 
-    # Apply immediately whenever charger state changes.
+    # Charger transitions always restore the default 120/240 policy and end
+    # any temporary manual refresh override selected from SUPER+SHIFT+R.
     if [[ "$state" != "$last_state" ]]; then
+        rm -f "$OVERRIDE_FILE"
         echo "Power-state change detected: ${last_state:-unknown} -> $state"
         should_apply=true
 
-    # Also verify every 30 seconds in case Hyprland reloads its monitor rule.
+    # While a manual selection is active, do not fight the refresh switcher.
+    elif [[ -f "$OVERRIDE_FILE" ]]; then
+        last_verification="$now"
+
+    # Periodically recover from a Hyprland reload that re-applied preferred.
     elif (( now - last_verification >= 30 )); then
         refresh="$(get_refresh_rate)"
 
         if [[ "$state" == "battery" ]]; then
-            awk -v hz="$refresh" 'BEGIN { exit !(hz > 180) }' &&
-                should_apply=true
+            awk -v hz="$refresh" 'BEGIN { exit !(hz > 180) }' && should_apply=true
         else
-            awk -v hz="$refresh" 'BEGIN { exit !(hz < 200) }' &&
-                should_apply=true
+            awk -v hz="$refresh" 'BEGIN { exit !(hz < 200) }' && should_apply=true
         fi
 
         last_verification="$now"
@@ -103,6 +123,8 @@ while true; do
             last_state="$state"
             last_verification="$now"
         fi
+    else
+        last_state="$state"
     fi
 
     sleep 1
