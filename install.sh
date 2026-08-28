@@ -57,6 +57,25 @@ configure_end4_search_only() {
     ok "end4 launcher set to search-only mode (workspace overview hidden)"
 }
 
+install_refresh_switcher() {
+    local mode="${1:-auto}"
+    local script="$DOTFILES_DIR/scripts/install-refresh-switcher.sh"
+    local arg
+
+    [[ -f "$script" ]] || die "Missing refresh switcher installer: $script"
+    chmod +x "$script"
+
+    case "$mode" in
+        auto)    arg="--auto" ;;
+        generic) arg="--generic" ;;
+        g16)     arg="--g16" ;;
+        *)       die "Unknown refresh switcher profile: $mode" ;;
+    esac
+
+    log "Installing refresh-rate switcher ($mode profile selection)"
+    "$script" "$arg"
+}
+
 install_multi_rice() {
     local restore="$DOTFILES_DIR/scripts/restore-dual-rice.sh"
     [[ -f "$restore" ]] || die "Missing Multi-Rice restore script: $restore"
@@ -68,7 +87,8 @@ install_multi_rice() {
     printf '  ◈ end4-pC\n'
     printf '  ◆ Ambxst\n'
     printf '  ● DankMaterialShell\n'
-    printf '  ⇄ SUPER + SHIFT + D dynamic profile switcher\n\n'
+    printf '  ⇄ SUPER + SHIFT + D dynamic profile switcher\n'
+    printf '  ↻ SUPER + SHIFT + R refresh-rate switcher\n\n'
 
     "$restore"
     configure_end4_search_only
@@ -85,6 +105,7 @@ install_frieren_sddm_theme() {
 
 full_customization() {
     install_multi_rice
+    install_refresh_switcher auto
     install_frieren_sddm_theme
 
     printf '\n'
@@ -97,6 +118,9 @@ full_customization() {
     printf '  🔎 end4 search-only launcher (workspace grid hidden)\n'
     printf '  🌙 Frieren SDDM login theme\n'
     printf '  ⇄ SUPER + SHIFT + D dynamic Multi-Rice switcher\n'
+    printf '  ↻ SUPER + SHIFT + R auto-detected refresh-rate switcher\n'
+    printf '     • Zephyrus G16: tested 60/90/120/144/165/180/240 Hz + 120/240 power policy\n'
+    printf '     • Other systems: OEM/EDID refresh modes only\n'
     printf '\nYour desktop wallpaper is not changed by the installer.\n'
     printf 'Log out and back into Hyprland when the installer finishes.\n'
 }
@@ -117,6 +141,10 @@ Default (no options):
     - search-only end4 launcher (workspace overview hidden)
     - Frieren SDDM login theme
     - SUPER + SHIFT + D dynamic Multi-Rice switcher
+    - SUPER + SHIFT + R refresh-rate switcher
+      * DMI auto-detects the computer model
+      * Zephyrus G16 gets the tested custom profile and 120/240 power policy
+      * other systems get only OEM/EDID modes reported by Hyprland
     - saved local end4-pC album-art fixes
 
   Desktop wallpaper is left unchanged.
@@ -128,6 +156,12 @@ Customization options:
   --sddm-theme-only    Install only the Frieren SDDM login theme
   --no-sddm-theme      Install the Multi-Rice setup but skip SDDM
 
+Refresh switcher options:
+  --refresh-switcher          Install/reconfigure with DMI auto-detection
+  --generic-refresh-switcher  Force portable OEM/EDID-only mode discovery
+  --g16-refresh-switcher      Force the tested Zephyrus G16 profile after DMI check
+  --no-refresh-switcher       Skip the refresh switcher when installing Multi-Rice
+
 Compatibility aliases:
   --triple-rice        Same as --multi-rice
   --triple-rice-only   Same as --multi-rice-only
@@ -138,7 +172,7 @@ Optional machine-specific extras (never run automatically):
   --asus               Generic ASUS support
   --g16                Zephyrus G16-specific safe extras
   --refind             Configure rEFInd for this machine
-  --refresh            Enable captured refresh-rate automation after checks
+  --refresh            Enable captured G16 120/240 refresh automation after checks
   --hibernate          Configure Btrfs hibernation swap
   --status             Show system-setup status
 
@@ -167,6 +201,8 @@ main() {
     local do_refresh=0
     local do_hibernate=0
     local do_status=0
+    local refresh_switcher_mode=""
+    local no_refresh_switcher=0
 
     while (($#)); do
         case "$1" in
@@ -180,6 +216,18 @@ main() {
                 ;;
             --sddm-theme|--sddm-theme-only)
                 do_theme=1
+                ;;
+            --refresh-switcher)
+                refresh_switcher_mode="auto"
+                ;;
+            --generic-refresh-switcher)
+                refresh_switcher_mode="generic"
+                ;;
+            --g16-refresh-switcher)
+                refresh_switcher_mode="g16"
+                ;;
+            --no-refresh-switcher)
+                no_refresh_switcher=1
                 ;;
             --asus)
                 do_asus=1
@@ -211,7 +259,19 @@ main() {
         shift
     done
 
-    (( do_rice )) && install_multi_rice
+    if (( no_refresh_switcher )) && [[ -n "$refresh_switcher_mode" ]]; then
+        die "--no-refresh-switcher cannot be combined with an explicit refresh switcher option"
+    fi
+
+    if (( do_rice )); then
+        install_multi_rice
+        if (( ! no_refresh_switcher )); then
+            install_refresh_switcher "${refresh_switcher_mode:-auto}"
+        fi
+    elif [[ -n "$refresh_switcher_mode" ]]; then
+        install_refresh_switcher "$refresh_switcher_mode"
+    fi
+
     (( do_theme )) && install_frieren_sddm_theme
 
     if (( do_asus && ! do_g16 )); then
