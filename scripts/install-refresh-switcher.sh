@@ -37,11 +37,11 @@ OVERRIDE_FILE="${XDG_RUNTIME_DIR:-/run/user/$UID}/refresh-rate-override"
 SCALE_FALLBACK="1.25"
 CONFIRM_SECONDS="10"
 
-# These use the same proven 2560x1600 timing family as the captured 120 Hz
-# modeline, with pixel clock scaled for each requested refresh rate.
+# 52.03 Hz was removed after producing a black screen on this panel under Linux.
+# The remaining custom modes use the same proven 2560x1600 timing family as the
+# captured 120 Hz modeline, with pixel clock scaled for each requested rate.
 mode_for_rate() {
     case "$1" in
-        52.03) echo 'modeline 487.900 2560 2568 2600 2640 1600 3534 3542 3552 -hsync -vsync' ;;
         60)    echo 'modeline 562.637 2560 2568 2600 2640 1600 3534 3542 3552 -hsync -vsync' ;;
         90)    echo 'modeline 843.955 2560 2568 2600 2640 1600 3534 3542 3552 -hsync -vsync' ;;
         120)   echo 'modeline 1125.275 2560 2568 2600 2640 1600 3534 3542 3552 -hsync -vsync' ;;
@@ -116,8 +116,8 @@ rate_is_current() {
 }
 
 choose_rate() {
-    local now auto_state choice line rate
-    local -a rates=(52.03 60 90 120 144 165 180 240)
+    local now auto_state choice rate
+    local -a rates=(60 90 120 144 165 180 240)
     local -a labels=()
 
     now="$(current_rate)"
@@ -157,12 +157,14 @@ choose_rate() {
 
 confirm_keep() {
     local rate="$1" choice
-    choice="$(printf '%s\n' "✓  Keep ${rate} Hz" "↩  Revert to Auto" | timeout "${CONFIRM_SECONDS}s" fuzzel \
+    # Revert is deliberately the first/default item. If the screen is black and
+    # Enter is pressed blindly, the safe action wins instead of Keep.
+    choice="$(printf '%s\n' "↩  Revert to Auto" "✓  Keep ${rate} Hz" | timeout "${CONFIRM_SECONDS}s" fuzzel \
         --config="$FUZZEL_CFG" \
         --dmenu \
         --lines=2 \
         --prompt='  Confirm  ❯  ' \
-        --mesg="Display test • auto-reverts in ${CONFIRM_SECONDS}s if you cannot see this")" || true
+        --mesg="Display test • auto-reverts in ${CONFIRM_SECONDS}s unless Keep is explicitly selected")" || true
     [[ "$choice" == *"Keep"* ]]
 }
 
@@ -177,7 +179,7 @@ main() {
     fi
 
     mode="$(mode_for_rate "$selected")" || {
-        echo "Usage: refresh-switch [auto|52.03|60|90|120|144|165|180|240]" >&2
+        echo "Usage: refresh-switch [auto|60|90|120|144|165|180|240]" >&2
         exit 2
     }
 
@@ -302,7 +304,7 @@ hyprctl reload >/dev/null 2>&1 || true
 printf '\n'
 ok "Refresh switcher installed"
 printf 'Hotkey: SUPER + SHIFT + R\n'
-printf 'Rates : 52.03, 60, 90, 120, 144, 165, 180, 240 Hz\n'
+printf 'Rates : 60, 90, 120, 144, 165, 180, 240 Hz\n'
 printf 'Auto  : 120 Hz on battery / 240 Hz on AC\n'
-printf 'Safety: custom modes auto-revert after 10 seconds unless confirmed\n'
+printf 'Safety: Revert is the default confirmation action; unconfirmed modes auto-revert after 10 seconds\n'
 printf '\nBackup: %s.before-refresh-switcher-%s\n' "$AUTO_SCRIPT" "$STAMP"
