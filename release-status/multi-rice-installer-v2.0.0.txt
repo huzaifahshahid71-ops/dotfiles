@@ -1,8 +1,8 @@
 Release: Huzaifah Multi-Rice Installer v2.0.0
 Tag: multi-rice-installer-v2.0.0
-Built from: 531da684c24b6b498d05167f8eb1740681950148
-Workflow run: 33096542431
-Published: 2026-08-27T17:04:56+00:00
+Built from: 4564899d072b10589616c45a93e6952bf50d5815
+Workflow run: 33166352134
+Published: 2026-08-28T11:13:49+00:00
 Assets:
   Huzaifah-Multi-Rice-Installer-x86_64.AppImage
   Huzaifah-Multi-Rice-Installer-x86_64.tar.gz
