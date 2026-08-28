@@ -1,0 +1,361 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+FUZZEL_CFG="$HOME/.config/desktop-switcher/fuzzel.ini"
+PROFILE_FILE="$HOME/.config/refresh-switcher/profile"
+OVERRIDE_FILE="${XDG_RUNTIME_DIR:-/run/user/$UID}/refresh-rate-override"
+CONFIRM_SECONDS="10"
+
+notify() {
+    notify-send "Refresh Rate" "$*" 2>/dev/null || true
+}
+
+die() {
+    notify "$*"
+    echo "refresh-switch: $*" >&2
+    exit 1
+}
+
+is_g16() {
+    local product vendor
+    product="$(cat /sys/class/dmi/id/product_name 2>/dev/null || true)"
+    vendor="$(cat /sys/class/dmi/id/sys_vendor 2>/dev/null || true)"
+    [[ "$vendor" == *ASUS* || "$vendor" == *ASUSTeK* ]] || return 1
+    [[ "$product" =~ GU60[35] || "$product" == *"Zephyrus G16"* || "$product" == *"ROG Zephyrus G16"* ]]
+}
+
+switcher_profile() {
+    local configured="auto"
+    [[ -f "$PROFILE_FILE" ]] && configured="$(tr -d '[:space:]' < "$PROFILE_FILE")"
+    case "$configured" in
+        auto|"") is_g16 && echo g16 || echo generic ;;
+        g16)      is_g16 && echo g16 || echo generic ;;
+        generic)  echo generic ;;
+        *)        echo generic ;;
+    esac
+}
+
+all_monitors_json() {
+    hyprctl -j monitors 2>/dev/null
+}
+
+target_output() {
+    local requested="${REFRESH_OUTPUT:-}"
+    if [[ -n "$requested" ]]; then
+        printf '%s\n' "$requested"
+        return
+    fi
+
+    all_monitors_json | jq -r '
+        (map(select(.focused == true)) | first | .name) //
+        (map(select(.name | startswith("eDP-"))) | first | .name) //
+        (first | .name) // empty
+    '
+}
+
+OUTPUT="$(target_output)"
+[[ -n "$OUTPUT" ]] || die "No active Hyprland monitor found"
+
+monitor_json() {
+    all_monitors_json | jq -c --arg output "$OUTPUT" '.[] | select(.name == $output)'
+}
+
+MONITOR_JSON="$(monitor_json)"
+[[ -n "$MONITOR_JSON" ]] || die "Monitor $OUTPUT is not active"
+
+current_rate() {
+    printf '%s\n' "$MONITOR_JSON" | jq -r '.refreshRate // 0'
+}
+
+current_width() {
+    printf '%s\n' "$MONITOR_JSON" | jq -r '.width // 0'
+}
+
+current_height() {
+    printf '%s\n' "$MONITOR_JSON" | jq -r '.height // 0'
+}
+
+current_position() {
+    printf '%s\n' "$MONITOR_JSON" | jq -r '(.x|tostring) + "x" + (.y|tostring)'
+}
+
+current_scale() {
+    printf '%s\n' "$MONITOR_JSON" | jq -r '.scale // 1'
+}
+
+monitor_description() {
+    printf '%s\n' "$MONITOR_JSON" | jq -r '.description // .model // .name'
+}
+
+native_prefix() {
+    printf '%sx%s@' "$(current_width)" "$(current_height)"
+}
+
+rate_from_mode() {
+    local mode="$1" rate
+    rate="${mode#*@}"
+    rate="${rate%Hz}"
+    printf '%s\n' "$rate"
+}
+
+normalized_mode() {
+    local mode="$1"
+    printf '%s\n' "${mode%Hz}"
+}
+
+oem_modes_native() {
+    local prefix
+    prefix="$(native_prefix)"
+    printf '%s\n' "$MONITOR_JSON" |
+        jq -r --arg prefix "$prefix" '(.availableModes // [])[] | select(startswith($prefix))' |
+        while IFS= read -r mode; do
+            [[ -n "$mode" ]] || continue
+            printf '%s\t%s\n' "$(rate_from_mode "$mode")" "$(normalized_mode "$mode")"
+        done |
+        sort -n -k1,1 -k2,2 -u
+}
+
+find_oem_mode_near() {
+    local target="$1"
+    oem_modes_native | awk -F '\t' -v t="$target" '
+        BEGIN { best=999; found="" }
+        {
+            d=$1-t; if (d<0) d=-d;
+            if (d < best) { best=d; found=$2 }
+        }
+        END { if (best < 0.35 && found != "") print found }
+    '
+}
+
+rate_is_current() {
+    local target="$1" now="$2"
+    awk -v a="$target" -v b="$now" 'BEGIN { d=a-b; if (d<0) d=-d; exit !(d < 0.35) }'
+}
+
+power_state() {
+    local result
+    result="$(busctl --system get-property \
+        org.freedesktop.UPower \
+        /org/freedesktop/UPower \
+        org.freedesktop.UPower \
+        OnBattery 2>/dev/null || true)"
+    [[ "$result" == "b true" ]] && echo battery || echo ac
+}
+
+apply_mode() {
+    local mode="$1" pos scale result
+    pos="$(current_position)"
+    scale="$(current_scale)"
+    [[ -n "$pos" && "$pos" != "nullxnull" ]] || pos="0x0"
+    [[ -n "$scale" && "$scale" != "null" ]] || scale="1"
+
+    result="$(hyprctl eval "hl.monitor({
+        output = \"$OUTPUT\",
+        mode = \"$mode\",
+        position = \"$pos\",
+        scale = $scale
+    })" 2>&1)"
+
+    [[ "$result" == "ok" ]] || {
+        notify "Failed to apply mode: $result"
+        return 1
+    }
+}
+
+# G16 custom timings tested on the 2560x1600 panel. 52.03 Hz is deliberately
+# excluded: the panel black-screened with that fixed Linux timing.
+g16_fallback_mode() {
+    case "$1" in
+        60)  echo 'modeline 562.637 2560 2568 2600 2640 1600 3534 3542 3552 -hsync -vsync' ;;
+        90)  echo 'modeline 843.955 2560 2568 2600 2640 1600 3534 3542 3552 -hsync -vsync' ;;
+        120) echo 'modeline 1125.275 2560 2568 2600 2640 1600 3534 3542 3552 -hsync -vsync' ;;
+        144) echo 'modeline 1350.328 2560 2568 2600 2640 1600 3534 3542 3552 -hsync -vsync' ;;
+        165) echo 'modeline 1547.251 2560 2568 2600 2640 1600 3534 3542 3552 -hsync -vsync' ;;
+        180) echo 'modeline 1687.910 2560 2568 2600 2640 1600 3534 3542 3552 -hsync -vsync' ;;
+        240) echo 'preferred' ;;
+        *) return 1 ;;
+    esac
+}
+
+g16_mode_for_rate() {
+    local rate="$1" oem
+    oem="$(find_oem_mode_near "$rate" || true)"
+    if [[ -n "$oem" ]]; then
+        printf '%s\n' "$oem"
+    else
+        g16_fallback_mode "$rate"
+    fi
+}
+
+previous_mode() {
+    local now profile oem
+    now="$(current_rate)"
+    oem="$(find_oem_mode_near "$now" || true)"
+    [[ -n "$oem" ]] && { printf '%s\n' "$oem"; return; }
+
+    profile="$(switcher_profile)"
+    if [[ "$profile" == g16 ]]; then
+        for rate in 60 90 120 144 165 180 240; do
+            if rate_is_current "$rate" "$now"; then
+                g16_mode_for_rate "$rate"
+                return
+            fi
+        done
+    fi
+
+    echo preferred
+}
+
+return_to_g16_auto() {
+    rm -f "$OVERRIDE_FILE"
+    if systemctl --user is-enabled auto-refresh-rate.service >/dev/null 2>&1; then
+        systemctl --user restart auto-refresh-rate.service
+    else
+        if [[ "$(power_state)" == battery ]]; then
+            apply_mode "$(g16_mode_for_rate 120)"
+        else
+            apply_mode "$(g16_mode_for_rate 240)"
+        fi
+    fi
+    notify "Auto restored — 120 Hz battery / 240 Hz AC"
+}
+
+confirm_keep() {
+    local label="$1" revert_mode="$2" choice
+
+    choice="$(printf '%s\n' \
+        "↩  Revert" \
+        "✓  Keep ${label}" |
+        timeout "${CONFIRM_SECONDS}s" fuzzel \
+            --config="$FUZZEL_CFG" \
+            --dmenu \
+            --lines=2 \
+            --prompt='  Confirm  ❯  ' \
+            --mesg="Display test • Enter defaults to REVERT • ${CONFIRM_SECONDS}s timeout")" || true
+
+    if [[ "$choice" == *"Keep"* ]]; then
+        return 0
+    fi
+
+    apply_mode "$revert_mode" || apply_mode preferred || true
+    notify "Previous display mode restored"
+    return 1
+}
+
+choose_generic() {
+    local now choice rate mode i
+    local -a rates=()
+    local -a modes=()
+    local -a labels=()
+
+    now="$(current_rate)"
+    labels+=("⚙  Preferred        OEM default")
+
+    while IFS=$'\t' read -r rate mode; do
+        [[ -n "$rate" && -n "$mode" ]] || continue
+        rates+=("$rate")
+        modes+=("$mode")
+        if rate_is_current "$rate" "$now"; then
+            labels+=("✓  ◉  ${rate} Hz        ACTIVE")
+        else
+            labels+=("   ◉  ${rate} Hz")
+        fi
+    done < <(oem_modes_native)
+
+    ((${#rates[@]} > 0)) || die "No OEM modes reported for $(current_width)x$(current_height) on $OUTPUT"
+
+    choice="$(printf '%s\n' "${labels[@]}" | fuzzel \
+        --config="$FUZZEL_CFG" \
+        --dmenu \
+        --lines="${#labels[@]}" \
+        --prompt='  Refresh  ❯  ' \
+        --mesg="$OUTPUT • $(monitor_description) • OEM modes only")" || exit 0
+
+    [[ "$choice" == *"Preferred"* ]] && { printf 'preferred\tPreferred\n'; return; }
+
+    for ((i=0; i<${#rates[@]}; i++)); do
+        if [[ "$choice" == *"${rates[$i]} Hz"* ]]; then
+            printf '%s\t%s Hz\n' "${modes[$i]}" "${rates[$i]}"
+            return
+        fi
+    done
+    exit 0
+}
+
+choose_g16() {
+    local now choice rate i
+    local -a rates=(60 90 120 144 165 180 240)
+    local -a labels=()
+
+    now="$(current_rate)"
+    if [[ -f "$OVERRIDE_FILE" ]]; then
+        labels+=("   ⚙  Auto        120 Hz battery • 240 Hz AC")
+    else
+        labels+=("✓  ⚙  Auto        120 Hz battery • 240 Hz AC")
+    fi
+
+    for rate in "${rates[@]}"; do
+        if rate_is_current "$rate" "$now"; then
+            labels+=("✓  ◉  ${rate} Hz        ACTIVE")
+        else
+            labels+=("   ◉  ${rate} Hz")
+        fi
+    done
+
+    choice="$(printf '%s\n' "${labels[@]}" | fuzzel \
+        --config="$FUZZEL_CFG" \
+        --dmenu \
+        --lines="${#labels[@]}" \
+        --prompt='  Refresh  ❯  ' \
+        --mesg="$OUTPUT • Zephyrus G16 • tested custom + OEM modes")" || exit 0
+
+    [[ "$choice" == *"Auto"* ]] && { echo auto; return; }
+    for rate in "${rates[@]}"; do
+        [[ "$choice" == *"${rate} Hz"* ]] && { echo "$rate"; return; }
+    done
+    exit 0
+}
+
+main() {
+    local profile selected mode label revert
+    command -v fuzzel >/dev/null 2>&1 || die "Fuzzel is not installed"
+    command -v jq >/dev/null 2>&1 || die "jq is not installed"
+    [[ -f "$FUZZEL_CFG" ]] || die "Missing Multi-Rice Fuzzel theme: $FUZZEL_CFG"
+
+    profile="$(switcher_profile)"
+
+    if [[ "${1:-}" == status ]]; then
+        printf 'Profile: %s\n' "$profile"
+        printf 'Monitor: %s\n' "$OUTPUT"
+        printf 'Model: %s\n' "$(monitor_description)"
+        printf 'Current: %.2f Hz\n' "$(current_rate)"
+        exit 0
+    fi
+
+    revert="$(previous_mode)"
+
+    if [[ "$profile" == g16 ]]; then
+        selected="${1:-$(choose_g16)}"
+        if [[ "$selected" == auto ]]; then
+            return_to_g16_auto
+            exit 0
+        fi
+        mode="$(g16_mode_for_rate "$selected")" || die "Unknown G16 rate: $selected"
+        label="${selected} Hz"
+        apply_mode "$mode" || exit 1
+        if confirm_keep "$label" "$revert"; then
+            printf '%s\n' "$selected" > "$OVERRIDE_FILE"
+            notify "${selected} Hz manual override active"
+        fi
+        exit 0
+    fi
+
+    IFS=$'\t' read -r mode label < <(choose_generic)
+    [[ -n "$mode" ]] || exit 0
+    apply_mode "$mode" || exit 1
+    if confirm_keep "$label" "$revert"; then
+        notify "$label selected on $OUTPUT"
+    fi
+}
+
+main "$@"
