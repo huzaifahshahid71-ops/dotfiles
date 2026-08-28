@@ -63,6 +63,7 @@ jobs:
           bash -n squashfs-root/AppRun
           grep -F 'TITLE="Huzaifah Multi-Rice Installer"' squashfs-root/AppRun >/dev/null
           grep -F 'DankMaterialShell' squashfs-root/AppRun >/dev/null
+          grep -F 'SUPER + SHIFT + R' squashfs-root/AppRun >/dev/null
           if grep -F 'bash -c "$(curl' installer-appimage/AppRun >/dev/null; then
             echo 'Unsafe curl-to-bash launcher pattern detected'
             exit 1
@@ -75,7 +76,7 @@ jobs:
           cat > dist/RELEASE_NOTES.md <<'EOF'
           # Huzaifah Multi-Rice Installer v2.0.0
 
-          The installer has grown from Triple-Rice into a dynamic **Multi-Rice** setup.
+          The installer provides a dynamic **Multi-Rice** Hyprland setup.
 
           **Installs:**
           - ✦ Caelestia
@@ -83,14 +84,23 @@ jobs:
           - ◆ Ambxst with axctl integration
           - ● DankMaterialShell (DMS 1.5.3 profile)
           - ⇄ `SUPER + SHIFT + D` dynamic profile switcher
+          - ↻ `SUPER + SHIFT + R` refresh-rate switcher
           - 🌙 Frieren SDDM login theme
           - saved end4/Ambxst fixes and repository configuration
+
+          **Refresh-rate switcher:**
+          - computer model is detected from DMI data
+          - Zephyrus G16 gets the validated 60/90/120/144/165/180/240 Hz profile and automatic 120 Hz battery / 240 Hz AC policy
+          - other computers receive OEM/EDID modes only, discovered live from Hyprland `availableModes`
+          - G16 custom timings are restricted to the internal `eDP-*` panel
+          - every change defaults to Revert and automatically reverts after 10 seconds if not confirmed
 
           **DMS integration:**
           - DMS starts only from its own Hyprland profile (`dms run`), not as a global user service
           - bare `SUPER` opens the DMS application launcher
           - `SUPER + SHIFT + S` opens DMS region screenshot capture
           - `SUPER + SHIFT + D` opens the Multi-Rice switcher
+          - `SUPER + SHIFT + R` opens the refresh-rate switcher
           - Alacritty is the DMS terminal
 
           This is the lightweight **online** AppImage. It downloads the normal repository installer and upstream packages during setup rather than embedding the full package payload.
@@ -130,6 +140,14 @@ jobs:
       - name: Record successful release
         run: |
           set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Pull before touching the tracked status file. The previous ordering
+          # wrote the file first, making the worktree dirty and causing
+          # `git pull --rebase` to abort.
+          git pull --rebase origin main
+
           mkdir -p release-status
           cat > release-status/multi-rice-installer-v2.0.0.txt <<EOF
           Release: Huzaifah Multi-Rice Installer v2.0.0
@@ -142,9 +160,6 @@ jobs:
             Huzaifah-Multi-Rice-Installer-x86_64.tar.gz
             SHA256SUMS.txt
           EOF
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git pull --rebase origin main
           git add release-status/multi-rice-installer-v2.0.0.txt
           if ! git diff --cached --quiet; then
             git commit -m "Record Multi-Rice AppImage v2.0.0 release"
