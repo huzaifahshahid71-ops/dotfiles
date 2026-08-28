@@ -1,6 +1,6 @@
 # Huzaifah's Hyprland Multi-Rice Dotfiles
 
-A complete Hyprland customization built around **Caelestia**, **end4-pC**, **Ambxst**, and **DankMaterialShell (DMS)**, with a one-command installer, Frieren SDDM theme, and a dynamic desktop-profile switcher.
+A complete Hyprland customization built around **Caelestia**, **end4-pC**, **Ambxst**, and **DankMaterialShell (DMS)**, with a one-command installer, Frieren SDDM theme, a dynamic desktop-profile switcher, and an auto-detected refresh-rate switcher.
 
 This repository is for people who already have an **Arch/CachyOS-family Linux installation** and want the desktop customization. It does **not** install an operating system.
 
@@ -14,6 +14,7 @@ The default installer sets up:
 - ● **DankMaterialShell (DMS)** as an isolated fourth rice
 - a separate Hyprland profile for every rice
 - a dynamic `SUPER + SHIFT + D` Multi-Rice switcher
+- an auto-detected `SUPER + SHIFT + R` refresh-rate switcher
 - saved end4 widget/top-bar layout and local album-art patches
 - search-only end4 launcher with the workspace grid hidden
 - **Frieren SDDM login theme**
@@ -45,7 +46,8 @@ Huzaifah Desktop
 ├── ● DankMaterialShell
 ├── 🔎 Search-only end4 launcher
 ├── 🌙 Frieren SDDM login theme
-└── ⇄ SUPER + SHIFT + D dynamic Multi-Rice switcher
+├── ⇄ SUPER + SHIFT + D dynamic Multi-Rice switcher
+└── ↻ SUPER + SHIFT + R refresh-rate switcher
 ```
 
 When installation finishes, log out and back into Hyprland.
@@ -82,6 +84,34 @@ desktop-switch dms --now
 
 Switching atomically repoints `~/.config/hypr` to the chosen profile and logs out so the next Hyprland session starts that rice.
 
+## ↻ Refresh-rate switcher
+
+Press:
+
+```text
+SUPER + SHIFT + R
+```
+
+The refresh switcher uses the same Fuzzel styling as the Multi-Rice switcher and is installed into all four Hyprland profiles.
+
+The installer reads the machine DMI vendor/product automatically:
+
+- **Zephyrus G16 detected:** enables the tested G16 profile with `60`, `90`, `120`, `144`, `165`, `180`, and `240 Hz`. The default automatic policy remains **120 Hz on battery / 240 Hz on AC**. A manual selection temporarily overrides the policy until the charger state changes or Auto is selected.
+- **Any other laptop or desktop:** no custom modelines are generated. The switcher reads the focused monitor's `availableModes` from Hyprland and offers only the refresh rates advertised for that monitor's current resolution (OEM/EDID modes).
+
+The G16 custom profile is pinned to the internal `eDP-*` panel and will not send its panel-specific modelines to an external monitor. The failed `52.03 Hz` experiment is intentionally excluded.
+
+Every mode change uses a safety confirmation. **Revert is the first/default action**, and an unconfirmed change automatically reverts after 10 seconds.
+
+Refresh-specific installer options:
+
+```text
+--refresh-switcher          DMI auto-detect (default with Multi-Rice)
+--generic-refresh-switcher  force OEM/EDID-only mode discovery
+--g16-refresh-switcher      force G16 profile after DMI validation
+--no-refresh-switcher       omit it from a Multi-Rice installation
+```
+
 ## ● DankMaterialShell integration
 
 DMS is deliberately **not** enabled as a global `dms.service`. In a Multi-Rice environment that could make DMS start on top of Caelestia, end4-pC, or Ambxst. Instead, the DMS Hyprland profile starts it with `dms run` only when the DMS rice is active.
@@ -92,6 +122,7 @@ The tested profile is based on DMS **v1.5.3** and uses Alacritty. Custom DMS sho
 SUPER                  DMS application launcher
 SUPER + SHIFT + S      region screenshot
 SUPER + SHIFT + D      Multi-Rice switcher
+SUPER + SHIFT + R      refresh-rate switcher
 SUPER + T              Alacritty
 SUPER + Q              close window
 SUPER + SHIFT + E      exit Hyprland
@@ -122,6 +153,10 @@ The isolated profile lives at:
 | `--multi-rice-only` | Install all four rices without changing SDDM |
 | `--no-sddm-theme` | Install Multi-Rice but skip SDDM |
 | `--sddm-theme-only` | Install only the Frieren SDDM login theme |
+| `--refresh-switcher` | Install/reconfigure refresh switcher with DMI auto-detection |
+| `--generic-refresh-switcher` | Force OEM/EDID-only refresh modes |
+| `--g16-refresh-switcher` | Force tested G16 refresh profile after DMI validation |
+| `--no-refresh-switcher` | Skip refresh switcher during Multi-Rice installation |
 | `--triple-rice` / `--triple-rice-only` | Compatibility aliases |
 | `--dual-rice` / `--dual-rice-only` | Compatibility aliases |
 | `--status` | Show system-setup status |
@@ -132,7 +167,7 @@ Example:
 ./install.sh --multi-rice-only
 ```
 
-Machine-specific extras remain opt-in only:
+Other machine-specific extras remain opt-in:
 
 ```text
 --asus
@@ -144,7 +179,7 @@ Machine-specific extras remain opt-in only:
 
 ## 📦 AppImage installer
 
-The **Huzaifah Multi-Rice Installer v2.0.0** release provides a lightweight x86_64 AppImage graphical front-end. It launches the same online installer used by the one-command method, so upstream packages and source trees are downloaded during installation.
+The **Huzaifah Multi-Rice Installer v2.0.0** release provides a lightweight x86_64 AppImage graphical front-end. It launches the same online installer used by the one-command method, so the current DMI-aware refresh switcher is picked up without embedding hardware-specific data into the AppImage itself.
 
 Release assets include:
 
@@ -212,6 +247,7 @@ The backup script now captures all four Hyprland profiles, Caelestia configurati
 ├── install.sh
 ├── scripts/
 │   ├── backup-dual-rice.sh             # historical filename retained
+│   ├── install-refresh-switcher.sh     # DMI-aware refresh profile installer
 │   ├── restore-dual-rice.sh            # online Multi-Rice restore
 │   └── restore-triple-rice-offline.sh  # historical filename retained
 ├── dual-rice/                           # historical path name retained
@@ -226,6 +262,8 @@ The backup script now captures all four Hyprland profiles, Caelestia configurati
 │   ├── dms/
 │   ├── desktop-switcher/
 │   ├── bin/
+│   │   ├── desktop-switch
+│   │   └── refresh-switch
 │   ├── packages/
 │   ├── versions/
 │   └── state/
@@ -250,4 +288,4 @@ Their code remains under their respective upstream licenses. Local configuration
 
 ## ⚠️ Notes
 
-This is a desktop-customization repository, not a universal Linux installer. Bootloader changes, refresh-rate automation, hibernation, and hardware-specific ASUS/G16 actions remain explicit opt-ins.
+This is a desktop-customization repository, not a universal Linux installer. The portable refresh switcher is part of the default Multi-Rice setup, but custom modelines are only enabled for the validated Zephyrus G16 profile. Bootloader changes, hibernation, and other hardware-specific ASUS/G16 actions remain explicit opt-ins.
