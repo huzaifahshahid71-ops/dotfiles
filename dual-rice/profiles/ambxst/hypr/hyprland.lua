@@ -22,9 +22,16 @@ hl.monitor({
     scale = 1.25
 })
 
--- Huzaifah triple-rice switcher.
+-- Huzaifah Multi-Rice switcher.
 hl.bind(
     "SUPER + SHIFT + D",
     hl.dsp.exec_cmd(home .. "/.local/bin/desktop-switch"),
     { description = "Switch desktop profile" }
+)
+
+-- HUZAIFAH-REFRESH-SWITCHER
+hl.bind(
+    "SUPER + SHIFT + R",
+    hl.dsp.exec_cmd(home .. "/.local/bin/refresh-switch"),
+    { description = "Display: Switch refresh rate" }
 )
