@@ -127,7 +127,7 @@ if [[ -d "$HOME/.config/desktop-switcher" ]]; then
         "$DEST/desktop-switcher/"
 fi
 
-for bin in desktop-switch recover-caelestia; do
+for bin in desktop-switch refresh-switch recover-caelestia; do
     if [[ -f "$HOME/.local/bin/$bin" ]]; then
         install -m 0755 "$HOME/.local/bin/$bin" "$DEST/bin/$bin"
     fi
