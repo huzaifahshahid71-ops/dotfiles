@@ -3,6 +3,9 @@
 -- HUZAIFAH-MULTI-RICE-SWITCHER
 hl.bind("SUPER + SHIFT + D", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/desktop-switch"))
 
+-- HUZAIFAH-REFRESH-SWITCHER
+hl.bind("SUPER + SHIFT + R", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/refresh-switch"))
+
 -- Keyboard has no Print key: use the familiar screenshot shortcut.
 hl.bind("SUPER + SHIFT + S", hl.dsp.exec_cmd("dms screenshot"))
 
