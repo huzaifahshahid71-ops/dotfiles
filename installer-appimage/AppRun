@@ -45,11 +45,11 @@ show_info() {
 
 confirm_install() {
     local gui="$1"
-    local msg='<b>Install Huzaifah Multi-Rice?</b>\n\n✦ Caelestia\n◈ end4-pC\n◆ Ambxst\n● DankMaterialShell\n⇄ SUPER + SHIFT + D dynamic switcher\n🌙 Frieren SDDM login theme\n\nThis is an <b>online installer</b>: upstream packages and sources are downloaded during installation.\n\nYour desktop wallpaper is left unchanged.\n\nRequires an Arch/CachyOS-family system, internet access, and sudo privileges.'
+    local msg='<b>Install Huzaifah Multi-Rice?</b>\n\n✦ Caelestia\n◈ end4-pC\n◆ Ambxst\n● DankMaterialShell\n⇄ SUPER + SHIFT + D dynamic switcher\n↻ SUPER + SHIFT + R refresh-rate switcher\n   • Zephyrus G16: tested custom profile + 120/240 power policy\n   • Other systems: OEM/EDID modes only\n🌙 Frieren SDDM login theme\n\nThe refresh profile is selected automatically from the computer model.\n\nThis is an <b>online installer</b>: upstream packages and sources are downloaded during installation.\n\nYour desktop wallpaper is left unchanged.\n\nRequires an Arch/CachyOS-family system, internet access, and sudo privileges.'
     case "$gui" in
-        zenity) zenity --question --title="$TITLE" --width=560 --ok-label="Install Everything" --cancel-label="Cancel" --text="$msg" ;;
-        kdialog) kdialog --yesno "Install Huzaifah Multi-Rice?\n\nCaelestia + end4-pC + Ambxst + DankMaterialShell\nFrieren SDDM + SUPER+SHIFT+D switcher\n\nOnline installation; desktop wallpaper is not changed." --title "$TITLE" ;;
-        yad) yad --question --title="$TITLE" --width=560 --button="Install Everything:0" --button="Cancel:1" --text="$msg" ;;
+        zenity) zenity --question --title="$TITLE" --width=600 --ok-label="Install Everything" --cancel-label="Cancel" --text="$msg" ;;
+        kdialog) kdialog --yesno "Install Huzaifah Multi-Rice?\n\nCaelestia + end4-pC + Ambxst + DankMaterialShell\nFrieren SDDM + SUPER+SHIFT+D switcher + SUPER+SHIFT+R refresh switcher\n\nRefresh modes are selected safely from DMI/EDID information.\n\nOnline installation; desktop wallpaper is not changed." --title "$TITLE" ;;
+        yad) yad --question --title="$TITLE" --width=600 --button="Install Everything:0" --button="Cancel:1" --text="$msg" ;;
         *) return 0 ;;
     esac
 }
@@ -111,7 +111,7 @@ INSTALL_URL=$(printf '%q' "$INSTALL_URL")
 clear 2>/dev/null || true
 printf '\n  Huzaifah Multi-Rice Installer\n'
 printf '  ==============================\n\n'
-printf '  ✦ Caelestia\n  ◈ end4-pC\n  ◆ Ambxst\n  ● DankMaterialShell\n  🌙 Frieren SDDM\n  ⇄ SUPER + SHIFT + D switcher\n\n'
+printf '  ✦ Caelestia\n  ◈ end4-pC\n  ◆ Ambxst\n  ● DankMaterialShell\n  🌙 Frieren SDDM\n  ⇄ SUPER + SHIFT + D switcher\n  ↻ SUPER + SHIFT + R refresh switcher\n\n'
 
 if ! command -v curl >/dev/null 2>&1; then
     echo 'curl is required; installing it first...'
@@ -172,7 +172,7 @@ EOF2
     rm -f "$tmp" "$status_file"
 
     if [[ "$rc" == "0" ]]; then
-        show_info "$gui" "Multi-Rice installation completed.\n\nLog out and back into Hyprland to start the installed profile.\n\nUse SUPER + SHIFT + D to switch between Caelestia, end4-pC, Ambxst and DankMaterialShell."
+        show_info "$gui" "Multi-Rice installation completed.\n\nLog out and back into Hyprland to start the installed profile.\n\nSUPER + SHIFT + D switches rices.\nSUPER + SHIFT + R switches refresh rates using the detected hardware profile."
     else
         show_error "$gui" "The installer did not complete successfully. Review the terminal output for details."
     fi
