@@ -35,6 +35,8 @@ switcher_profile() {
     esac
 }
 
+PROFILE="$(switcher_profile)"
+
 all_monitors_json() {
     hyprctl -j monitors 2>/dev/null
 }
@@ -46,15 +48,23 @@ target_output() {
         return
     fi
 
-    all_monitors_json | jq -r '
-        (map(select(.focused == true)) | first | .name) //
-        (map(select(.name | startswith("eDP-"))) | first | .name) //
-        (first | .name) // empty
-    '
+    if [[ "$PROFILE" == g16 ]]; then
+        # Custom G16 timings are panel-specific: never send them to an
+        # external monitor just because that monitor currently has focus.
+        all_monitors_json | jq -r '
+            (map(select(.name | startswith("eDP-"))) | first | .name) // empty
+        '
+    else
+        all_monitors_json | jq -r '
+            (map(select(.focused == true)) | first | .name) //
+            (map(select(.name | startswith("eDP-"))) | first | .name) //
+            (first | .name) // empty
+        '
+    fi
 }
 
 OUTPUT="$(target_output)"
-[[ -n "$OUTPUT" ]] || die "No active Hyprland monitor found"
+[[ -n "$OUTPUT" ]] || die "No suitable active Hyprland monitor found"
 
 monitor_json() {
     all_monitors_json | jq -c --arg output "$OUTPUT" '.[] | select(.name == $output)'
@@ -188,13 +198,12 @@ g16_mode_for_rate() {
 }
 
 previous_mode() {
-    local now profile oem
+    local now oem
     now="$(current_rate)"
     oem="$(find_oem_mode_near "$now" || true)"
     [[ -n "$oem" ]] && { printf '%s\n' "$oem"; return; }
 
-    profile="$(switcher_profile)"
-    if [[ "$profile" == g16 ]]; then
+    if [[ "$PROFILE" == g16 ]]; then
         for rate in 60 90 120 144 165 180 240; do
             if rate_is_current "$rate" "$now"; then
                 g16_mode_for_rate "$rate"
@@ -283,7 +292,7 @@ choose_generic() {
 }
 
 choose_g16() {
-    local now choice rate i
+    local now choice rate
     local -a rates=(60 90 120 144 165 180 240)
     local -a labels=()
 
@@ -317,24 +326,26 @@ choose_g16() {
 }
 
 main() {
-    local profile selected mode label revert
+    local selected mode label revert
     command -v fuzzel >/dev/null 2>&1 || die "Fuzzel is not installed"
     command -v jq >/dev/null 2>&1 || die "jq is not installed"
     [[ -f "$FUZZEL_CFG" ]] || die "Missing Multi-Rice Fuzzel theme: $FUZZEL_CFG"
 
-    profile="$(switcher_profile)"
-
     if [[ "${1:-}" == status ]]; then
-        printf 'Profile: %s\n' "$profile"
+        printf 'Profile: %s\n' "$PROFILE"
         printf 'Monitor: %s\n' "$OUTPUT"
         printf 'Model: %s\n' "$(monitor_description)"
         printf 'Current: %.2f Hz\n' "$(current_rate)"
         exit 0
     fi
 
+    if [[ "$PROFILE" == g16 ]] && { [[ "$(current_width)" != 2560 ]] || [[ "$(current_height)" != 1600 ]]; }; then
+        die "G16 custom timings require the internal panel at 2560x1600; current mode is $(current_width)x$(current_height)"
+    fi
+
     revert="$(previous_mode)"
 
-    if [[ "$profile" == g16 ]]; then
+    if [[ "$PROFILE" == g16 ]]; then
         selected="${1:-$(choose_g16)}"
         if [[ "$selected" == auto ]]; then
             return_to_g16_auto
