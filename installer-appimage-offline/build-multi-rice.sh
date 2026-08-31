@@ -134,6 +134,98 @@ new_rebuild = '''rebuild_one_aur_package() {
 if old_rebuild not in s:
     raise SystemExit("Could not locate rebuild_one_aur_package in build.sh")
 s = s.replace(old_rebuild, new_rebuild, 1)
+
+old_ensure = '''ensure_foreign_archives() {
+    local pass=1 pkg ver archive
+    while (( pass <= 3 )); do
+        resolve_closure
+        split_closure
+        local missing=()
+        while IFS= read -r pkg; do
+            [[ -n "$pkg" ]] || continue
+            ver="$(package_version "$pkg")"
+            if ! archive="$(find_exact_archive "$pkg" "$ver")"; then
+                missing+=("$pkg")
+            fi
+        done < "$BUILD/foreign.txt"
+
+        if ((${#missing[@]} == 0)); then
+            return 0
+        fi
+
+        log "Rebuilding ${#missing[@]} foreign/AUR package(s) whose exact archives are still missing (pass $pass)"
+        printf '  %s\n' "${missing[@]}"
+
+        for pkg in "${missing[@]}"; do
+            if paru -Si --aur "$pkg" >/dev/null 2>&1; then
+                rebuild_one_aur_package "$pkg"
+            else
+                die "Foreign package '$pkg' has no cached archive and could not be resolved from the AUR. Preserve/provide its .pkg.tar.* archive before rebuilding the offline image."
+            fi
+        done
+        ((pass++))
+    done
+
+    die "Foreign package closure kept changing after rebuilds; refusing to create an incomplete offline image"
+}
+'''
+new_ensure = '''ensure_foreign_archives() {
+    local pass=1 pkg ver archive
+    while (( pass <= 3 )); do
+        resolve_closure
+        split_closure
+        local missing=()
+        while IFS= read -r pkg; do
+            [[ -n "$pkg" ]] || continue
+            ver="$(package_version "$pkg")"
+            if ! archive="$(find_exact_archive "$pkg" "$ver")"; then
+                missing+=("$pkg")
+            fi
+        done < "$BUILD/foreign.txt"
+
+        if ((${#missing[@]} == 0)); then
+            return 0
+        fi
+
+        log "Rebuilding ${#missing[@]} foreign/AUR package(s) whose exact archives are still missing (pass $pass)"
+        printf '  %s\n' "${missing[@]}"
+
+        for pkg in "${missing[@]}"; do
+            if paru -Si --aur "$pkg" >/dev/null 2>&1; then
+                rebuild_one_aur_package "$pkg"
+            else
+                die "Foreign package '$pkg' has no cached archive and could not be resolved from the AUR. Preserve/provide its .pkg.tar.* archive before rebuilding the offline image."
+            fi
+        done
+        ((pass++))
+    done
+
+    # The old loop failed immediately after pass 3 without checking whether the
+    # archives rebuilt during pass 3 now satisfy the closure. Perform one final
+    # verification before declaring the closure unstable.
+    resolve_closure
+    split_closure
+    local final_missing=()
+    while IFS= read -r pkg; do
+        [[ -n "$pkg" ]] || continue
+        ver="$(package_version "$pkg")"
+        if ! archive="$(find_exact_archive "$pkg" "$ver")"; then
+            final_missing+=("$pkg")
+        fi
+    done < "$BUILD/foreign.txt"
+
+    if ((${#final_missing[@]} == 0)); then
+        return 0
+    fi
+
+    printf 'Foreign package archives still missing after final verification:\n' >&2
+    printf '  %s\n' "${final_missing[@]}" >&2
+    die "Foreign package closure is still incomplete after rebuild attempts"
+}
+'''
+if old_ensure not in s:
+    raise SystemExit("Could not locate ensure_foreign_archives in build.sh")
+s = s.replace(old_ensure, new_ensure, 1)
 p.write_text(s)
 PY
 
