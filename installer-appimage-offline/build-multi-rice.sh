@@ -51,9 +51,11 @@ PY
 
 python3 - "$WORK/installer-appimage-offline/build.sh" <<'PY'
 from pathlib import Path
+import re
 import sys
 p = Path(sys.argv[1])
 s = p.read_text()
+
 old = '''mapfile -t TARGETS < "$TARGETS_FILE"
 log "Installing any missing direct triple-rice targets on the build machine"
 paru -S --needed --noconfirm --skipreview --sudoloop "${TARGETS[@]}"
@@ -135,40 +137,6 @@ if old_rebuild not in s:
     raise SystemExit("Could not locate rebuild_one_aur_package in build.sh")
 s = s.replace(old_rebuild, new_rebuild, 1)
 
-old_ensure = '''ensure_foreign_archives() {
-    local pass=1 pkg ver archive
-    while (( pass <= 3 )); do
-        resolve_closure
-        split_closure
-        local missing=()
-        while IFS= read -r pkg; do
-            [[ -n "$pkg" ]] || continue
-            ver="$(package_version "$pkg")"
-            if ! archive="$(find_exact_archive "$pkg" "$ver")"; then
-                missing+=("$pkg")
-            fi
-        done < "$BUILD/foreign.txt"
-
-        if ((${#missing[@]} == 0)); then
-            return 0
-        fi
-
-        log "Rebuilding ${#missing[@]} foreign/AUR package(s) whose exact archives are still missing (pass $pass)"
-        printf '  %s\n' "${missing[@]}"
-
-        for pkg in "${missing[@]}"; do
-            if paru -Si --aur "$pkg" >/dev/null 2>&1; then
-                rebuild_one_aur_package "$pkg"
-            else
-                die "Foreign package '$pkg' has no cached archive and could not be resolved from the AUR. Preserve/provide its .pkg.tar.* archive before rebuilding the offline image."
-            fi
-        done
-        ((pass++))
-    done
-
-    die "Foreign package closure kept changing after rebuilds; refusing to create an incomplete offline image"
-}
-'''
 new_ensure = '''ensure_foreign_archives() {
     local pass=1 pkg ver archive
     while (( pass <= 3 )); do
@@ -200,9 +168,8 @@ new_ensure = '''ensure_foreign_archives() {
         ((pass++))
     done
 
-    # The old loop failed immediately after pass 3 without checking whether the
-    # archives rebuilt during pass 3 now satisfy the closure. Perform one final
-    # verification before declaring the closure unstable.
+    # Pass 3 may have created the last missing archive. Verify once more before
+    # declaring the package closure unstable.
     resolve_closure
     split_closure
     local final_missing=()
@@ -223,9 +190,12 @@ new_ensure = '''ensure_foreign_archives() {
     die "Foreign package closure is still incomplete after rebuild attempts"
 }
 '''
-if old_ensure not in s:
-    raise SystemExit("Could not locate ensure_foreign_archives in build.sh")
-s = s.replace(old_ensure, new_ensure, 1)
+
+pattern = r'(?ms)^ensure_foreign_archives\(\) \{.*?^\}\n\n(?=copy_foreign_archives\(\))'
+s, count = re.subn(pattern, lambda _m: new_ensure + "\n", s, count=1)
+if count != 1:
+    raise SystemExit("Could not locate ensure_foreign_archives function in build.sh")
+
 p.write_text(s)
 PY
 
