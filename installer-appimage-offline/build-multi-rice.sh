@@ -91,7 +91,50 @@ fi
 '''
 if old not in s:
     raise SystemExit("Could not locate the direct-target installation block in build.sh")
-p.write_text(s.replace(old, new, 1))
+s = s.replace(old, new, 1)
+
+old_rebuild = '''rebuild_one_aur_package() {
+    local pkg="$1"
+    log "Rebuilding AUR package: $pkg"
+    paru -S --rebuild=all --noconfirm --skipreview --nocheck --sudoloop "$pkg"
+}
+'''
+new_rebuild = '''rebuild_one_aur_package() {
+    local pkg="$1"
+    log "Rebuilding AUR package: $pkg"
+
+    # noctalia-qs is a repository package that provides `quickshell-git` and
+    # conflicts with the real AUR quickshell-git package. Asking paru to install
+    # quickshell-git can therefore make the resolver choose noctalia-qs instead.
+    # For the offline image we only need a package archive, so build quickshell-git
+    # from its PKGBUILD without installing/replacing the working provider.
+    if [[ "$pkg" == "quickshell-git" ]]; then
+        local tmp cache_dir built=0 file
+        tmp="$(mktemp -d)"
+        cache_dir="$HOME/.cache/paru/clone/quickshell-git"
+        mkdir -p "$cache_dir"
+        (
+            cd "$tmp"
+            paru -G quickshell-git
+            cd quickshell-git
+            makepkg -s --noconfirm --cleanbuild --clean --nocheck
+        )
+        while IFS= read -r -d '' file; do
+            cp -f "$file" "$cache_dir/"
+            built=1
+        done < <(find "$tmp/quickshell-git" -maxdepth 1 -type f -name '*.pkg.tar.*' ! -name '*.sig' -print0)
+        rm -rf "$tmp"
+        (( built )) || die "quickshell-git PKGBUILD completed without producing a package archive"
+        return 0
+    fi
+
+    paru -S --rebuild=all --noconfirm --skipreview --nocheck --sudoloop "$pkg"
+}
+'''
+if old_rebuild not in s:
+    raise SystemExit("Could not locate rebuild_one_aur_package in build.sh")
+s = s.replace(old_rebuild, new_rebuild, 1)
+p.write_text(s)
 PY
 
 cat > "$WORK/installer-appimage-offline/huzaifah-triple-rice-offline.desktop" <<'EOF'
