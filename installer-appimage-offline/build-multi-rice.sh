@@ -32,23 +32,13 @@ rsync -a \
     --exclude 'installer-appimage-offline/.build/' \
     "$ROOT/" "$WORK/"
 
-# The proven historical builder expects these legacy filenames. Substitute the
-# current Multi-Rice launcher/engine inside the isolated build tree only.
-cp "$ROOT/installer-appimage-offline/AppRun" \
-   "$WORK/installer-appimage-offline/AppRun"
-cp "$ROOT/installer-appimage-offline/multi-rice-offline.sh" \
-   "$WORK/installer-appimage-offline/install-offline.sh"
-chmod +x \
-    "$WORK/installer-appimage-offline/AppRun" \
-    "$WORK/installer-appimage-offline/install-offline.sh"
+cp "$ROOT/installer-appimage-offline/AppRun" "$WORK/installer-appimage-offline/AppRun"
+cp "$ROOT/installer-appimage-offline/multi-rice-offline.sh" "$WORK/installer-appimage-offline/install-offline.sh"
+chmod +x "$WORK/installer-appimage-offline/AppRun" "$WORK/installer-appimage-offline/install-offline.sh"
 
-# Bundle support packages required by optional offline toolbox actions. They are
-# added to the direct-target list used by the existing dependency-closure builder
-# without changing what the online Multi-Rice installer installs on normal users.
 python3 - "$WORK/scripts/restore-dual-rice.sh" <<'PY'
 from pathlib import Path
 import sys
-
 p = Path(sys.argv[1])
 s = p.read_text()
 needle = "    adw-gtk-theme inter-font ttf-fira-code\n"
@@ -59,16 +49,9 @@ if needle not in s:
 p.write_text(s.replace(needle, addition, 1))
 PY
 
-# paru can choose noctalia-qs as the repo provider for the generic `quickshell`
-# dependency when DMS and quickshell-git are requested in one huge transaction.
-# That produces an impossible noctalia-qs <-> quickshell-git transaction. Stage
-# the Quickshell-sensitive packages first and exclude them from the bulk install.
-# They stay in targets.txt, so they are still included in the offline dependency
-# closure and final package payload.
 python3 - "$WORK/installer-appimage-offline/build.sh" <<'PY'
 from pathlib import Path
 import sys
-
 p = Path(sys.argv[1])
 s = p.read_text()
 old = '''mapfile -t TARGETS < "$TARGETS_FILE"
@@ -77,23 +60,26 @@ paru -S --needed --noconfirm --skipreview --sudoloop "${TARGETS[@]}"
 '''
 new = '''mapfile -t TARGETS < "$TARGETS_FILE"
 
-log "Preparing the Quickshell provider before the bulk package transaction"
-if pacman -Q noctalia-qs >/dev/null 2>&1; then
-    warn "noctalia-qs is installed on the builder host and conflicts with quickshell-git."
-    read -r -p "Replace noctalia-qs with quickshell-git on this build machine? [y/N] " answer
-    [[ "$answer" =~ ^[Yy]$ ]] || die "Offline build cancelled before changing the Quickshell provider"
-    sudo pacman -Rdd --noconfirm noctalia-qs
-fi
-
-paru -S --needed --noconfirm --skipreview --sudoloop \\
-    quickshell-git dim-caelestia-shell-git caelestia-cli
-sudo pacman -S --needed --noconfirm dms-shell dms-shell-hyprland
+log "Preparing Quickshell-sensitive packages"
+for pkg in quickshell-git dim-caelestia-shell-git caelestia-cli dms-shell dms-shell-hyprland; do
+    if pacman -Q "$pkg" >/dev/null 2>&1; then
+        printf '  %s already installed; keeping current working package\n' "$pkg"
+        continue
+    fi
+    if [[ "$pkg" == quickshell-git ]] && pacman -Q noctalia-qs >/dev/null 2>&1; then
+        die "quickshell-git is missing while noctalia-qs is installed; resolve that provider choice before building"
+    fi
+    if [[ "$pkg" == dms-shell || "$pkg" == dms-shell-hyprland ]]; then
+        sudo pacman -S --needed --noconfirm "$pkg"
+    else
+        paru -S --needed --noconfirm --skipreview --sudoloop "$pkg"
+    fi
+done
 
 FILTERED_TARGETS=()
 for pkg in "${TARGETS[@]}"; do
     case "$pkg" in
-        quickshell-git|dim-caelestia-shell-git|caelestia-cli|dms-shell|dms-shell-hyprland)
-            ;;
+        quickshell-git|dim-caelestia-shell-git|caelestia-cli|dms-shell|dms-shell-hyprland) ;;
         *) FILTERED_TARGETS+=("$pkg") ;;
     esac
 done
@@ -108,8 +94,6 @@ if old not in s:
 p.write_text(s.replace(old, new, 1))
 PY
 
-# Rebrand the desktop metadata in the isolated tree while retaining the legacy
-# filename expected by build.sh.
 cat > "$WORK/installer-appimage-offline/huzaifah-triple-rice-offline.desktop" <<'EOF'
 [Desktop Entry]
 Type=Application
@@ -141,19 +125,12 @@ mv "$OLD_OUT" "$NEW_OUT"
 chmod +x "$NEW_OUT"
 sha256sum "$NEW_OUT" > "$NEW_SHA"
 
-printf '\n'
-printf 'Built:\n'
+printf '\nBuilt:\n'
 ls -lh "$NEW_OUT" "$NEW_SHA"
 printf '\nThis AppImage contains:\n'
-printf '  ✦ Caelestia\n'
-printf '  ◈ end4-pC\n'
-printf '  ◆ Ambxst\n'
-printf '  ● DankMaterialShell\n'
-printf '  ⇄ Multi-Rice switcher\n'
-printf '  ↻ hardware-aware refresh switcher\n'
-printf '  🌙 Frieren SDDM theme\n'
-printf '  ◇ ASUS / Zephyrus G16 setup tools\n'
-printf '  ◇ rEFInd configuration\n'
-printf '  ◇ guided sbctl Secure Boot setup\n'
+printf '  ✦ Caelestia\n  ◈ end4-pC\n  ◆ Ambxst\n  ● DankMaterialShell\n'
+printf '  ⇄ Multi-Rice switcher\n  ↻ hardware-aware refresh switcher\n'
+printf '  🌙 Frieren SDDM theme\n  ◇ ASUS / Zephyrus G16 setup tools\n'
+printf '  ◇ rEFInd configuration\n  ◇ guided sbctl Secure Boot setup\n'
 printf '  ◇ guarded Btrfs hibernation storage setup\n'
 printf '\nInstallation/runtime network requirement: none.\n'
