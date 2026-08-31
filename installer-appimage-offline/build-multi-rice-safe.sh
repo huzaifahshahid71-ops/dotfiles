@@ -36,10 +36,11 @@ rsync -a \
 
 # Fix archive metadata parsing and, crucially, replace the old O(N) archive
 # search. The old function walked every package in /var/cache/pacman/pkg and
-# ran pacman -Qp on each file for every lookup. On a large cache that can mean
-# tens of thousands of package parses for only 11 AUR packages. The corrected
-# lookup narrows candidates by package name + exact installed version first,
-# then validates only those candidate files with pacman -Qp.
+# ran pacman -Qp on each file for every lookup. The corrected lookup narrows
+# candidates by package-name prefix first, then validates the exact name/version
+# from package metadata. Do not encode the installed version into the filename
+# glob: Arch package epochs and some PKGBUILD filename details do not have to
+# match pacman's displayed version string byte-for-byte.
 python3 - "$WORK/installer-appimage-offline/build.sh" <<'PY'
 from pathlib import Path
 import re
@@ -56,10 +57,7 @@ elif new_meta not in s:
     raise SystemExit("Could not locate archive_meta command in build.sh")
 
 new_find = r'''find_exact_archive() {
-    local pkg="$1" ver="$2" file meta name version file_ver
-    # Epochs (for example 1:1.601-1) are reported by pacman but are not part
-    # of Arch package archive filenames.
-    file_ver="${ver#*:}"
+    local pkg="$1" ver="$2" file meta name version
 
     check_candidates() {
         local dir="$1" depth="$2"
@@ -75,7 +73,7 @@ new_find = r'''find_exact_archive() {
                 return 0
             fi
         done < <(find "$dir" -maxdepth "$depth" -type f \
-            -name "${pkg}-${file_ver}-*.pkg.tar.*" ! -name '*.sig' -print0 2>/dev/null)
+            -name "${pkg}-*.pkg.tar.*" ! -name '*.sig' -print0 2>/dev/null)
         return 1
     }
 
@@ -86,8 +84,8 @@ new_find = r'''find_exact_archive() {
     check_candidates "$HOME/.cache/paru/$pkg" 2 && return 0
 
     # Compatibility fallback for unusual paru cache layouts. This may traverse
-    # the directory tree, but pacman -Qp is run ONLY on filename-matched
-    # candidates rather than on every cached package.
+    # the directory tree, but pacman -Qp is run ONLY on files whose basenames
+    # begin with the requested package name, never on the whole cache.
     [[ -d "$HOME/.cache/paru" ]] || return 1
     while IFS= read -r -d '' file; do
         [[ "$file" == *.sig ]] && continue
@@ -100,7 +98,7 @@ new_find = r'''find_exact_archive() {
             return 0
         fi
     done < <(find "$HOME/.cache/paru" -type f \
-        -name "${pkg}-${file_ver}-*.pkg.tar.*" ! -name '*.sig' -print0 2>/dev/null)
+        -name "${pkg}-*.pkg.tar.*" ! -name '*.sig' -print0 2>/dev/null)
     return 1
 }
 '''
@@ -127,8 +125,8 @@ if (( PREFLIGHT_ONLY )); then
     exit 0
 fi
 
-# Read-only cache audit. Use targeted filename lookups so this itself does not
-# scan and parse the whole pacman cache repeatedly.
+# Read-only cache audit. Use package-name-targeted lookups so this itself does
+# not scan and parse the whole pacman cache repeatedly.
 if (( CACHE_AUDIT_ONLY )); then
     audit_pkgs=(
         caelestia-cli
@@ -153,7 +151,6 @@ if (( CACHE_AUDIT_ONLY )); then
             continue
         fi
         ver="${installed#* }"
-        file_ver="${ver#*:}"
         found=0
 
         candidate_dirs=(/var/cache/pacman/pkg "$HOME/.cache/paru/clone/$pkg" "$HOME/.cache/paru/$pkg")
@@ -166,7 +163,7 @@ if (( CACHE_AUDIT_ONLY )); then
                 found=1
                 break 2
             done < <(find "$dir" -maxdepth 2 -type f \
-                -name "${pkg}-${file_ver}-*.pkg.tar.*" ! -name '*.sig' -print0 2>/dev/null)
+                -name "${pkg}-*.pkg.tar.*" ! -name '*.sig' -print0 2>/dev/null)
         done
 
         if (( ! found )); then
@@ -177,7 +174,7 @@ if (( CACHE_AUDIT_ONLY )); then
                 found=1
                 break
             done < <(find "$HOME/.cache/paru" -type f \
-                -name "${pkg}-${file_ver}-*.pkg.tar.*" ! -name '*.sig' -print0 2>/dev/null)
+                -name "${pkg}-*.pkg.tar.*" ! -name '*.sig' -print0 2>/dev/null)
         fi
 
         if (( ! found )); then
