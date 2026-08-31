@@ -39,7 +39,8 @@ Default builder behaviour:
   1. Fully updates the Arch/CachyOS build machine.
   2. Installs any direct triple-rice packages missing from the build machine.
   3. Resolves the exact installed dependency closure, including virtual providers.
-  4. Rebuilds AUR packages in the closure against the current system libraries.
+  4. Preserves exact cached AUR archives when available and rebuilds only missing
+     AUR archives, one package at a time to avoid virtual-provider conflicts.
   5. Ensures every foreign/AUR package has a real package archive.
   6. Downloads every official package archive into an embedded local pacman repo.
   7. Bundles current local end4-dots, end4-pC, Ambxst and axctl.
@@ -160,20 +161,32 @@ split_closure() {
     done < "$CLOSURE_FILE"
 }
 
+rebuild_one_aur_package() {
+    local pkg="$1"
+    log "Rebuilding AUR package: $pkg"
+    paru -S --rebuild=all --noconfirm --skipreview --nocheck --sudoloop "$pkg"
+}
+
 rebuild_aur_closure() {
     resolve_closure
     split_closure
 
     local pkg ver archive
-    local aur_packages=()
+    local rebuild_needed=()
+    local cached_exact=()
     local local_only=()
 
     while IFS= read -r pkg; do
         [[ -n "$pkg" ]] || continue
+        ver="$(package_version "$pkg")"
+
         if paru -Si --aur "$pkg" >/dev/null 2>&1; then
-            aur_packages+=("$pkg")
+            if archive="$(find_exact_archive "$pkg" "$ver")"; then
+                cached_exact+=("$pkg")
+            else
+                rebuild_needed+=("$pkg")
+            fi
         else
-            ver="$(package_version "$pkg")"
             if archive="$(find_exact_archive "$pkg" "$ver")"; then
                 local_only+=("$pkg")
             else
@@ -182,15 +195,27 @@ rebuild_aur_closure() {
         fi
     done < "$BUILD/foreign.txt"
 
+    if ((${#cached_exact[@]})); then
+        log "Keeping ${#cached_exact[@]} exact AUR archive(s) already matching the installed versions"
+        printf '  %s\n' "${cached_exact[@]}"
+    fi
+
     if ((${#local_only[@]})); then
         log "Keeping ${#local_only[@]} non-AUR foreign package archive(s) exactly as installed"
         printf '  %s\n' "${local_only[@]}"
     fi
 
-    if ((${#aur_packages[@]})); then
-        log "Rebuilding ${#aur_packages[@]} AUR package(s) against the updated host libraries"
-        printf '  %s\n' "${aur_packages[@]}"
-        paru -S --rebuild=all --noconfirm --skipreview --nocheck --sudoloop "${aur_packages[@]}"
+    if ((${#rebuild_needed[@]})); then
+        log "Rebuilding ${#rebuild_needed[@]} AUR package(s) whose exact installed archives are missing"
+        printf '  %s\n' "${rebuild_needed[@]}"
+        # Never ask paru to solve the entire foreign-package set in one
+        # transaction. Packages such as DMS depend on the virtual `quickshell`
+        # provider and can make paru select noctalia-qs while quickshell-git is
+        # already installed. One-package transactions preserve the installed
+        # provider and avoid that resolver ambiguity.
+        for pkg in "${rebuild_needed[@]}"; do
+            rebuild_one_aur_package "$pkg"
+        done
     fi
 }
 
@@ -215,16 +240,13 @@ ensure_foreign_archives() {
         log "Rebuilding ${#missing[@]} foreign/AUR package(s) whose exact archives are still missing (pass $pass)"
         printf '  %s\n' "${missing[@]}"
 
-        local rebuildable=()
         for pkg in "${missing[@]}"; do
             if paru -Si --aur "$pkg" >/dev/null 2>&1; then
-                rebuildable+=("$pkg")
+                rebuild_one_aur_package "$pkg"
             else
                 die "Foreign package '$pkg' has no cached archive and could not be resolved from the AUR. Preserve/provide its .pkg.tar.* archive before rebuilding the offline image."
             fi
         done
-
-        paru -S --rebuild=all --noconfirm --skipreview --nocheck --sudoloop "${rebuildable[@]}"
         ((pass++))
     done
 
