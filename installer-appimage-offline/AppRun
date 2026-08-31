@@ -2,13 +2,19 @@
 set -u
 
 APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TITLE="Huzaifah Triple-Rice Offline Installer"
+TITLE="Huzaifah Multi-Rice OFFLINE"
 ENGINE="$APPDIR/install-offline.sh"
 
 is_arch_family() {
     [[ -r /etc/os-release ]] || return 1
     . /etc/os-release
     [[ "${ID:-}" == "arch" || "${ID:-}" == "cachyos" || "${ID_LIKE:-}" == *arch* ]]
+}
+
+machine_name() {
+    printf '%s / %s' \
+        "$(cat /sys/class/dmi/id/sys_vendor 2>/dev/null || echo unknown)" \
+        "$(cat /sys/class/dmi/id/product_name 2>/dev/null || echo unknown)"
 }
 
 find_gui() {
@@ -21,9 +27,9 @@ find_gui() {
 show_error() {
     local gui="$1" msg="$2"
     case "$gui" in
-        zenity) zenity --error --title="$TITLE" --width=540 --text="$msg" ;;
+        zenity) zenity --error --title="$TITLE" --width=620 --text="$msg" ;;
         kdialog) kdialog --error "$msg" --title "$TITLE" ;;
-        yad) yad --error --title="$TITLE" --width=540 --text="$msg" ;;
+        yad) yad --error --title="$TITLE" --width=620 --text="$msg" ;;
         *) printf '%s: %s\n' "$TITLE" "$msg" >&2 ;;
     esac
 }
@@ -31,21 +37,10 @@ show_error() {
 show_info() {
     local gui="$1" msg="$2"
     case "$gui" in
-        zenity) zenity --info --title="$TITLE" --width=540 --text="$msg" ;;
+        zenity) zenity --info --title="$TITLE" --width=650 --text="$msg" ;;
         kdialog) kdialog --msgbox "$msg" --title "$TITLE" ;;
-        yad) yad --info --title="$TITLE" --width=540 --text="$msg" ;;
-        *) printf '%s\n' "$msg" ;;
-    esac
-}
-
-confirm_install() {
-    local gui="$1"
-    local msg='<b>Install Huzaifah Triple-Rice — OFFLINE Edition?</b>\n\n✦ Caelestia\n◈ end4-pC\n◆ Ambxst + axctl\n⇄ SUPER + SHIFT + D switcher\n🌙 Frieren SDDM login theme\n\nAll required package archives and rice sources are bundled inside this AppImage. <b>No internet connection is required.</b>\n\nThe installer uses its own local pacman repository and leaves your desktop wallpaper unchanged.\n\nRequires an x86_64 Arch/CachyOS-family system and sudo privileges.'
-    case "$gui" in
-        zenity) zenity --question --title="$TITLE" --width=590 --ok-label="Install Offline" --cancel-label="Cancel" --text="$msg" ;;
-        kdialog) kdialog --yesno "Install Huzaifah Triple-Rice OFFLINE Edition?\n\nCaelestia + end4-pC + Ambxst + Frieren SDDM\nAll required packages and sources are bundled.\nNo internet connection is required.\nDesktop wallpaper is not changed." --title "$TITLE" ;;
-        yad) yad --question --title="$TITLE" --width=590 --button="Install Offline:0" --button="Cancel:1" --text="$msg" ;;
-        *) return 0 ;;
+        yad) yad --info --title="$TITLE" --width=650 --text="$msg" ;;
+        *) printf '%b\n' "$msg" ;;
     esac
 }
 
@@ -55,33 +50,36 @@ find_terminal() {
     candidates+=(foot kitty alacritty konsole wezterm gnome-terminal xfce4-terminal xterm)
     local t
     for t in "${candidates[@]}"; do
-        if command -v "$t" >/dev/null 2>&1; then
-            echo "$t"
-            return 0
-        fi
+        command -v "$t" >/dev/null 2>&1 && { echo "$t"; return 0; }
     done
     return 1
 }
 
 run_terminal() {
-    local terminal="$1" script="$2" status="$3"
+    local terminal="$1" action="$2" status="$3"
     local wrapper
     wrapper="$(mktemp --suffix=.sh)"
     cat > "$wrapper" <<EOF
 #!/usr/bin/env bash
 set -o pipefail
-bash $(printf '%q' "$script")
+clear 2>/dev/null || true
+printf '\n  Huzaifah Multi-Rice OFFLINE\n'
+printf '  ===========================\n'
+printf '  Action: %s\n\n' $(printf '%q' "$action")
+bash $(printf '%q' "$ENGINE") $(printf '%q' "$action")
 rc=\$?
 printf '%s\n' "\$rc" > $(printf '%q' "$status")
 printf '\n'
 if [[ \$rc -eq 0 ]]; then
-    printf '✓ Offline installation completed successfully.\n'
+    printf '✓ Action completed successfully.\n'
+elif [[ \$rc -eq 2 ]]; then
+    printf 'ℹ Action needs a firmware/manual follow-up before it can continue.\n'
 else
-    printf '✗ Offline installation exited with status %s.\n' "\$rc"
+    printf '✗ Action exited with status %s.\n' "\$rc"
 fi
 printf '\n'
-read -r -p 'Press Enter to close this window...'
-exit "\$rc"
+read -r -p 'Press Enter to return to the offline installer menu...'
+exit 0
 EOF
     chmod +x "$wrapper"
 
@@ -96,45 +94,151 @@ EOF
         xterm) xterm -e bash "$wrapper" ;;
         *) "$terminal" -e bash "$wrapper" ;;
     esac
-    local rc=$?
     rm -f "$wrapper"
-    return "$rc"
+}
+
+choose_action_gui() {
+    local gui="$1" machine
+    machine="$(machine_name)"
+    case "$gui" in
+        zenity)
+            zenity --list --radiolist \
+                --title="$TITLE" --width=920 --height=610 \
+                --text="<b>Fully offline Multi-Rice installer & system setup toolbox</b>\nDetected: $machine\n\nNothing uses GitHub, AUR or online mirrors at install time." \
+                --column="" --column="Action" --column="What it does" --print-column=2 \
+                TRUE  preflight  "Verify payload, machine, Secure Boot state and known package conflicts — changes nothing" \
+                FALSE install     "Install Caelestia + end4-pC + Ambxst + DMS, Frieren SDDM, SUPER+SHIFT+D and SUPER+SHIFT+R" \
+                FALSE refresh     "Install/reconfigure hardware-aware refresh switcher; G16 gets tested custom profile, others OEM only" \
+                FALSE sddm        "Install Frieren SDDM login theme only; does not enable/replace the display manager" \
+                FALSE asus        "Generic ASUS support: asusctl, ROG Control Center and safe power-profile setup" \
+                FALSE g16         "Guarded Zephyrus G16 extras and optional GPU-switching tools" \
+                FALSE refind      "Safe rEFInd install/config + portable theme + machine-generated kernel options" \
+                FALSE secureboot  "Guided sbctl Secure Boot setup; explicit ENROLL gate; Microsoft keys retained" \
+                FALSE hibernate   "Guarded Btrfs hibernation swap-storage setup" \
+                FALSE status      "Show DMI model, rEFInd, ASUS, refresh, Secure Boot and payload status" \
+                FALSE exit        "Close installer" 2>/dev/null
+            ;;
+        yad)
+            yad --list --radiolist \
+                --title="$TITLE" --width=920 --height=610 \
+                --text="Fully offline Multi-Rice installer & system setup toolbox\nDetected: $machine" \
+                --column="" --column="Action" --column="What it does" --print-column=2 \
+                TRUE preflight "Verify payload and machine; changes nothing" \
+                FALSE install "Install all four rices + switchers + Frieren SDDM" \
+                FALSE refresh "Hardware-aware refresh switcher" \
+                FALSE sddm "Frieren SDDM theme only" \
+                FALSE asus "Generic ASUS support" \
+                FALSE g16 "Zephyrus G16 guarded extras" \
+                FALSE refind "Safe rEFInd configuration" \
+                FALSE secureboot "Guided sbctl Secure Boot setup" \
+                FALSE hibernate "Btrfs hibernation storage" \
+                FALSE status "System/payload status" \
+                FALSE exit "Close installer" 2>/dev/null
+            ;;
+        kdialog)
+            kdialog --menu "Huzaifah Multi-Rice OFFLINE\n$machine\n\nChoose an action:" \
+                preflight "Preflight — no changes" \
+                install "Install all four rices + SDDM + switchers" \
+                refresh "Refresh-rate switcher" \
+                sddm "Frieren SDDM theme" \
+                asus "Generic ASUS support" \
+                g16 "Zephyrus G16 extras" \
+                refind "rEFInd setup" \
+                secureboot "Secure Boot setup" \
+                hibernate "Hibernation storage" \
+                status "System status" \
+                exit "Exit" --title "$TITLE" 2>/dev/null
+            ;;
+        *) return 1 ;;
+    esac
+}
+
+choose_action_terminal() {
+    printf '\nHuzaifah Multi-Rice OFFLINE\n'
+    printf '===========================\n'
+    printf 'Detected: %s\n\n' "$(machine_name)"
+    printf '  1) Preflight (no changes)\n'
+    printf '  2) Install Multi-Rice + Frieren SDDM + switchers\n'
+    printf '  3) Refresh-rate switcher\n'
+    printf '  4) Frieren SDDM theme only\n'
+    printf '  5) Generic ASUS support\n'
+    printf '  6) Zephyrus G16 extras\n'
+    printf '  7) rEFInd setup\n'
+    printf '  8) Secure Boot setup\n'
+    printf '  9) Btrfs hibernation storage\n'
+    printf ' 10) System/payload status\n'
+    printf '  0) Exit\n\n'
+    read -r -p 'Choose: ' choice < /dev/tty || return 1
+    case "$choice" in
+        1) echo preflight ;; 2) echo install ;; 3) echo refresh ;; 4) echo sddm ;;
+        5) echo asus ;; 6) echo g16 ;; 7) echo refind ;; 8) echo secureboot ;;
+        9) echo hibernate ;; 10) echo status ;; 0) echo exit ;; *) echo invalid ;;
+    esac
+}
+
+confirm_dangerous_action() {
+    local gui="$1" action="$2"
+    local msg=""
+    case "$action" in
+        install) msg="Install the complete offline Multi-Rice setup?\n\nExisting desktop configuration is backed up before replacement." ;;
+        refind) msg="Open the guarded rEFInd setup?\n\nIt can write the EFI System Partition and UEFI boot entries. Existing config and BootOrder are protected by the bundled setup script." ;;
+        secureboot) msg="Open the guided Secure Boot setup?\n\nFirmware key enrollment is NEVER automatic. The terminal requires typing ENROLL before sbctl is allowed to change UEFI Secure Boot keys." ;;
+        hibernate) msg="Open Btrfs hibernation storage setup?\n\nIt can create a swap subvolume/file and edit /etc/fstab, but asks again before making those changes." ;;
+        *) return 0 ;;
+    esac
+    case "$gui" in
+        zenity) zenity --question --title="$TITLE" --width=620 --ok-label="Continue" --cancel-label="Cancel" --text="$msg" ;;
+        kdialog) kdialog --yesno "$msg" --title "$TITLE" ;;
+        yad) yad --question --title="$TITLE" --width=620 --button="Continue:0" --button="Cancel:1" --text="$msg" ;;
+        *) read -r -p "$msg [y/N] " ans < /dev/tty; [[ "$ans" =~ ^[Yy]$ ]] ;;
+    esac
 }
 
 main() {
-    local gui terminal status_file rc=1
+    local gui terminal action status_file rc
     gui="$(find_gui)"
 
     if ! is_arch_family; then
         show_error "$gui" "This offline installer supports Arch/CachyOS-family systems only."
         exit 1
     fi
-    if [[ "$(uname -m)" != "x86_64" ]]; then
+    if [[ "$(uname -m)" != x86_64 ]]; then
         show_error "$gui" "This offline build currently targets x86_64 systems only."
         exit 1
     fi
     [[ -x "$ENGINE" ]] || { show_error "$gui" "The bundled offline installer engine is missing or not executable."; exit 1; }
 
-    confirm_install "$gui" || exit 0
-
     if ! terminal="$(find_terminal)"; then
-        show_error "$gui" "No supported terminal emulator was found. Because this is the fully offline edition, the launcher will not download one. Install a terminal such as foot, kitty, Alacritty or Konsole and try again."
+        show_error "$gui" "No supported terminal emulator was found. The offline edition will not download one. Install a terminal such as foot, kitty, Alacritty or Konsole first."
         exit 1
     fi
 
-    status_file="$(mktemp)"
-    run_terminal "$terminal" "$ENGINE" "$status_file" || true
+    while true; do
+        if [[ "$gui" == none ]]; then
+            action="$(choose_action_terminal)" || exit 0
+        else
+            action="$(choose_action_gui "$gui")" || exit 0
+        fi
+        [[ -n "$action" ]] || exit 0
+        [[ "$action" == exit ]] && exit 0
+        [[ "$action" == invalid ]] && continue
 
-    if [[ -s "$status_file" ]]; then
-        read -r rc < "$status_file" || rc=1
-    fi
-    rm -f "$status_file"
+        confirm_dangerous_action "$gui" "$action" || continue
 
-    if [[ "$rc" == "0" ]]; then
-        show_info "$gui" "Offline triple-rice installation completed.\n\nNo internet connection was used.\n\nLog out and back into Hyprland when ready.\nUse SUPER + SHIFT + D to switch between Caelestia, end4-pC and Ambxst."
-    else
-        show_error "$gui" "The offline installer did not complete successfully. Review the terminal output for details."
-    fi
+        status_file="$(mktemp)"
+        run_terminal "$terminal" "$action" "$status_file"
+        rc=1
+        [[ -s "$status_file" ]] && read -r rc < "$status_file" || true
+        rm -f "$status_file"
+
+        if [[ "$rc" == 0 ]]; then
+            show_info "$gui" "Action completed successfully.\n\nYou can choose another tool from the offline installer menu."
+        elif [[ "$rc" == 2 ]]; then
+            show_info "$gui" "This action stopped safely because a firmware/manual prerequisite is required.\n\nFollow the terminal instructions, then run the AppImage again."
+        else
+            show_error "$gui" "The action did not complete successfully. Review the terminal output. No network fallback was attempted."
+        fi
+    done
 }
 
 main "$@"
