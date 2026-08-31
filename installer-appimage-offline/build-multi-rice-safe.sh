@@ -7,6 +7,7 @@ WORK="$TMP/dotfiles"
 DIST="$ROOT/dist"
 PREFLIGHT_ONLY=0
 CACHE_AUDIT_ONLY=0
+DOWNLOAD_PREFLIGHT_ONLY=0
 FORWARD_ARGS=()
 
 cleanup() { rm -rf "$TMP"; }
@@ -19,6 +20,7 @@ for arg in "$@"; do
     case "$arg" in
         --preflight-only) PREFLIGHT_ONLY=1 ;;
         --cache-audit-only) CACHE_AUDIT_ONLY=1 ;;
+        --download-preflight-only) DOWNLOAD_PREFLIGHT_ONLY=1 ;;
         *) FORWARD_ARGS+=("$arg") ;;
     esac
 done
@@ -34,13 +36,17 @@ rsync -a \
     --exclude 'installer-appimage-offline/.build/' \
     "$ROOT/" "$WORK/"
 
-# Fix archive metadata parsing and, crucially, replace the old O(N) archive
-# search. The old function walked every package in /var/cache/pacman/pkg and
-# ran pacman -Qp on each file for every lookup. The corrected lookup narrows
-# candidates by package-name prefix first, then validates the exact name/version
-# from package metadata. Do not encode the installed version into the filename
-# glob: Arch package epochs and some PKGBUILD filename details do not have to
-# match pacman's displayed version string byte-for-byte.
+# Fix three historical builder problems before launching it:
+#   1. package archive metadata was queried with an invalid pacman option mix;
+#   2. exact archive lookup parsed every file in the whole pacman cache;
+#   3. pacman was told to download into a private mktemp tree. Modern pacman can
+#      drop download privileges to its sandbox user, which cannot traverse that
+#      0700 parent directory and therefore fails with "Permission denied".
+#
+# The corrected builder downloads official packages into pacman's normal system
+# cache, then copies the exact installed-version archives into the AppImage
+# payload as the regular build user. This also makes those ~1 GiB downloads
+# reusable after a late build failure instead of throwing them away with /tmp.
 python3 - "$WORK/installer-appimage-offline/build.sh" <<'PY'
 from pathlib import Path
 import re
@@ -83,9 +89,8 @@ new_find = r'''find_exact_archive() {
     check_candidates "$HOME/.cache/paru/clone/$pkg" 2 && return 0
     check_candidates "$HOME/.cache/paru/$pkg" 2 && return 0
 
-    # Compatibility fallback for unusual paru cache layouts. This may traverse
-    # the directory tree, but pacman -Qp is run ONLY on files whose basenames
-    # begin with the requested package name, never on the whole cache.
+    # Compatibility fallback for unusual paru cache layouts. pacman -Qp is run
+    # only on files whose basenames begin with the requested package name.
     [[ -d "$HOME/.cache/paru" ]] || return 1
     while IFS= read -r -d '' file; do
         [[ "$file" == *.sig ]] && continue
@@ -107,6 +112,46 @@ s, count = re.subn(pattern, lambda _m: new_find + "\n", s, count=1)
 if count != 1:
     raise SystemExit("Could not locate find_exact_archive in build.sh")
 
+# The historical final validation used the same broken --print-format mixture.
+old_validate = '''        name="$(pacman -Qp --print-format '%n' "$file" 2>/dev/null || true)"\n'''
+new_validate = '''        name="$(LC_ALL=C pacman -Qp "$file" 2>/dev/null | awk '{print $1}' || true)"\n'''
+if old_validate in s:
+    s = s.replace(old_validate, new_validate, 1)
+elif new_validate not in s:
+    raise SystemExit("Could not locate staged-package validation metadata command")
+
+old_download = '''mapfile -t OFFICIAL < "$BUILD/official.txt"
+if ((${#OFFICIAL[@]})); then
+    log "Downloading ${#OFFICIAL[@]} official package archives into the offline repository"
+    sudo pacman -Sw --noconfirm --cachedir "$PKG_DIR" "${OFFICIAL[@]}"
+fi
+sudo chown -R "$USER":"$(id -gn)" "$PKG_DIR"
+find "$PKG_DIR" -maxdepth 1 -type f -name '*.sig' -delete
+'''
+new_download = '''mapfile -t OFFICIAL < "$BUILD/official.txt"
+if ((${#OFFICIAL[@]})); then
+    log "Downloading ${#OFFICIAL[@]} official package archives into pacman's persistent system cache"
+    # Do not point pacman's downloader at the private mktemp/AppDir path. On
+    # modern Arch/CachyOS pacman may download as a sandbox user that cannot
+    # traverse mktemp's 0700 parent directory. The normal system cache is the
+    # supported location and survives retries.
+    sudo pacman -Sw --noconfirm "${OFFICIAL[@]}"
+
+    log "Copying exact installed-version official archives into the offline repository"
+    while IFS= read -r pkg; do
+        [[ -n "$pkg" ]] || continue
+        ver="$(package_version "$pkg")"
+        archive="$(find_exact_archive "$pkg" "$ver")" || \
+            die "Exact official archive missing after download: $pkg $ver"
+        cp -f "$archive" "$PKG_DIR/"
+    done < "$BUILD/official.txt"
+fi
+find "$PKG_DIR" -maxdepth 1 -type f -name '*.sig' -delete
+'''
+if old_download not in s:
+    raise SystemExit("Could not locate official package download block in build.sh")
+s = s.replace(old_download, new_download, 1)
+
 p.write_text(s)
 PY
 
@@ -125,8 +170,29 @@ if (( PREFLIGHT_ONLY )); then
     exit 0
 fi
 
-# Read-only cache audit. Use package-name-targeted lookups so this itself does
-# not scan and parse the whole pacman cache repeatedly.
+# Prove the corrected official-download route independently of the full build.
+# This downloads/caches one tiny official package at most; it does not install it.
+if (( DOWNLOAD_PREFLIGHT_ONLY )); then
+    test_pkg="xorg-xprop"
+    installed="$(pacman -Q "$test_pkg" 2>/dev/null)" || die "$test_pkg is not installed"
+    test_ver="${installed#* }"
+    log "Testing pacman's persistent-cache download path with $test_pkg $test_ver"
+    sudo pacman -Sw --noconfirm "$test_pkg"
+    found=0
+    while IFS= read -r -d '' file; do
+        file_meta="$(LC_ALL=C pacman -Qp "$file" 2>/dev/null || true)"
+        if [[ "$file_meta" == "$test_pkg $test_ver" ]]; then
+            found=1
+            break
+        fi
+    done < <(find /var/cache/pacman/pkg -maxdepth 1 -type f \
+        -name "${test_pkg}-*.pkg.tar.*" ! -name '*.sig' -print0 2>/dev/null)
+    (( found )) || die "Download preflight completed but exact cached archive was not found for $test_pkg $test_ver"
+    log "Download preflight passed; no AppImage build was started"
+    exit 0
+fi
+
+# Read-only cache audit for the exact AUR/foreign set that previously looped.
 if (( CACHE_AUDIT_ONLY )); then
     audit_pkgs=(
         caelestia-cli
