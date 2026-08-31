@@ -51,10 +51,8 @@ import sys
 p = Path(sys.argv[1])
 s = p.read_text()
 needle = "    adw-gtk-theme inter-font ttf-fira-code\n"
-addition = (
-    "    adw-gtk-theme inter-font ttf-fira-code \\\n"
-    "    sbctl refind efibootmgr asusctl rog-control-center supergfxctl btrfs-progs\n"
-)
+addition = "    adw-gtk-theme inter-font ttf-fira-code \\" + "\n" + \
+           "    sbctl refind efibootmgr asusctl rog-control-center supergfxctl btrfs-progs\n"
 if needle not in s:
     raise SystemExit("Could not locate the final Multi-Rice package line in restore-dual-rice.sh")
 p.write_text(s.replace(needle, addition, 1))
