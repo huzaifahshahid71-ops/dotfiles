@@ -13,6 +13,7 @@ cleanup() { rm -rf "$TMP"; }
 trap cleanup EXIT
 
 log() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
+warn() { printf '\033[1;33mWARNING:\033[0m %s\n' "$*" >&2; }
 die() { printf '\033[1;31mERROR:\033[0m %s\n' "$*" >&2; exit 1; }
 
 [[ "$(uname -m)" == x86_64 ]] || die "This builder currently targets x86_64 only"
@@ -58,6 +59,55 @@ if needle not in s:
 p.write_text(s.replace(needle, addition, 1))
 PY
 
+# paru can choose noctalia-qs as the repo provider for the generic `quickshell`
+# dependency when DMS and quickshell-git are requested in one huge transaction.
+# That produces an impossible noctalia-qs <-> quickshell-git transaction. Stage
+# the Quickshell-sensitive packages first and exclude them from the bulk install.
+# They stay in targets.txt, so they are still included in the offline dependency
+# closure and final package payload.
+python3 - "$WORK/installer-appimage-offline/build.sh" <<'PY'
+from pathlib import Path
+import sys
+
+p = Path(sys.argv[1])
+s = p.read_text()
+old = '''mapfile -t TARGETS < "$TARGETS_FILE"
+log "Installing any missing direct triple-rice targets on the build machine"
+paru -S --needed --noconfirm --skipreview --sudoloop "${TARGETS[@]}"
+'''
+new = '''mapfile -t TARGETS < "$TARGETS_FILE"
+
+log "Preparing the Quickshell provider before the bulk package transaction"
+if pacman -Q noctalia-qs >/dev/null 2>&1; then
+    warn "noctalia-qs is installed on the builder host and conflicts with quickshell-git."
+    read -r -p "Replace noctalia-qs with quickshell-git on this build machine? [y/N] " answer
+    [[ "$answer" =~ ^[Yy]$ ]] || die "Offline build cancelled before changing the Quickshell provider"
+    sudo pacman -Rdd --noconfirm noctalia-qs
+fi
+
+paru -S --needed --noconfirm --skipreview --sudoloop \\
+    quickshell-git dim-caelestia-shell-git caelestia-cli
+sudo pacman -S --needed --noconfirm dms-shell dms-shell-hyprland
+
+FILTERED_TARGETS=()
+for pkg in "${TARGETS[@]}"; do
+    case "$pkg" in
+        quickshell-git|dim-caelestia-shell-git|caelestia-cli|dms-shell|dms-shell-hyprland)
+            ;;
+        *) FILTERED_TARGETS+=("$pkg") ;;
+    esac
+done
+
+log "Installing any remaining direct Multi-Rice targets on the build machine"
+if ((${#FILTERED_TARGETS[@]})); then
+    paru -S --needed --noconfirm --skipreview --sudoloop "${FILTERED_TARGETS[@]}"
+fi
+'''
+if old not in s:
+    raise SystemExit("Could not locate the direct-target installation block in build.sh")
+p.write_text(s.replace(old, new, 1))
+PY
+
 # Rebrand the desktop metadata in the isolated tree while retaining the legacy
 # filename expected by build.sh.
 cat > "$WORK/installer-appimage-offline/huzaifah-triple-rice-offline.desktop" <<'EOF'
@@ -75,6 +125,7 @@ EOF
 log "Syntax-checking the Multi-Rice launcher and engine"
 bash -n "$WORK/installer-appimage-offline/AppRun"
 bash -n "$WORK/installer-appimage-offline/install-offline.sh"
+bash -n "$WORK/installer-appimage-offline/build.sh"
 
 log "Running the proven dependency-closure offline builder"
 (
