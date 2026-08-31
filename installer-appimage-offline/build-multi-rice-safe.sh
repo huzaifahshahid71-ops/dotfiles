@@ -5,12 +5,21 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP="$(mktemp -d)"
 WORK="$TMP/dotfiles"
 DIST="$ROOT/dist"
+PREFLIGHT_ONLY=0
+FORWARD_ARGS=()
 
 cleanup() { rm -rf "$TMP"; }
 trap cleanup EXIT
 
 log() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 die() { printf '\033[1;31mERROR:\033[0m %s\n' "$*" >&2; exit 1; }
+
+for arg in "$@"; do
+    case "$arg" in
+        --preflight-only) PREFLIGHT_ONLY=1 ;;
+        *) FORWARD_ARGS+=("$arg") ;;
+    esac
+done
 
 [[ -f "$ROOT/installer-appimage-offline/build-multi-rice.sh" ]] || die "build-multi-rice.sh is missing"
 [[ -f "$ROOT/installer-appimage-offline/build.sh" ]] || die "build.sh is missing"
@@ -52,10 +61,15 @@ else
     log "No cached package archive found for preflight; continuing because the builder can create them"
 fi
 
+if (( PREFLIGHT_ONLY )); then
+    log "Preflight-only mode passed; no packages were installed/rebuilt and no AppImage build was started"
+    exit 0
+fi
+
 log "Starting corrected Multi-Rice offline build"
 (
     cd "$WORK"
-    bash installer-appimage-offline/build-multi-rice.sh "$@"
+    bash installer-appimage-offline/build-multi-rice.sh "${FORWARD_ARGS[@]}"
 )
 
 for name in Huzaifah-Multi-Rice-OFFLINE-x86_64.AppImage Huzaifah-Multi-Rice-OFFLINE-x86_64.sha256; do
