@@ -34,26 +34,85 @@ rsync -a \
     --exclude 'installer-appimage-offline/.build/' \
     "$ROOT/" "$WORK/"
 
-# Root cause of the long rebuild loop:
-# `pacman -Qp` uses -p as the query-file option, while --print-format implies
-# pacman's global --print operation. Combining them caused archive_meta() to
-# return no usable metadata, so every successfully built AUR archive looked
-# "missing" forever. Use normal `pacman -Qp FILE`, whose output is exactly
-# "pkgname pkgver" and is what find_exact_archive() expects.
+# Fix archive metadata parsing and, crucially, replace the old O(N) archive
+# search. The old function walked every package in /var/cache/pacman/pkg and
+# ran pacman -Qp on each file for every lookup. On a large cache that can mean
+# tens of thousands of package parses for only 11 AUR packages. The corrected
+# lookup narrows candidates by package name + exact installed version first,
+# then validates only those candidate files with pacman -Qp.
 python3 - "$WORK/installer-appimage-offline/build.sh" <<'PY'
 from pathlib import Path
+import re
 import sys
 
 p = Path(sys.argv[1])
 s = p.read_text()
-old = "    pacman -Qp --print-format '%n %v' \"$1\" 2>/dev/null || true\n"
-new = "    LC_ALL=C pacman -Qp \"$1\" 2>/dev/null || true\n"
-if old not in s:
-    raise SystemExit("Could not locate the broken archive_meta command in build.sh")
-p.write_text(s.replace(old, new, 1))
+
+old_meta = "    pacman -Qp --print-format '%n %v' \"$1\" 2>/dev/null || true\n"
+new_meta = "    LC_ALL=C pacman -Qp \"$1\" 2>/dev/null || true\n"
+if old_meta in s:
+    s = s.replace(old_meta, new_meta, 1)
+elif new_meta not in s:
+    raise SystemExit("Could not locate archive_meta command in build.sh")
+
+new_find = r'''find_exact_archive() {
+    local pkg="$1" ver="$2" file meta name version file_ver
+    # Epochs (for example 1:1.601-1) are reported by pacman but are not part
+    # of Arch package archive filenames.
+    file_ver="${ver#*:}"
+
+    check_candidates() {
+        local dir="$1" depth="$2"
+        [[ -d "$dir" ]] || return 1
+        while IFS= read -r -d '' file; do
+            [[ "$file" == *.sig ]] && continue
+            meta="$(archive_meta "$file")"
+            [[ -n "$meta" ]] || continue
+            name="${meta%% *}"
+            version="${meta#* }"
+            if [[ "$name" == "$pkg" && "$version" == "$ver" ]]; then
+                printf '%s\n' "$file"
+                return 0
+            fi
+        done < <(find "$dir" -maxdepth "$depth" -type f \
+            -name "${pkg}-${file_ver}-*.pkg.tar.*" ! -name '*.sig' -print0 2>/dev/null)
+        return 1
+    }
+
+    # Official cache is flat. Paru normally stores built archives in the
+    # package's own clone directory, so check those tiny locations first.
+    check_candidates /var/cache/pacman/pkg 1 && return 0
+    check_candidates "$HOME/.cache/paru/clone/$pkg" 2 && return 0
+    check_candidates "$HOME/.cache/paru/$pkg" 2 && return 0
+
+    # Compatibility fallback for unusual paru cache layouts. This may traverse
+    # the directory tree, but pacman -Qp is run ONLY on filename-matched
+    # candidates rather than on every cached package.
+    [[ -d "$HOME/.cache/paru" ]] || return 1
+    while IFS= read -r -d '' file; do
+        [[ "$file" == *.sig ]] && continue
+        meta="$(archive_meta "$file")"
+        [[ -n "$meta" ]] || continue
+        name="${meta%% *}"
+        version="${meta#* }"
+        if [[ "$name" == "$pkg" && "$version" == "$ver" ]]; then
+            printf '%s\n' "$file"
+            return 0
+        fi
+    done < <(find "$HOME/.cache/paru" -type f \
+        -name "${pkg}-${file_ver}-*.pkg.tar.*" ! -name '*.sig' -print0 2>/dev/null)
+    return 1
+}
+'''
+pattern = r'(?ms)^find_exact_archive\(\) \{.*?^\}\n\n(?=resolve_closure\(\))'
+s, count = re.subn(pattern, lambda _m: new_find + "\n", s, count=1)
+if count != 1:
+    raise SystemExit("Could not locate find_exact_archive in build.sh")
+
+p.write_text(s)
 PY
 
-# Fast sanity-check the exact metadata path before allowing another long build.
+# Fast sanity-check the metadata path before allowing another long build.
 sample="$(find "$HOME/.cache/paru" /var/cache/pacman/pkg -type f -name '*.pkg.tar.*' ! -name '*.sig' -print -quit 2>/dev/null || true)"
 if [[ -n "$sample" ]]; then
     meta="$(LC_ALL=C pacman -Qp "$sample" 2>/dev/null || true)"
@@ -68,8 +127,8 @@ if (( PREFLIGHT_ONLY )); then
     exit 0
 fi
 
-# The packages below were the exact foreign/AUR set repeatedly rebuilt by the
-# failed runs. Audit them before another expensive build. This is read-only.
+# Read-only cache audit. Use targeted filename lookups so this itself does not
+# scan and parse the whole pacman cache repeatedly.
 if (( CACHE_AUDIT_ONLY )); then
     audit_pkgs=(
         caelestia-cli
@@ -94,18 +153,32 @@ if (( CACHE_AUDIT_ONLY )); then
             continue
         fi
         ver="${installed#* }"
+        file_ver="${ver#*:}"
         found=0
-        while IFS= read -r -d '' file; do
-            file_meta="$(LC_ALL=C pacman -Qp "$file" 2>/dev/null || true)"
-            [[ -n "$file_meta" ]] || continue
-            name="${file_meta%% *}"
-            file_ver="${file_meta#* }"
-            if [[ "$name" == "$pkg" && "$file_ver" == "$ver" ]]; then
+
+        candidate_dirs=(/var/cache/pacman/pkg "$HOME/.cache/paru/clone/$pkg" "$HOME/.cache/paru/$pkg")
+        for dir in "${candidate_dirs[@]}"; do
+            [[ -d "$dir" ]] || continue
+            while IFS= read -r -d '' file; do
+                file_meta="$(LC_ALL=C pacman -Qp "$file" 2>/dev/null || true)"
+                [[ "$file_meta" == "$pkg $ver" ]] || continue
+                printf '  OK  %-30s %s\n' "$pkg" "$ver"
+                found=1
+                break 2
+            done < <(find "$dir" -maxdepth 2 -type f \
+                -name "${pkg}-${file_ver}-*.pkg.tar.*" ! -name '*.sig' -print0 2>/dev/null)
+        done
+
+        if (( ! found )); then
+            while IFS= read -r -d '' file; do
+                file_meta="$(LC_ALL=C pacman -Qp "$file" 2>/dev/null || true)"
+                [[ "$file_meta" == "$pkg $ver" ]] || continue
                 printf '  OK  %-30s %s\n' "$pkg" "$ver"
                 found=1
                 break
-            fi
-        done < <(find "$HOME/.cache/paru" /var/cache/pacman/pkg -type f -name '*.pkg.tar.*' ! -name '*.sig' -print0 2>/dev/null)
+            done < <(find "$HOME/.cache/paru" -type f \
+                -name "${pkg}-${file_ver}-*.pkg.tar.*" ! -name '*.sig' -print0 2>/dev/null)
+        fi
 
         if (( ! found )); then
             printf '  NO EXACT ARCHIVE: %-24s %s\n' "$pkg" "$ver"
