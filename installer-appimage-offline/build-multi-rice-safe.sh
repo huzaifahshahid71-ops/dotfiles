@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+TMP="$(mktemp -d)"
+WORK="$TMP/dotfiles"
+DIST="$ROOT/dist"
+
+cleanup() { rm -rf "$TMP"; }
+trap cleanup EXIT
+
+log() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
+die() { printf '\033[1;31mERROR:\033[0m %s\n' "$*" >&2; exit 1; }
+
+[[ -f "$ROOT/installer-appimage-offline/build-multi-rice.sh" ]] || die "build-multi-rice.sh is missing"
+[[ -f "$ROOT/installer-appimage-offline/build.sh" ]] || die "build.sh is missing"
+
+log "Preparing isolated safe build tree"
+mkdir -p "$WORK" "$DIST"
+rsync -a \
+    --exclude '.git/' \
+    --exclude 'dist/' \
+    --exclude 'installer-appimage-offline/.build/' \
+    "$ROOT/" "$WORK/"
+
+# Root cause of the long rebuild loop:
+# `pacman -Qp` uses -p as the query-file option, while --print-format implies
+# pacman's global --print operation. Combining them caused archive_meta() to
+# return no usable metadata, so every successfully built AUR archive looked
+# "missing" forever. Use normal `pacman -Qp FILE`, whose output is exactly
+# "pkgname pkgver" and is what find_exact_archive() expects.
+python3 - "$WORK/installer-appimage-offline/build.sh" <<'PY'
+from pathlib import Path
+import sys
+
+p = Path(sys.argv[1])
+s = p.read_text()
+old = "    pacman -Qp --print-format '%n %v' \"$1\" 2>/dev/null || true\n"
+new = "    LC_ALL=C pacman -Qp \"$1\" 2>/dev/null || true\n"
+if old not in s:
+    raise SystemExit("Could not locate the broken archive_meta command in build.sh")
+p.write_text(s.replace(old, new, 1))
+PY
+
+# Fast sanity-check the exact metadata path before allowing another long build.
+sample="$(find "$HOME/.cache/paru" /var/cache/pacman/pkg -type f -name '*.pkg.tar.*' ! -name '*.sig' -print -quit 2>/dev/null || true)"
+if [[ -n "$sample" ]]; then
+    meta="$(LC_ALL=C pacman -Qp "$sample" 2>/dev/null || true)"
+    [[ -n "$meta" ]] || die "pacman cannot read package archive metadata: $sample"
+    log "Archive metadata preflight passed: $meta"
+else
+    log "No cached package archive found for preflight; continuing because the builder can create them"
+fi
+
+log "Starting corrected Multi-Rice offline build"
+(
+    cd "$WORK"
+    bash installer-appimage-offline/build-multi-rice.sh "$@"
+)
+
+for name in Huzaifah-Multi-Rice-OFFLINE-x86_64.AppImage Huzaifah-Multi-Rice-OFFLINE-x86_64.sha256; do
+    [[ -f "$WORK/dist/$name" ]] || die "Corrected builder finished without producing $name"
+    cp -f "$WORK/dist/$name" "$DIST/$name"
+done
+chmod +x "$DIST/Huzaifah-Multi-Rice-OFFLINE-x86_64.AppImage"
+
+printf '\nBuilt successfully:\n'
+ls -lh "$DIST/Huzaifah-Multi-Rice-OFFLINE-x86_64.AppImage" "$DIST/Huzaifah-Multi-Rice-OFFLINE-x86_64.sha256"
