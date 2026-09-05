@@ -4,6 +4,98 @@ A complete Hyprland customization built around **Caelestia**, **end4-pC**, **Amb
 
 This repository is for people who already have an **Arch/CachyOS-family Linux installation** and want the desktop customization. It does **not** install an operating system.
 
+<!-- MULTI_RICE_GALLERY_START -->
+## 📸 Multi-Rice Showcase
+
+### 🌙 Frieren SDDM
+
+<table>
+<tr>
+<td width="50%"><img src="screenshots/v3/01-frieren-sddm-login.webp" alt="Frieren SDDM login screen"></td>
+<td width="50%"><img src="screenshots/v3/02-frieren-sddm-login-filled.webp" alt="Frieren SDDM login screen with user credentials"></td>
+</tr>
+<tr><td align="center"><sub>Frieren SDDM login</sub></td><td align="center"><sub>Login form</sub></td></tr>
+</table>
+
+### ✦ Caelestia
+
+<img src="screenshots/v3/03-caelestia-desktop.webp" alt="Caelestia desktop" width="100%">
+
+<table>
+<tr>
+<td width="50%"><img src="screenshots/v3/04-caelestia-notifications.webp" alt="Caelestia notifications"></td>
+<td width="50%"><img src="screenshots/v3/05-caelestia-quick-settings.webp" alt="Caelestia quick settings"></td>
+</tr>
+<tr><td align="center"><sub>Notifications</sub></td><td align="center"><sub>Quick settings</sub></td></tr>
+<tr>
+<td><img src="screenshots/v3/06-caelestia-dashboard.webp" alt="Caelestia dashboard"></td>
+<td><img src="screenshots/v3/07-caelestia-visualizer.webp" alt="Caelestia audio visualizer"></td>
+</tr>
+<tr><td align="center"><sub>Dashboard</sub></td><td align="center"><sub>Audio visualizer</sub></td></tr>
+<tr>
+<td><img src="screenshots/v3/08-caelestia-multi-rice-switcher.webp" alt="Multi-Rice switcher showing all five profiles"></td>
+<td><img src="screenshots/v3/09-caelestia-wallpaper-picker.webp" alt="Caelestia wallpaper picker"></td>
+</tr>
+<tr><td align="center"><sub>Five-profile Multi-Rice switcher</sub></td><td align="center"><sub>Wallpaper picker</sub></td></tr>
+</table>
+
+### ◈ end4-pC
+
+<img src="screenshots/v3/10-end4-pc-desktop.webp" alt="end4-pC desktop" width="100%">
+
+<table>
+<tr>
+<td width="50%"><img src="screenshots/v3/11-end4-pc-media.webp" alt="end4-pC media panel"></td>
+<td width="50%"><img src="screenshots/v3/12-end4-pc-settings.webp" alt="end4-pC settings panel"></td>
+</tr>
+<tr><td align="center"><sub>Media panel</sub></td><td align="center"><sub>Settings panel</sub></td></tr>
+</table>
+
+### ◆ Ambxst
+
+<img src="screenshots/v3/13-ambxst-dashboard.webp" alt="Ambxst dashboard" width="100%">
+
+<table>
+<tr>
+<td width="50%"><img src="screenshots/v3/14-ambxst-wallpaper-picker.webp" alt="Ambxst wallpaper picker"></td>
+<td width="50%"><img src="screenshots/v3/15-ambxst-system-monitor.webp" alt="Ambxst system monitor"></td>
+</tr>
+<tr><td align="center"><sub>Wallpaper picker</sub></td><td align="center"><sub>System monitor</sub></td></tr>
+</table>
+
+### ● DankMaterialShell (DMS)
+
+<table>
+<tr>
+<td width="50%"><img src="screenshots/v3/16-dms-overview.webp" alt="DankMaterialShell overview"></td>
+<td width="50%"><img src="screenshots/v3/17-dms-launcher.webp" alt="DankMaterialShell launcher"></td>
+</tr>
+<tr><td align="center"><sub>Overview</sub></td><td align="center"><sub>Application launcher</sub></td></tr>
+<tr>
+<td><img src="screenshots/v3/18-dms-weather.webp" alt="DankMaterialShell weather panel"></td>
+<td><img src="screenshots/v3/19-dms-processes.webp" alt="DankMaterialShell processes panel"></td>
+</tr>
+<tr><td align="center"><sub>Weather</sub></td><td align="center"><sub>Processes</sub></td></tr>
+</table>
+
+### ◉ Noctalia v5
+
+<img src="screenshots/v3/20-noctalia-system.webp" alt="Noctalia v5 system panel" width="100%">
+
+<table>
+<tr>
+<td width="50%"><img src="screenshots/v3/21-noctalia-launcher.webp" alt="Noctalia v5 launcher"></td>
+<td width="50%"><img src="screenshots/v3/22-noctalia-media.webp" alt="Noctalia v5 media panel"></td>
+</tr>
+<tr><td align="center"><sub>Application launcher</sub></td><td align="center"><sub>Media panel</sub></td></tr>
+<tr>
+<td><img src="screenshots/v3/23-noctalia-btop.webp" alt="Noctalia v5 with btop"></td>
+<td><img src="screenshots/v3/24-noctalia-unimatrix-media.webp" alt="Noctalia v5 media panel with Unimatrix terminal"></td>
+</tr>
+<tr><td align="center"><sub>btop</sub></td><td align="center"><sub>Media + Unimatrix</sub></td></tr>
+</table>
+<!-- MULTI_RICE_GALLERY_END -->
+
 ## ✨ What you get
 
 The default installer sets up:
