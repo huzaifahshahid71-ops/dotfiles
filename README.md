@@ -1,6 +1,6 @@
 # Huzaifah's Hyprland Multi-Rice Dotfiles
 
-A complete Hyprland customization built around **Caelestia**, **end4-pC**, **Ambxst**, and **DankMaterialShell (DMS)**, with a one-command installer, Frieren SDDM theme, a dynamic desktop-profile switcher, and an auto-detected refresh-rate switcher.
+A complete Hyprland customization built around **Caelestia**, **end4-pC**, **Ambxst**, **DankMaterialShell (DMS)**, and **Noctalia v5**, with a one-command installer, Frieren SDDM theme, a dynamic desktop-profile switcher, and an auto-detected refresh-rate switcher.
 
 This repository is for people who already have an **Arch/CachyOS-family Linux installation** and want the desktop customization. It does **not** install an operating system.
 
@@ -103,14 +103,15 @@ The default installer sets up:
 - ✦ **Caelestia** rice and user configuration
 - ◈ **end4-pC** rice based on pctrade/end4-pC
 - ◆ **Ambxst** rice with axctl compositor integration
-- ● **DankMaterialShell (DMS)** as an isolated fourth rice
+- ● **DankMaterialShell (DMS)** as an isolated rice
+- ◉ **Noctalia v5** with its own portable Hyprland profile and configuration
 - a separate Hyprland profile for every rice
-- a dynamic `SUPER + SHIFT + D` Multi-Rice switcher
+- a dynamic `SUPER + SHIFT + D` five-profile Multi-Rice switcher
 - an auto-detected `SUPER + SHIFT + R` refresh-rate switcher
 - saved end4 widget/top-bar layout and local album-art patches
 - search-only end4 launcher with the workspace grid hidden
 - **Frieren SDDM login theme**
-- safety backups before profile restoration
+- transactional pre-install backup and exact desktop rollback support in the v3 offline installer
 
 **The installer does not choose or replace your desktop wallpaper.** The Frieren image belongs to the SDDM login theme only.
 
@@ -136,6 +137,7 @@ Huzaifah Desktop
 ├── ◈ end4-pC
 ├── ◆ Ambxst + axctl
 ├── ● DankMaterialShell
+├── ◉ Noctalia v5
 ├── 🔎 Search-only end4 launcher
 ├── 🌙 Frieren SDDM login theme
 ├── ⇄ SUPER + SHIFT + D dynamic Multi-Rice switcher
@@ -159,9 +161,10 @@ The preferred order is:
 ◈ end4-pC
 ◆ Ambxst
 ● DankMaterialShell
+◉ Noctalia v5
 ```
 
-The switcher also discovers additional valid profiles placed under `~/.local/share/desktop-profiles`, so the design is not hard-coded to four rices.
+The switcher includes those five preferred profiles and also discovers additional valid profiles placed under `~/.local/share/desktop-profiles`.
 
 CLI examples:
 
@@ -172,6 +175,7 @@ desktop-switch caelestia --now
 desktop-switch end4 --now
 desktop-switch ambxst --now
 desktop-switch dms --now
+desktop-switch noctalia --now
 ```
 
 Switching atomically repoints `~/.config/hypr` to the chosen profile and logs out so the next Hyprland session starts that rice.
@@ -184,7 +188,7 @@ Press:
 SUPER + SHIFT + R
 ```
 
-The refresh switcher uses the same Fuzzel styling as the Multi-Rice switcher and is installed into all four Hyprland profiles.
+The refresh switcher uses the same Fuzzel styling as the Multi-Rice switcher and is installed into all five Hyprland profiles.
 
 The installer reads the machine DMI vendor/product automatically:
 
@@ -206,7 +210,7 @@ Refresh-specific installer options:
 
 ## ● DankMaterialShell integration
 
-DMS is deliberately **not** enabled as a global `dms.service`. In a Multi-Rice environment that could make DMS start on top of Caelestia, end4-pC, or Ambxst. Instead, the DMS Hyprland profile starts it with `dms run` only when the DMS rice is active.
+DMS is deliberately **not** enabled as a global `dms.service`. In a Multi-Rice environment that could make DMS start on top of Caelestia, end4-pC, Ambxst, or Noctalia. Instead, the DMS Hyprland profile starts it with `dms run` only when the DMS rice is active.
 
 The tested profile is based on DMS **v1.5.3** and uses Alacritty. Custom DMS shortcuts included in this setup are:
 
@@ -236,13 +240,23 @@ The isolated profile lives at:
 ~/.local/share/desktop-profiles/ambxst/hypr/
 ```
 
+## ◉ Noctalia v5 integration
+
+Noctalia v5 is included as a first-class fifth rice with its own portable Hyprland profile, launcher/media/system panels, and saved configuration. The profile avoids forcing machine-specific DRM device paths on systems where those devices do not exist.
+
+Its isolated profile lives at:
+
+```text
+~/.local/share/desktop-profiles/noctalia/hypr/
+```
+
 ## 🧩 Installer options
 
 | Option | Action |
 | --- | --- |
 | `--customization` | Full customization; same as no flags |
 | `--multi-rice` | Full customization alias |
-| `--multi-rice-only` | Install all four rices without changing SDDM |
+| `--multi-rice-only` | Install all five rices without changing SDDM |
 | `--no-sddm-theme` | Install Multi-Rice but skip SDDM |
 | `--sddm-theme-only` | Install only the Frieren SDDM login theme |
 | `--refresh-switcher` | Install/reconfigure refresh switcher with DMI auto-detection |
@@ -269,21 +283,28 @@ Other machine-specific extras remain opt-in:
 --hibernate
 ```
 
-## 📦 AppImage installer
+## 📦 Fully offline AppImage — v3.0.0
 
-The **Huzaifah Multi-Rice Installer v2.0.0** release provides a lightweight x86_64 AppImage graphical front-end. It launches the same online installer used by the one-command method, so the current DMI-aware refresh switcher is picked up without embedding hardware-specific data into the AppImage itself.
+**Huzaifah Multi-Rice OFFLINE v3.0.0** is the current x86_64 fully-offline release. It bundles the five-rice desktop payload and its package closure so installation does not require a network connection.
 
-Release assets include:
+Release assets:
 
 ```text
-Huzaifah-Multi-Rice-Installer-x86_64.AppImage
-Huzaifah-Multi-Rice-Installer-x86_64.tar.gz
-SHA256SUMS.txt
+Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.AppImage
+Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.sha256
 ```
 
-The tarball contains the same AppImage while preserving its executable bit after extraction.
+Verify and run:
 
-The repository also contains work for a much larger fully-offline AppImage payload. That offline artifact is separate from the lightweight release above and should not be assumed to be current until it is explicitly rebuilt and published.
+```bash
+sha256sum -c Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.sha256
+chmod +x Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.AppImage
+./Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.AppImage
+```
+
+The v3.0.0 build was validated in a CachyOS QEMU VM with networking disabled, with 685 package archives bundled. The same validation covered all five rices, Noctalia startup, and transactional uninstall/desktop restoration.
+
+Release: https://github.com/huzaifahshahid71-ops/dotfiles/releases/tag/v3.0.0
 
 ## 🌙 Frieren SDDM theme
 
@@ -315,6 +336,12 @@ Timestamped safety backups are stored under:
 ~/.local/share/desktop-profile-backups/
 ```
 
+The v3 offline installer additionally keeps transactional install snapshots under:
+
+```text
+~/.local/share/huzaifah-multi-rice/installations/
+```
+
 ## 💾 Backing up the current Multi-Rice setup
 
 The historical script/path names are retained for compatibility:
@@ -330,13 +357,14 @@ To review, commit, and push the snapshot automatically:
 ./scripts/backup-dual-rice.sh --push
 ```
 
-The backup script now captures all four Hyprland profiles, Caelestia configuration, end4 layout, Ambxst configuration, DMS configuration when present, switcher files, package/version manifests, pinned source revisions, local patches, and selected portable state. Caches, `.env` files, private keys, and obvious credential/token files are excluded or block automatic pushing.
+The backup/restore workflow covers all five Hyprland profiles, including Noctalia, together with the saved rice configuration, switcher files, package/version manifests, pinned source revisions, local patches, and selected portable state. Caches, `.env` files, private keys, and obvious credential/token files are excluded or block automatic pushing.
 
 ## 📁 Repository layout
 
 ```text
 .
 ├── install.sh
+├── screenshots/v3/                     # v3 visual showcase
 ├── scripts/
 │   ├── backup-dual-rice.sh             # historical filename retained
 │   ├── install-refresh-switcher.sh     # DMI-aware refresh profile installer
@@ -347,11 +375,13 @@ The backup script now captures all four Hyprland profiles, Caelestia configurati
 │   │   ├── caelestia/hypr/
 │   │   ├── end4/hypr/
 │   │   ├── ambxst/hypr/
-│   │   └── dms/hypr/
+│   │   ├── dms/hypr/
+│   │   └── noctalia/hypr/
 │   ├── caelestia/
 │   ├── end4/
 │   ├── ambxst/
 │   ├── dms/
+│   ├── noctalia/
 │   ├── desktop-switcher/
 │   ├── bin/
 │   │   ├── desktop-switch
@@ -360,6 +390,7 @@ The backup script now captures all four Hyprland profiles, Caelestia configurati
 │   ├── versions/
 │   └── state/
 ├── installer-appimage/
+├── installer-appimage-offline/
 ├── machine/
 │   └── sddm/themes/sddm-frieren-theme/
 └── system-setup.sh
@@ -374,6 +405,7 @@ This setup builds on:
 - **pctrade/end4-pC**
 - **Axenide/Ambxst** and **axctl**
 - **AvengeMedia/DankMaterialShell**
+- **Noctalia**
 - **Hyprland** and **Quickshell**
 
 Their code remains under their respective upstream licenses. Local configuration and patches in this repository customize those projects rather than replace them.
