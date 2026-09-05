@@ -76,6 +76,10 @@ This repository is for people who already have an **Arch/CachyOS-family Linux in
 <td><img src="screenshots/v3/19-dms-processes.webp" alt="DankMaterialShell processes panel"></td>
 </tr>
 <tr><td align="center"><sub>Weather</sub></td><td align="center"><sub>Processes</sub></td></tr>
+<tr>
+<td colspan="2"><img src="screenshots/v3/25-dms-media.webp" alt="DankMaterialShell media player" width="100%"></td>
+</tr>
+<tr><td colspan="2" align="center"><sub>Media player</sub></td></tr>
 </table>
 
 ### ◉ Noctalia v5
