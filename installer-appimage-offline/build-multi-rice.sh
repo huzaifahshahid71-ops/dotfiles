@@ -6,8 +6,8 @@ TMP="$(mktemp -d)"
 WORK="$TMP/dotfiles"
 DIST="$ROOT/dist"
 OLD_OUT="$WORK/dist/Huzaifah-Triple-Rice-Offline-x86_64.AppImage"
-NEW_OUT="$DIST/Huzaifah-Multi-Rice-OFFLINE-x86_64.AppImage"
-NEW_SHA="$DIST/Huzaifah-Multi-Rice-OFFLINE-x86_64.sha256"
+NEW_OUT="$DIST/Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.AppImage"
+NEW_SHA="$DIST/Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.sha256"
 
 cleanup() { rm -rf "$TMP"; }
 trap cleanup EXIT
@@ -91,9 +91,10 @@ if ((${#FILTERED_TARGETS[@]})); then
     paru -S --needed --noconfirm --skipreview --sudoloop "${FILTERED_TARGETS[@]}"
 fi
 '''
-if old not in s:
-    raise SystemExit("Could not locate the direct-target installation block in build.sh")
-s = s.replace(old, new, 1)
+if old in s:
+    s = s.replace(old, new, 1)
+elif "HUZ_FIX_QUICKSHELL_PROVIDER:" not in s:
+    raise SystemExit("Could not locate either supported direct-target installation block in build.sh")
 
 old_rebuild = '''rebuild_one_aur_package() {
     local pkg="$1"

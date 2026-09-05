@@ -1,8 +1,24 @@
 #!/usr/bin/env bash
 set -u
 
+
+# HUZ_FIX_ROOT_FUSE_REEXEC:
+# A normally mounted AppImage is a user-owned FUSE mount. Commands run through
+# sudo (pacman, install, cp, etc.) may be unable to read files beneath that
+# mount. Keep the user experience as a normal double-click/direct launch, but
+# transparently relaunch once using AppImage's extract-and-run mode so the
+# bundled offline payload lives in an ordinary temporary directory readable by
+# both the user and root.
+if [[ -n "${APPIMAGE:-}" \
+      && "${APPIMAGE_EXTRACT_AND_RUN:-0}" != "1" \
+      && "${HUZ_APPIMAGE_REEXECED:-0}" != "1" ]]; then
+    export HUZ_APPIMAGE_REEXECED=1
+    export APPIMAGE_EXTRACT_AND_RUN=1
+    exec "$APPIMAGE" "$@"
+fi
+
 APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TITLE="Huzaifah Multi-Rice OFFLINE"
+TITLE="Huzaifah Multi-Rice OFFLINE v3.0.0"
 ENGINE="$APPDIR/install-offline.sh"
 
 is_arch_family() {
@@ -63,7 +79,7 @@ run_terminal() {
 #!/usr/bin/env bash
 set -o pipefail
 clear 2>/dev/null || true
-printf '\n  Huzaifah Multi-Rice OFFLINE\n'
+printf '\n  Huzaifah Multi-Rice OFFLINE v3.0.0\n'
 printf '  ===========================\n'
 printf '  Action: %s\n\n' $(printf '%q' "$action")
 bash $(printf '%q' "$ENGINE") $(printf '%q' "$action")
@@ -107,7 +123,8 @@ choose_action_gui() {
                 --text="<b>Fully offline Multi-Rice installer & system setup toolbox</b>\nDetected: $machine\n\nNothing uses GitHub, AUR or online mirrors at install time." \
                 --column="" --column="Action" --column="What it does" --print-column=2 \
                 TRUE  preflight  "Verify payload, machine, Secure Boot state and known package conflicts — changes nothing" \
-                FALSE install     "Install Caelestia + end4-pC + Ambxst + DMS, Frieren SDDM, SUPER+SHIFT+D and SUPER+SHIFT+R" \
+                FALSE install     "Install Caelestia + end4-pC + Ambxst + DMS + Noctalia v5, Frieren SDDM and switchers" \
+                FALSE uninstall   "Uninstall / restore the exact pre-install desktop configuration" \
                 FALSE refresh     "Install/reconfigure hardware-aware refresh switcher; G16 gets tested custom profile, others OEM only" \
                 FALSE sddm        "Install Frieren SDDM login theme only; does not enable/replace the display manager" \
                 FALSE asus        "Generic ASUS support: asusctl, ROG Control Center and safe power-profile setup" \
@@ -124,7 +141,8 @@ choose_action_gui() {
                 --text="Fully offline Multi-Rice installer & system setup toolbox\nDetected: $machine" \
                 --column="" --column="Action" --column="What it does" --print-column=2 \
                 TRUE preflight "Verify payload and machine; changes nothing" \
-                FALSE install "Install all four rices + switchers + Frieren SDDM" \
+                FALSE install "Install all five rices + switchers + Frieren SDDM" \
+                FALSE uninstall "Uninstall / restore exact pre-install desktop configuration" \
                 FALSE refresh "Hardware-aware refresh switcher" \
                 FALSE sddm "Frieren SDDM theme only" \
                 FALSE asus "Generic ASUS support" \
@@ -136,9 +154,10 @@ choose_action_gui() {
                 FALSE exit "Close installer" 2>/dev/null
             ;;
         kdialog)
-            kdialog --menu "Huzaifah Multi-Rice OFFLINE\n$machine\n\nChoose an action:" \
+            kdialog --menu "Huzaifah Multi-Rice OFFLINE v3.0.0\n$machine\n\nChoose an action:" \
                 preflight "Preflight — no changes" \
-                install "Install all four rices + SDDM + switchers" \
+                install "Install all five rices + SDDM + switchers" \
+                uninstall "Uninstall / restore previous desktop" \
                 refresh "Refresh-rate switcher" \
                 sddm "Frieren SDDM theme" \
                 asus "Generic ASUS support" \
@@ -154,25 +173,54 @@ choose_action_gui() {
 }
 
 choose_action_terminal() {
-    printf '\nHuzaifah Multi-Rice OFFLINE\n'
-    printf '===========================\n'
-    printf 'Detected: %s\n\n' "$(machine_name)"
-    printf '  1) Preflight (no changes)\n'
-    printf '  2) Install Multi-Rice + Frieren SDDM + switchers\n'
-    printf '  3) Refresh-rate switcher\n'
-    printf '  4) Frieren SDDM theme only\n'
-    printf '  5) Generic ASUS support\n'
-    printf '  6) Zephyrus G16 extras\n'
-    printf '  7) rEFInd setup\n'
-    printf '  8) Secure Boot setup\n'
-    printf '  9) Btrfs hibernation storage\n'
-    printf ' 10) System/payload status\n'
-    printf '  0) Exit\n\n'
-    read -r -p 'Choose: ' choice < /dev/tty || return 1
+    printf "
+Huzaifah Multi-Rice OFFLINE v3.0.0
+"
+    printf "==================================
+"
+    printf "Detected: %s
+
+" "$(machine_name)"
+    printf "  1) Preflight (no changes)
+"
+    printf "  2) Install Multi-Rice + Frieren SDDM + switchers
+"
+    printf "  3) Uninstall / restore previous desktop
+"
+    printf "  4) Refresh-rate switcher
+"
+    printf "  5) Frieren SDDM theme only
+"
+    printf "  6) Generic ASUS support
+"
+    printf "  7) Zephyrus G16 extras
+"
+    printf "  8) rEFInd setup
+"
+    printf "  9) Secure Boot setup
+"
+    printf " 10) Btrfs hibernation storage
+"
+    printf " 11) System/payload status
+"
+    printf "  0) Exit
+
+"
+    read -r -p "Choose: " choice < /dev/tty || return 1
     case "$choice" in
-        1) echo preflight ;; 2) echo install ;; 3) echo refresh ;; 4) echo sddm ;;
-        5) echo asus ;; 6) echo g16 ;; 7) echo refind ;; 8) echo secureboot ;;
-        9) echo hibernate ;; 10) echo status ;; 0) echo exit ;; *) echo invalid ;;
+        1) echo preflight ;;
+        2) echo install ;;
+        3) echo uninstall ;;
+        4) echo refresh ;;
+        5) echo sddm ;;
+        6) echo asus ;;
+        7) echo g16 ;;
+        8) echo refind ;;
+        9) echo secureboot ;;
+        10) echo hibernate ;;
+        11) echo status ;;
+        0) echo exit ;;
+        *) echo invalid ;;
     esac
 }
 
@@ -181,6 +229,9 @@ confirm_dangerous_action() {
     local msg=""
     case "$action" in
         install) msg="Install the complete offline Multi-Rice setup?\n\nExisting desktop configuration is backed up before replacement." ;;
+        uninstall) msg="Restore the exact desktop/configuration snapshot from before Multi-Rice was installed?
+
+System packages added by Multi-Rice will be left installed by default for safety." ;;
         refind) msg="Open the guarded rEFInd setup?\n\nIt can write the EFI System Partition and UEFI boot entries. Existing config and BootOrder are protected by the bundled setup script." ;;
         secureboot) msg="Open the guided Secure Boot setup?\n\nFirmware key enrollment is NEVER automatic. The terminal requires typing ENROLL before sbctl is allowed to change UEFI Secure Boot keys." ;;
         hibernate) msg="Open Btrfs hibernation storage setup?\n\nIt can create a swap subvolume/file and edit /etc/fstab, but asks again before making those changes." ;;

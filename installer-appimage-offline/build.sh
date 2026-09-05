@@ -11,7 +11,7 @@ APPDIR="$BUILD/AppDir"
 PAYLOAD="$APPDIR/payload"
 PKG_DIR="$PAYLOAD/packages"
 DIST="$ROOT/dist"
-TOOL="$BUILD/appimagetool-x86_64.AppImage"
+TOOL="$BUILD/appimagetool-modern-x86_64.AppImage"
 OUT="$DIST/Huzaifah-Triple-Rice-Offline-x86_64.AppImage"
 OUT_SHA="$DIST/Huzaifah-Triple-Rice-Offline-x86_64.sha256"
 TARGETS_FILE="$BUILD/targets.txt"
@@ -293,6 +293,7 @@ copy_tree() {
         --exclude '.build/' \
         --exclude 'build/' \
         --exclude 'dist/' \
+        --exclude '*.before-*' \
         --exclude '__pycache__/' \
         --exclude '*.pyc' \
         "$src/" "$dst/"
@@ -348,8 +349,31 @@ fi
 ensure_paru
 
 mapfile -t TARGETS < "$TARGETS_FILE"
-log "Installing any missing direct triple-rice targets on the build machine"
-paru -S --needed --noconfirm --skipreview --sudoloop "${TARGETS[@]}"
+log "Installing any missing direct Multi-Rice targets on the build machine"
+
+# HUZ_FIX_QUICKSHELL_PROVIDER:
+# Never ask paru to resolve quickshell-git by package name here. Some repositories
+# expose legacy noctalia-qs as a Quickshell provider, which can make paru choose it
+# and conflict with the exact quickshell-git package already used by this setup.
+if printf '%s
+' "${TARGETS[@]}" | grep -Fxq quickshell-git; then
+if pacman -Q quickshell-git >/dev/null 2>&1; then
+log "Keeping installed quickshell-git as the exact Quickshell provider"
+elif pacman -Q noctalia-qs >/dev/null 2>&1; then
+die "Legacy noctalia-qs is installed instead of quickshell-git; refusing to alter the build host provider automatically"
+else
+die "quickshell-git is required but is not installed on the build host"
+fi
+fi
+
+for target in "${TARGETS[@]}"; do
+    [[ "$target" == "quickshell-git" ]] && continue
+    if pacman -Q "$target" >/dev/null 2>&1; then
+        continue
+    fi
+    log "Preparing direct target: $target"
+    paru -S --needed --noconfirm --skipreview --sudoloop "$target"
+done
 
 log "Resolving exact installed dependency closure"
 resolve_closure
@@ -393,6 +417,16 @@ repo-add -q "$PKG_DIR/huzaifah-offline.db.tar.gz" "${PACKAGE_ARCHIVES[@]}"
 log "Bundling the current dotfiles working tree"
 copy_tree "$ROOT" "$PAYLOAD/repo"
 
+# HUZ_FIX_PAYLOAD_EXEC_BITS: git/archive copies may lose executable metadata.
+log "Normalizing executable permissions in the bundled repository payload"
+find "$PAYLOAD/repo" -type f -name '*.sh' -exec chmod 0755 {} +
+if [[ -d "$PAYLOAD/repo/dual-rice/bin" ]]; then
+    find "$PAYLOAD/repo/dual-rice/bin" -maxdepth 1 -type f -exec chmod 0755 {} +
+fi
+[[ -x "$PAYLOAD/repo/scripts/install-refresh-switcher.sh" ]] \
+    || die "Bundled refresh switcher installer is not executable after staging"
+
+
 log "Bundling current local rice source trees (including local patches)"
 copy_tree "$END4_DOTS_SOURCE" "$PAYLOAD/sources/end4-dots"
 copy_tree "$END4_PC_SOURCE" "$PAYLOAD/sources/end4-pC"
@@ -435,7 +469,7 @@ python3 -m py_compile "$RESOLVER"
 if [[ ! -x "$TOOL" ]]; then
     log "Downloading appimagetool"
     curl -fL --retry 3 \
-        https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage \
+        https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage \
         -o "$TOOL"
     chmod +x "$TOOL"
 fi

@@ -28,7 +28,7 @@ The current offline control-center edition bundles:
 Launching the AppImage presents a control-center menu rather than immediately modifying the machine:
 
 1. **Preflight** — validates the embedded payload, DMI model, UEFI/Secure-Boot state and known package conflicts without changing the system.
-2. **Install Multi-Rice** — installs all four rices, switchers and Frieren SDDM from the embedded package repository.
+2. **Install Multi-Rice** — installs all five rices, switchers and Frieren SDDM from the embedded package repository.
 3. **Refresh switcher** — installs/reconfigures the hardware-aware refresh switcher.
 4. **Frieren SDDM** — theme only; does not replace the configured display manager or enable autologin.
 5. **ASUS support** — generic ASUS tooling with DMI warning on non-ASUS machines.
@@ -63,8 +63,8 @@ The normal build is recommended.
 Output:
 
 ```text
-dist/Huzaifah-Multi-Rice-OFFLINE-x86_64.AppImage
-dist/Huzaifah-Multi-Rice-OFFLINE-x86_64.sha256
+dist/Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.AppImage
+dist/Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.sha256
 ```
 
 The build step itself needs internet because it resolves/rebuilds AUR packages and downloads exact official package archives. **The resulting AppImage does not require internet for installation or for the bundled setup tools.**

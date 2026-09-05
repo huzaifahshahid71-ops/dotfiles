@@ -12,6 +12,7 @@ PROFILE_ROOT="$HOME/.local/share/desktop-profiles"
 BACKUP_ROOT="$HOME/.local/share/desktop-profile-backups"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 BACKUP="$BACKUP_ROOT/offline-restore-$STAMP"
+HUZ_OFFLINE_ACTION="${1:-install}"
 
 log()  { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 ok()   { printf '\033[1;32m✓\033[0m %s\n' "$*"; }
@@ -225,6 +226,29 @@ configure_end4_search_only() {
     mv "$tmp" "$config"
 }
 
+# HUZ_FIX_ACTIVATE_SDDM:
+# Change the display-manager choice for the next boot without killing this session.
+activate_sddm_for_next_boot() {
+    local dm_link="/etc/systemd/system/display-manager.service"
+    local current_dm=""
+
+    if [[ -L "$dm_link" ]]; then
+        current_dm="$(basename "$(readlink -f "$dm_link" 2>/dev/null || true)")"
+    fi
+
+    if [[ -n "$current_dm" && "$current_dm" != "sddm.service" ]]; then
+        log "Replacing $current_dm with SDDM for the next boot"
+        sudo systemctl disable "$current_dm" >/dev/null 2>&1 || true
+    fi
+
+    # CachyOS Hyprland commonly ships greetd; this is harmless if absent.
+    sudo systemctl disable greetd.service >/dev/null 2>&1 || true
+
+    sudo systemctl enable sddm.service >/dev/null
+    sudo systemctl set-default graphical.target >/dev/null
+    ok "SDDM enabled for next boot; current graphical session was left running"
+}
+
 install_frieren_theme() {
     local theme_src="$REPO/machine/sddm/themes/sddm-frieren-theme"
     local theme_dst="/usr/share/sddm/themes/sddm-frieren-theme"
@@ -236,13 +260,33 @@ install_frieren_theme() {
     if sudo test -d "$theme_dst"; then
         sudo cp -a "$theme_dst" "$root_backup/"
     fi
-    if sudo test -f /etc/sddm.conf.d/90-huzaifah-theme.conf; then
-        sudo cp -a /etc/sddm.conf.d/90-huzaifah-theme.conf "$root_backup/90-huzaifah-theme.conf"
+    if sudo test -f /etc/sddm.conf.d/99-huzaifah-theme.conf; then
+        sudo cp -a /etc/sddm.conf.d/99-huzaifah-theme.conf "$root_backup/90-huzaifah-theme.conf"
     fi
 
     sudo rm -rf "$theme_dst"
     sudo cp -a "$theme_src" "$theme_dst"
-    printf '[Theme]\nCurrent=sddm-frieren-theme\n' | sudo tee /etc/sddm.conf.d/90-huzaifah-theme.conf >/dev/null
+    # HUZ_FIX_SDDM_CONFIG_PRECEDENCE:
+    # /etc/sddm.conf has higher precedence than drop-ins, so update its Theme
+    # selection too when it already exists.
+    if sudo test -f /etc/sddm.conf; then
+        sudo cp -a /etc/sddm.conf "$root_backup/sddm.conf"
+        if sudo grep -qE '^[[:space:]]*Current[[:space:]]*=' /etc/sddm.conf; then
+            sudo sed -Ei 's#^[[:space:]]*Current[[:space:]]*=.*#Current=sddm-frieren-theme#' /etc/sddm.conf
+        elif sudo grep -qE '^[[:space:]]*\[Theme\][[:space:]]*$' /etc/sddm.conf; then
+            sudo sed -i '/^[[:space:]]*\[Theme\][[:space:]]*$/a Current=sddm-frieren-theme' /etc/sddm.conf
+        else
+            printf '\n[Theme]\nCurrent=sddm-frieren-theme\n' | sudo tee -a /etc/sddm.conf >/dev/null
+        fi
+    fi
+
+    printf '[Theme]\nCurrent=sddm-frieren-theme\n' | sudo tee /etc/sddm.conf.d/99-huzaifah-theme.conf >/dev/null
+
+    # Full Multi-Rice install means SDDM should actually become the login manager.
+    # The dedicated "sddm" toolbox action intentionally remains theme-only.
+    if [[ "$HUZ_OFFLINE_ACTION" == "install" ]]; then
+        activate_sddm_for_next_boot
+    fi
 
     ok "Frieren SDDM theme installed (display manager state/autologin unchanged)"
 }

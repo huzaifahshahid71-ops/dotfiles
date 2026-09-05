@@ -26,3 +26,6 @@ migration-backups/
 !machine/sddm/
 !machine/sddm/**
 # --- End disaster-recovery snapshots ---
+dist/
+installer-appimage-offline/.build/
+*.before-*

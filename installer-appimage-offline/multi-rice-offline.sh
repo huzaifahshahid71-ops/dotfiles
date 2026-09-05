@@ -82,14 +82,294 @@ rewrite_home_paths_json() {
     mv "$tmp" "$file"
 }
 
+
+# HUZ_V3_TRANSACTIONAL_ROLLBACK
+# v3.0.0 records the machine state BEFORE any Multi-Rice mutation.
+# The snapshot preserves files/directories/symlinks exactly with tar.
+
+managed_user_paths() {
+    printf "%s\n" \
+        ".config/hypr" \
+        ".config/caelestia" \
+        ".config/illogical-impulse" \
+        ".config/ambxst" \
+        ".config/DankMaterialShell" \
+        ".config/noctalia" \
+        ".config/desktop-switcher" \
+        ".config/desktop-profile" \
+        ".config/quickshell/ii" \
+        ".config/quickshell/end4-pC" \
+        ".config/systemd/user/background-music.service" \
+        ".config/systemd/user/dms.service" \
+        ".local/share/desktop-profiles" \
+        ".local/share/ambxst" \
+        ".local/state/noctalia" \
+        ".local/src/ambxst" \
+        ".local/src/end4-dots" \
+        ".local/bin/desktop-switch" \
+        ".local/bin/recover-caelestia" \
+        ".local/bin/ambxst" \
+        ".local/bin/refresh-switch" \
+        ".cache/ambxst/wallpapers.json"
+}
+
+managed_system_paths() {
+    printf "%s\n" \
+        "usr/local/bin/axctl" \
+        "usr/local/bin/ambxst" \
+        "usr/share/sddm/themes/sddm-frieren-theme" \
+        "etc/sddm.conf.d/90-huzaifah-theme.conf" \
+        "etc/systemd/system/display-manager.service"
+}
+
+record_path_state() {
+    local path="$1" label="$2" out="$3" kind target=""
+    if [[ -L "$path" ]]; then
+        kind=symlink
+        target="$(readlink "$path" 2>/dev/null || true)"
+    elif [[ -d "$path" ]]; then
+        kind=directory
+    elif [[ -f "$path" ]]; then
+        kind=file
+    elif [[ -e "$path" ]]; then
+        kind=other
+    else
+        kind=absent
+    fi
+    printf "%s\t%s\t%s\n" "$label" "$kind" "$target" >> "$out"
+}
+
+create_install_snapshot() {
+    local root="$HOME/.local/share/huzaifah-multi-rice/installations"
+    local state="$root/$STAMP"
+    local system_state="/var/backups/huzaifah-multi-rice/$STAMP"
+    local rel abs legacy archive meta
+    local -a existing_user=()
+    local -a existing_system=()
+
+    HUZ_INSTALL_STATE="$state"
+    HUZ_SYSTEM_STATE="$system_state"
+
+    log "Creating transactional v3.0.0 rollback snapshot BEFORE installation"
+    mkdir -p "$state/packages"
+    sudo mkdir -p "$system_state"
+
+    {
+        printf "version=3.0.0\n"
+        printf "install_id=%s\n" "$STAMP"
+        printf "created=%s\n" "$(date --iso-8601=seconds)"
+        printf "user=%s\n" "$USER"
+        printf "home=%s\n" "$HOME"
+        printf "hostname=%s\n" "$(hostname)"
+        printf "system_snapshot=%s\n" "$system_state"
+        printf "status=in-progress\n"
+    } > "$state/manifest"
+
+    pacman -Qq 2>/dev/null | sort -u > "$state/packages-before.txt"
+    pacman -Qqe 2>/dev/null | sort -u > "$state/packages-explicit-before.txt"
+
+    systemctl --user is-enabled dms.service > "$state/dms-enabled-before.txt" 2>&1 || true
+    systemctl --user is-active dms.service > "$state/dms-active-before.txt" 2>&1 || true
+
+    if [[ -L "$HOME/.config/hypr" ]]; then
+        readlink "$HOME/.config/hypr" > "$state/hypr-target-before.txt" || true
+    fi
+
+    : > "$state/user-paths.tsv"
+    while IFS= read -r rel; do
+        [[ -n "$rel" ]] || continue
+        abs="$HOME/$rel"
+        record_path_state "$abs" "$rel" "$state/user-paths.tsv"
+        if [[ -e "$abs" || -L "$abs" ]]; then
+            existing_user+=("$rel")
+        fi
+    done < <(managed_user_paths)
+
+    if ((${#existing_user[@]})); then
+        tar -C "$HOME" -cpf "$state/user-home.tar" -- "${existing_user[@]}"
+    else
+        tar -C "$HOME" -cpf "$state/user-home.tar" --files-from /dev/null
+    fi
+
+    : > "$state/system-paths.tsv"
+    while IFS= read -r rel; do
+        [[ -n "$rel" ]] || continue
+        abs="/$rel"
+        record_path_state "$abs" "$rel" "$state/system-paths.tsv"
+        if [[ -e "$abs" || -L "$abs" ]]; then
+            existing_system+=("$rel")
+        fi
+    done < <(managed_system_paths)
+
+    if ((${#existing_system[@]})); then
+        sudo tar -C / -cpf "$system_state/root.tar" -- "${existing_system[@]}"
+    else
+        sudo tar -C / -cpf "$system_state/root.tar" --files-from /dev/null
+    fi
+
+    if legacy="$(pacman -Q noctalia-qs 2>/dev/null)"; then
+        printf "%s\n" "$legacy" > "$state/legacy-noctalia-qs-before.txt"
+
+        while IFS= read -r -d "" archive; do
+            meta="$(LC_ALL=C pacman -Qp "$archive" 2>/dev/null || true)"
+            if [[ "$meta" == "$legacy" ]]; then
+                cp -f "$archive" "$state/packages/"
+                break
+            fi
+        done < <(find /var/cache/pacman/pkg -maxdepth 1 -type f \
+            -name "noctalia-qs-*.pkg.tar.*" ! -name "*.sig" -print0 2>/dev/null)
+        if ! find "$state/packages" -maxdepth 1 -type f -name "noctalia-qs-*.pkg.tar.*" ! -name "*.sig" -print -quit | grep -q .; then
+            die "Legacy noctalia-qs is installed, but its exact package archive is not cached; refusing migration because exact rollback would be impossible"
+        fi
+    fi
+
+    pacman -Q quickshell-git > "$state/quickshell-git-before.txt" 2>/dev/null || true
+    pacman -Q noctalia > "$state/noctalia-before.txt" 2>/dev/null || true
+
+    ln -sfn "$state" "$root/latest"
+
+    ok "Rollback snapshot created: $state"
+}
+
+finalize_install_snapshot() {
+    [[ -n "${HUZ_INSTALL_STATE:-}" && -d "$HUZ_INSTALL_STATE" ]] || return 0
+
+    pacman -Qq 2>/dev/null | sort -u > "$HUZ_INSTALL_STATE/packages-after.txt"
+    comm -13 \
+        "$HUZ_INSTALL_STATE/packages-before.txt" \
+        "$HUZ_INSTALL_STATE/packages-after.txt" \
+        > "$HUZ_INSTALL_STATE/packages-added.txt"
+
+    sed -i "s/^status=.*/status=complete/" "$HUZ_INSTALL_STATE/manifest"
+    printf "%s\n" "$(date --iso-8601=seconds)" > "$HUZ_INSTALL_STATE/completed-at"
+
+    ok "Rollback manifest finalized"
+}
+
+latest_install_snapshot() {
+    local latest="$HOME/.local/share/huzaifah-multi-rice/installations/latest"
+    [[ -L "$latest" ]] || return 1
+    readlink -f "$latest"
+}
+
+uninstall_multi_rice() {
+    local state root system_state rel legacy_archive=""
+    local -a added=()
+    local dms_enabled="" dms_active=""
+
+    state="$(latest_install_snapshot || true)"
+
+    if [[ -z "$state" || ! -d "$state" || ! -f "$state/manifest" ]]; then
+        printf "\nNo Huzaifah Multi-Rice installation/rollback snapshot was found.\n"
+        printf "Nothing was changed.\n"
+        return 0
+    fi
+
+    if [[ -s "$state/legacy-noctalia-qs-before.txt" ]]; then
+        legacy_archive="$(find "$state/packages" -maxdepth 1 -type f -name "noctalia-qs-*.pkg.tar.*" ! -name "*.sig" -print -quit 2>/dev/null || true)"
+        [[ -n "$legacy_archive" ]] || die "Rollback snapshot is missing the saved legacy noctalia-qs archive; exact rollback cannot continue"
+    fi
+
+    if [[ -f "$state/restored-at" ]]; then
+        printf "\nThis v3.0.0 rollback snapshot has already been restored.\n"
+        printf "Nothing was changed.\n"
+        return 0
+    fi
+
+    printf "\nHuzaifah Multi-Rice v3.0.0 rollback\n"
+    printf "====================================\n"
+    printf "Snapshot: %s\n\n" "$state"
+
+    warn "This will remove Multi-Rice-managed desktop files and restore the exact pre-install snapshot."
+    warn "Packages are NOT removed by the default uninstall."
+
+    prompt_yes_no "Restore the previous desktop configuration now?" n || {
+        log "Uninstall cancelled"
+        return 0
+    }
+
+    root="$HOME/.local/share/huzaifah-multi-rice/installations"
+    system_state="$(grep "^system_snapshot=" "$state/manifest" | cut -d= -f2- || true)"
+
+    log "Removing Multi-Rice-managed user paths"
+    while IFS= read -r rel; do
+        [[ -n "$rel" ]] || continue
+        rm -rf -- "$HOME/$rel"
+    done < <(managed_user_paths)
+
+    if [[ -f "$state/user-home.tar" ]]; then
+        log "Restoring exact pre-install user files and symlinks"
+        tar -C "$HOME" -xpf "$state/user-home.tar"
+    fi
+
+    log "Restoring system files changed by Multi-Rice"
+    while IFS= read -r rel; do
+        [[ -n "$rel" ]] || continue
+        sudo rm -rf -- "/$rel"
+    done < <(managed_system_paths)
+
+    if [[ -n "$system_state" ]] && sudo test -f "$system_state/root.tar"; then
+        sudo tar -C / -xpf "$system_state/root.tar"
+    fi
+
+    sudo systemctl daemon-reload >/dev/null 2>&1 || true
+    systemctl --user daemon-reload >/dev/null 2>&1 || true
+
+    dms_enabled="$(head -n1 "$state/dms-enabled-before.txt" 2>/dev/null || true)"
+    dms_active="$(head -n1 "$state/dms-active-before.txt" 2>/dev/null || true)"
+
+    case "$dms_enabled" in
+        enabled) systemctl --user enable dms.service >/dev/null 2>&1 || true ;;
+        disabled) systemctl --user disable dms.service >/dev/null 2>&1 || true ;;
+    esac
+
+    case "$dms_active" in
+        active) systemctl --user start dms.service >/dev/null 2>&1 || true ;;
+        inactive|failed) systemctl --user stop dms.service >/dev/null 2>&1 || true ;;
+    esac
+
+    if [[ -n "$legacy_archive" ]]; then
+        log "Restoring legacy noctalia-qs provider state"
+        if [[ ! -s "$state/quickshell-git-before.txt" ]] && pacman -Q quickshell-git >/dev/null 2>&1; then
+            sudo pacman -Rdd --noconfirm quickshell-git
+        fi
+        if [[ ! -s "$state/noctalia-before.txt" ]] && pacman -Q noctalia >/dev/null 2>&1; then
+            sudo pacman -Rdd --noconfirm noctalia
+        fi
+        sudo pacman -U --noconfirm "$legacy_archive"
+        ok "Legacy noctalia-qs provider state restored"
+    fi
+
+    if [[ -f "$state/packages-added.txt" ]]; then
+        mapfile -t added < "$state/packages-added.txt"
+    fi
+
+    printf "%s\n" "$(date --iso-8601=seconds)" > "$state/restored-at"
+    sed -i "s/^status=.*/status=restored/" "$state/manifest"
+    ln -sfn "$state" "$root/latest"
+
+    ok "Previous desktop configuration restored"
+
+    if ((${#added[@]})); then
+        printf "\n%d package(s) were added during the original Multi-Rice install.\n" "${#added[@]}"
+        printf "They were intentionally left installed for safety.\n"
+        printf "The package list is preserved at:\n  %s/packages-added.txt\n" "$state"
+    fi
+
+    printf "\nLog out and back in, or reboot, to complete the desktop rollback.\n"
+}
+
+
 preflight_payload() {
     [[ -d "$REPO/dual-rice" ]] || die "Offline payload is missing the dotfiles snapshot"
     [[ -d "$PKG_DIR" ]] || die "Offline payload is missing package archives"
     [[ -f "$PKG_DIR/huzaifah-offline.db" || -f "$PKG_DIR/huzaifah-offline.db.tar.gz" ]] || die "Offline pacman repository database is missing"
     [[ -s "$TARGETS_FILE" ]] || die "Offline target package list is missing"
-    for profile in caelestia end4 ambxst dms; do
+    for profile in caelestia end4 ambxst dms noctalia; do
         [[ -f "$REPO/dual-rice/profiles/$profile/hypr/hyprland.lua" ]] || die "Missing $profile profile in offline payload"
     done
+    [[ -f "$REPO/dual-rice/noctalia/config.toml" ]] || die "Missing Noctalia config in offline payload"
+    [[ -f "$REPO/dual-rice/noctalia/settings.toml" ]] || die "Missing Noctalia settings in offline payload"
     [[ -d "$SOURCE_DIR/end4-dots" ]] || die "Bundled end4-dots source is missing"
     [[ -d "$SOURCE_DIR/end4-pC" ]] || die "Bundled end4-pC source is missing"
     [[ -d "$SOURCE_DIR/ambxst" ]] || die "Bundled Ambxst source is missing"
@@ -142,13 +422,13 @@ install_named_local() {
     rm -f "$conf"
 }
 
-handle_noctalia_provider_transition() {
+handle_legacy_noctalia_qs_transition() {
     pacman -Q noctalia-qs >/dev/null 2>&1 || return 0
     local_repo_has quickshell-git || die "noctalia-qs is installed, but bundled quickshell-git is missing"
 
-    warn "Existing noctalia-qs conflicts with the bundled Caelestia/Quickshell stack."
+    warn "Legacy noctalia-qs conflicts with the bundled Caelestia/Quickshell stack."
     warn "The installer can replace its Quickshell provider with bundled quickshell-git before continuing."
-    prompt_yes_no "Replace noctalia-qs with quickshell-git?" y || die "Cannot install Multi-Rice while noctalia-qs owns the conflicting Quickshell provider"
+    prompt_yes_no "Replace legacy noctalia-qs with bundled quickshell-git?" y || die "Cannot install Multi-Rice while noctalia-qs owns the conflicting Quickshell provider"
 
     sudo pacman -Rdd --noconfirm noctalia-qs
     install_named_local quickshell-git
@@ -160,7 +440,7 @@ install_all_local_packages() {
     mapfile -t targets < <(grep -Ev '^[[:space:]]*(#|$)' "$TARGETS_FILE" | sort -u)
     ((${#targets[@]})) || die "Offline target package list is empty"
 
-    handle_noctalia_provider_transition
+    handle_legacy_noctalia_qs_transition
 
     conf="$(mktemp --suffix=.conf)"
     make_pacman_conf "$conf"
@@ -183,7 +463,7 @@ preflight_report() {
     printf 'G16 profile:   %s\n' "$(is_g16 && echo yes || echo no)"
     printf 'Free space /:  %s\n' "$(df -h --output=avail / | tail -1 | xargs)"
     if pacman -Q noctalia-qs >/dev/null 2>&1; then
-        printf 'Conflict:      noctalia-qs detected; automatic provider transition available\n'
+        printf 'Conflict:      legacy noctalia-qs detected; migration to bundled quickshell-git available\n'
     else
         printf 'Conflict:      no known Quickshell provider conflict detected\n'
     fi
@@ -200,6 +480,8 @@ restore_profiles_and_configs() {
     backup_path "$HOME/.config/illogical-impulse" illogical-impulse
     backup_path "$HOME/.config/ambxst" ambxst-config
     backup_path "$HOME/.config/DankMaterialShell" dms-config
+    backup_path "$HOME/.config/noctalia" noctalia-config
+    backup_path "$HOME/.local/state/noctalia" noctalia-state
     backup_path "$HOME/.local/share/ambxst" ambxst-share
     backup_path "$HOME/.local/src/ambxst" ambxst-source
     backup_path "$HOME/.cache/ambxst/wallpapers.json" ambxst-wallpapers.json
@@ -208,8 +490,8 @@ restore_profiles_and_configs() {
     backup_path "$HOME/.local/bin/desktop-switch" desktop-switch
     backup_path "$HOME/.local/bin/recover-caelestia" recover-caelestia
 
-    log "Restoring Caelestia, end4-pC, Ambxst and DMS profiles"
-    for profile in caelestia end4 ambxst dms; do
+    log "Restoring Caelestia, end4-pC, Ambxst, DMS and Noctalia profiles"
+    for profile in caelestia end4 ambxst dms noctalia; do
         mkdir -p "$PROFILE_ROOT/$profile/hypr"
         rsync -a --delete "$src/profiles/$profile/hypr/" "$PROFILE_ROOT/$profile/hypr/"
     done
@@ -238,6 +520,14 @@ restore_profiles_and_configs() {
         rsync -a --delete "$src/dms/config/" "$HOME/.config/DankMaterialShell/"
         while IFS= read -r json; do rewrite_home_paths_json "$json"; done < <(find "$HOME/.config/DankMaterialShell" -type f -name '*.json' -print)
     fi
+    if [[ -d "$src/noctalia" ]]; then
+        log "Restoring Noctalia v5 configuration"
+        mkdir -p "$HOME/.config/noctalia" "$HOME/.local/state/noctalia"
+        [[ -f "$src/noctalia/config.toml" ]] && cp -a "$src/noctalia/config.toml" "$HOME/.config/noctalia/config.toml"
+        [[ -f "$src/noctalia/settings.toml" ]] && cp -a "$src/noctalia/settings.toml" "$HOME/.local/state/noctalia/settings.toml"
+        [[ -f "$src/noctalia/.setup-complete" ]] && cp -a "$src/noctalia/.setup-complete" "$HOME/.local/state/noctalia/.setup-complete"
+    fi
+
     if [[ -d "$src/desktop-switcher" ]]; then
         mkdir -p "$HOME/.config/desktop-switcher"
         rsync -a --delete "$src/desktop-switcher/" "$HOME/.config/desktop-switcher/"
@@ -303,7 +593,7 @@ install_frieren_theme() {
 activate_saved_profile() {
     local active=caelestia
     [[ -f "$REPO/dual-rice/state/active" ]] && active="$(tr -d '[:space:]' < "$REPO/dual-rice/state/active")"
-    case "$active" in caelestia|end4|ambxst|dms) ;; *) active=caelestia ;; esac
+    case "$active" in caelestia|end4|ambxst|dms|noctalia) ;; *) active=caelestia ;; esac
     rm -rf "$HOME/.config/hypr"
     ln -s "$PROFILE_ROOT/$active/hypr" "$HOME/.config/hypr"
     mkdir -p "$HOME/.config/desktop-profile"
@@ -317,6 +607,7 @@ install_refresh_switcher() {
 
 install_multi_rice() {
     verify_payload
+    create_install_snapshot
     install_all_local_packages
     systemctl --user disable --now dms.service >/dev/null 2>&1 || true
     restore_profiles_and_configs
@@ -325,9 +616,12 @@ install_multi_rice() {
     activate_saved_profile
     install_refresh_switcher
     install_frieren_theme
-    ok "Fully offline Multi-Rice installation completed"
-    printf 'Safety backup: %s\n' "$BACKUP"
-    printf 'No internet connection was required.\n'
+    finalize_install_snapshot
+    ok "Fully offline Multi-Rice v3.0.0 installation completed"
+    printf "Transactional rollback snapshot: %s
+" "$HUZ_INSTALL_STATE"
+    printf "No internet connection was required.
+"
 }
 
 run_system_setup() {
@@ -417,6 +711,56 @@ secure_boot_setup() {
     printf 'Do not delete Microsoft keys; this flow intentionally enrolled them alongside your keys.\n'
 }
 
+uninstall_multi_rice_packages() {
+    local state pkg
+    local -a candidates=()
+    local -a installed=()
+
+    state="$(latest_install_snapshot || true)"
+
+    if [[ -n "$state" && -d "$state" && ! -f "$state/restored-at" ]]; then
+        warn "Restore the previous desktop first before removing Multi-Rice-added packages."
+        return 2
+    fi
+
+    if [[ -n "$state" && -f "$state/packages-cleaned-at" ]]; then
+        printf "\nThe Multi-Rice-added package cleanup has already been completed.\n"
+        printf "Nothing was removed.\n"
+        return 0
+    fi
+
+    if [[ -z "$state" || ! -f "$state/packages-added.txt" ]]; then
+        printf "\nNo v3.0.0 package-addition manifest was found.\n"
+        printf "Nothing was removed.\n"
+        return 0
+    fi
+
+    while IFS= read -r pkg; do
+        [[ -n "$pkg" ]] || continue
+        candidates+=("$pkg")
+        pacman -Q "$pkg" >/dev/null 2>&1 && installed+=("$pkg")
+    done < "$state/packages-added.txt"
+
+    if ((${#installed[@]} == 0)); then
+        printf "\nNo packages originally added by Multi-Rice remain installed.\n"
+        return 0
+    fi
+
+    printf "\nPackages recorded as added by this v3.0.0 installation:\n\n"
+    printf "  %s\n" "${installed[@]}"
+
+    printf "\nOnly packages absent before installation are candidates.\n"
+    printf "Pacman will still perform dependency checks before removal.\n\n"
+
+    prompt_yes_no "Remove these Multi-Rice-added packages with pacman -Rns?" n || {
+        log "Package cleanup cancelled"
+        return 0
+    }
+
+    sudo pacman -Rns -- "${installed[@]}"
+    printf "%s\n" "$(date --iso-8601=seconds)" > "$state/packages-cleaned-at"
+}
+
 status_report() {
     printf '\nHuzaifah Multi-Rice OFFLINE Status\n'
     printf '==================================\n'
@@ -435,7 +779,10 @@ Usage: install-offline.sh ACTION
 
 Actions:
   preflight     Verify payload and target-machine readiness without changing it
-  install       Install all four rices + switchers + Frieren SDDM theme
+  install       Install all five rices + switchers + Frieren SDDM theme
+  uninstall     Restore the exact pre-install desktop snapshot
+  uninstall-packages
+                Remove packages recorded as added by the v3.0.0 installation
   refresh       Install/reconfigure SUPER+SHIFT+R refresh switcher
   sddm          Install Frieren SDDM theme only
   asus          Install generic ASUS support (asusctl/ROG Control Center)
@@ -454,6 +801,8 @@ main() {
     case "$action" in
         preflight) preflight_report ;;
         install) install_multi_rice ;;
+        uninstall) uninstall_multi_rice ;;
+        uninstall-packages) uninstall_multi_rice_packages ;;
         refresh) verify_payload; install_refresh_switcher ;;
         sddm) verify_payload; install_named_local sddm rsync; install_frieren_theme ;;
         asus) verify_payload; install_named_local asusctl rog-control-center power-profiles-daemon; run_system_setup asus ;;

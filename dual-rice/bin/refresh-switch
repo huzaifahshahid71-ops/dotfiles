@@ -189,6 +189,11 @@ g16_fallback_mode() {
 
 g16_mode_for_rate() {
     local rate="$1" oem
+    # HUZAIFAH-FORCE-60: runtime OEM 60 Hz does not apply reliably
+    if [[ "$rate" == 60 ]]; then
+        g16_fallback_mode 60
+        return
+    fi
     oem="$(find_oem_mode_near "$rate" || true)"
     if [[ -n "$oem" ]]; then
         printf '%s\n' "$oem"

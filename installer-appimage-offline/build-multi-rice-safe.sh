@@ -33,6 +33,7 @@ mkdir -p "$WORK" "$DIST"
 rsync -a \
     --exclude '.git/' \
     --exclude 'dist/' \
+        --exclude '*.before-*' \
     --exclude 'installer-appimage-offline/.build/' \
     "$ROOT/" "$WORK/"
 
@@ -260,11 +261,12 @@ log "Starting corrected Multi-Rice offline build"
     bash installer-appimage-offline/build-multi-rice.sh "${FORWARD_ARGS[@]}"
 )
 
-for name in Huzaifah-Multi-Rice-OFFLINE-x86_64.AppImage Huzaifah-Multi-Rice-OFFLINE-x86_64.sha256; do
+for name in Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.AppImage Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.sha256; do
     [[ -f "$WORK/dist/$name" ]] || die "Corrected builder finished without producing $name"
     cp -f "$WORK/dist/$name" "$DIST/$name"
 done
-chmod +x "$DIST/Huzaifah-Multi-Rice-OFFLINE-x86_64.AppImage"
+chmod +x "$DIST/Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.AppImage"
+(cd "$DIST" && sha256sum Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.AppImage > Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.sha256)
 
 printf '\nBuilt successfully:\n'
-ls -lh "$DIST/Huzaifah-Multi-Rice-OFFLINE-x86_64.AppImage" "$DIST/Huzaifah-Multi-Rice-OFFLINE-x86_64.sha256"
+ls -lh "$DIST/Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.AppImage" "$DIST/Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.sha256"

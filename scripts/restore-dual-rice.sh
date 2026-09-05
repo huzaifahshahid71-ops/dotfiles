@@ -140,7 +140,7 @@ EOF
 }
 
 is_arch_family || die "This restore currently supports Arch/CachyOS only"
-for profile in caelestia end4 ambxst dms; do
+for profile in caelestia end4 ambxst dms noctalia; do
     [[ -d "$SRC/profiles/$profile/hypr" ]] || die "Missing backed-up $profile profile. Run backup-dual-rice.sh first."
     [[ -f "$SRC/profiles/$profile/hypr/hyprland.lua" ]] || die "Backed-up $profile hyprland.lua missing"
 done
@@ -157,7 +157,7 @@ paru -S --needed \
     brightnessctl playerctl cava matugen-bin imagemagick upower hyprpicker grim \
     slurp swappy wf-recorder tesseract tesseract-data-eng ydotool gnome-keyring \
     easyeffects libqalculate qt6-positioning ttf-readex-pro ttf-jetbrains-mono-nerd \
-    dim-caelestia-shell-git caelestia-cli quickshell-git dms-shell dms-shell-hyprland \
+    dim-caelestia-shell-git caelestia-cli quickshell-git dms-shell dms-shell-hyprland noctalia \
     tmux network-manager-applet blueman pavucontrol ffmpeg x264 qt6-base \
     qt6-declarative qt6-wayland qt6-svg qt6-tools qt6-imageformats qt6-multimedia \
     qt6-shadertools libwebp libavif syntax-highlighting breeze-icons hicolor-icon-theme \
@@ -178,6 +178,8 @@ backup_path "$HOME/.config/caelestia" "caelestia"
 backup_path "$HOME/.config/illogical-impulse" "illogical-impulse"
 backup_path "$HOME/.config/ambxst" "ambxst-config"
 backup_path "$HOME/.config/DankMaterialShell" "dms-config"
+backup_path "$HOME/.config/noctalia" "noctalia-config"
+backup_path "$HOME/.local/state/noctalia" "noctalia-state"
 backup_path "$HOME/.local/share/ambxst" "ambxst-share"
 backup_path "$HOME/.local/src/ambxst" "ambxst-source"
 backup_path "$HOME/.cache/ambxst/wallpapers.json" "ambxst-wallpapers.json"
@@ -187,8 +189,8 @@ backup_path "$HOME/.local/bin/desktop-switch" "desktop-switch"
 backup_path "$HOME/.local/bin/recover-caelestia" "recover-caelestia"
 backup_path "$HOME/.local/bin/ambxst" "ambxst-launcher"
 
-log "Restoring all four Hyprland profiles"
-for profile in caelestia end4 ambxst dms; do
+log "Restoring all five Hyprland profiles"
+for profile in caelestia end4 ambxst dms noctalia; do
     mkdir -p "$PROFILE_ROOT/$profile/hypr"
     rsync -a --delete "$SRC/profiles/$profile/hypr/" "$PROFILE_ROOT/$profile/hypr/"
 done
@@ -229,6 +231,14 @@ if [[ -d "$SRC/dms/config" ]] && find "$SRC/dms/config" -mindepth 1 -print -quit
     while IFS= read -r json; do
         rewrite_home_paths_json "$json"
     done < <(find "$HOME/.config/DankMaterialShell" -type f -name '*.json' -print)
+fi
+
+if [[ -d "$SRC/noctalia" ]]; then
+    log "Restoring Noctalia v5 configuration"
+    mkdir -p "$HOME/.config/noctalia" "$HOME/.local/state/noctalia"
+    [[ -f "$SRC/noctalia/config.toml" ]] && cp -a "$SRC/noctalia/config.toml" "$HOME/.config/noctalia/config.toml"
+    [[ -f "$SRC/noctalia/settings.toml" ]] && cp -a "$SRC/noctalia/settings.toml" "$HOME/.local/state/noctalia/settings.toml"
+    [[ -f "$SRC/noctalia/.setup-complete" ]] && cp -a "$SRC/noctalia/.setup-complete" "$HOME/.local/state/noctalia/.setup-complete"
 fi
 
 if [[ -d "$SRC/desktop-switcher" ]]; then
@@ -307,7 +317,7 @@ if [[ -f "$SRC/state/active" ]]; then
     active="$(tr -d '[:space:]' < "$SRC/state/active")"
 fi
 case "$active" in
-    caelestia|end4|ambxst|dms) ;;
+    caelestia|end4|ambxst|dms|noctalia) ;;
     *) warn "Unknown saved active profile '$active'; defaulting to Caelestia"; active="caelestia" ;;
 esac
 

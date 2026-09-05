@@ -1,4 +1,10 @@
-hl.env("AQ_DRM_DEVICES", "/dev/dri/intel-igpu")
+-- HUZ_FIX_PORTABLE_AQ_DRM_DEVICES:
+-- Keep the preferred ASUS iGPU on the real laptop, but let VMs/other PCs auto-detect.
+local aq_drm_device = "/dev/dri/intel-igpu"
+local aq_drm_exists = os.execute("test -e " .. aq_drm_device)
+if aq_drm_exists == true or aq_drm_exists == 0 then
+    hl.env("AQ_DRM_DEVICES", aq_drm_device)
+end
 local home   = os.getenv("HOME")
 local hypr   = home .. "/.config/hypr"
 package.path = package.path .. ";" .. home .. "/.config/caelestia/?.lua"
