@@ -24,11 +24,12 @@ profile_target() {
 
 pretty_name() {
     case "$1" in
-        caelestia) echo "Caelestia" ;;
-        end4) echo "end4-pC" ;;
-        ambxst) echo "Ambxst" ;;
-        dms) echo "DankMaterialShell" ;;
-        noctalia) echo "Noctalia v5" ;;
+        caelestia) echo "Aether" ;;
+        end4) echo "Obsidian" ;;
+        ambxst) echo "Aurora" ;;
+        dms) echo "Materia" ;;
+        serpantinum) echo "Ouroboros" ;;
+        noctalia) echo "Nocturne" ;;
         *) echo "$1" ;;
     esac
 }
@@ -39,13 +40,14 @@ profile_icon() {
         end4) echo "◈" ;;
         ambxst) echo "◆" ;;
         dms) echo "●" ;;
+        serpantinum) echo "◇" ;;
         noctalia) echo "◉" ;;
         *) echo "○" ;;
     esac
 }
 
 list_profiles() {
-    local preferred=(caelestia end4 ambxst dms noctalia)
+    local preferred=(caelestia end4 ambxst dms serpantinum noctalia)
     local p dir
 
     for p in "${preferred[@]}"; do
@@ -58,7 +60,7 @@ list_profiles() {
         [ -d "$dir" ] || continue
         p="$(basename "$dir")"
         case "$p" in
-            caelestia|end4|ambxst|dms|noctalia) continue ;;
+            caelestia|end4|ambxst|dms|serpantinum|noctalia) continue ;;
         esac
         if profile_target "$p" >/dev/null 2>&1; then
             printf '%s\n' "$p"
