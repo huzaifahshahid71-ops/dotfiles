@@ -1,0 +1,11 @@
+[Unit]
+Description=End4 Media Artwork Backend
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/end4-media-backend
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=default.target

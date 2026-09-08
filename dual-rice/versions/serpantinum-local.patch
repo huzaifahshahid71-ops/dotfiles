@@ -1,0 +1,79 @@
+diff --git a/src/quickshell/media/art_fetch.sh b/src/quickshell/media/art_fetch.sh
+index f8c8836..2b3b911 100755
+--- a/src/quickshell/media/art_fetch.sh
++++ b/src/quickshell/media/art_fetch.sh
+@@ -11,6 +11,45 @@ mkdir -p "$TMP_DIR"
+ RAW_URL="$1"
+ TITLE="$2"
+ ARTIST="$3"
++TRACK_URL="${4:-}"
++
++# For local media, trust the actual current file rather than mpris:artUrl.
++# mpv can leave mpris:artUrl pointing at the previous track.
++if [[ "$TRACK_URL" == file://* ]]; then
++    TRACK_PATH="$(python3 -c 'import sys,urllib.parse; print(urllib.parse.unquote(sys.argv[1]))' "${TRACK_URL#file://}")"
++
++    if [ -f "$TRACK_PATH" ]; then
++        sourceHash="$(printf "%s" "$TRACK_PATH" | md5sum | cut -d" " -f1)"
++        sourceArt="$TMP_DIR/${sourceHash}_source.png"
++        sourceTmp="$TMP_DIR/${sourceHash}_source.$$"
++
++        if [ ! -s "$sourceArt" ] || [ "$TRACK_PATH" -nt "$sourceArt" ]; then
++            rm -f "$sourceTmp"
++
++            if ffmpeg -v error -i "$TRACK_PATH"                 -map 0:v:0 -frames:v 1                 -f image2pipe -vcodec png -                 > "$sourceTmp" 2>/dev/null                 && [ -s "$sourceTmp" ]                 && identify "$sourceTmp" >/dev/null 2>&1; then
++
++                mv -f "$sourceTmp" "$sourceArt"
++            else
++                rm -f "$sourceTmp" "$sourceArt"
++
++                trackDir="$(dirname "$TRACK_PATH")"
++                for img in                     "$trackDir/cover.jpg" "$trackDir/cover.png"                     "$trackDir/folder.jpg" "$trackDir/folder.png"                     "$trackDir/front.jpg" "$trackDir/album.jpg"                     "$trackDir/Cover.jpg" "$trackDir/Folder.jpg"
++                do
++                    if [ -f "$img" ] && identify "$img" >/dev/null 2>&1; then
++                        cp "$img" "$sourceArt"
++                        break
++                    fi
++                done
++            fi
++        fi
++
++        if [ -s "$sourceArt" ] && identify "$sourceArt" >/dev/null 2>&1; then
++            RAW_URL="file://$sourceArt"
++        else
++            RAW_URL=""
++        fi
++    fi
++fi
+ 
+ CLEAN_URL="$RAW_URL"
+ if [[ "$RAW_URL" == file://* ]]; then
+diff --git a/src/quickshell/singletons/audio/MprisController.qml b/src/quickshell/singletons/audio/MprisController.qml
+index 0d19c11..327b59e 100644
+--- a/src/quickshell/singletons/audio/MprisController.qml
++++ b/src/quickshell/singletons/audio/MprisController.qml
+@@ -21,6 +21,11 @@ Singleton {
+     readonly property bool isPlaying: activePlayer ? activePlayer.isPlaying : false
+     readonly property string trackTitle: activePlayer ? (activePlayer.trackTitle || "") : ""
+     readonly property string trackArtist: activePlayer ? (activePlayer.trackArtist || "") : ""
++    readonly property string trackUrl: {
++        if (!activePlayer || !activePlayer.metadata) return "";
++        let u = activePlayer.metadata["xesam:url"];
++        return (typeof u === "string") ? u : "";
++    }
+     readonly property string currentArtUrl: {
+         if (!activePlayer) return "";
+         if (activePlayer.trackArtUrl && activePlayer.trackArtUrl !== "") return activePlayer.trackArtUrl;
+@@ -102,9 +107,10 @@ Singleton {
+         command: [
+             "bash",
+             Caching.qsDir + "/media/art_fetch.sh",
+-            root.currentArtUrl,
++            (root.trackUrl && root.trackUrl.startsWith("file://")) ? "" : root.currentArtUrl,
+             root.trackTitle,
+-            root.trackArtist
++            root.trackArtist,
++            root.trackUrl
+         ]
+         onExited: {
+             if (root.fetchPending) {

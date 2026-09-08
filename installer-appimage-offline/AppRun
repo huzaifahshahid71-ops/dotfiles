@@ -18,7 +18,7 @@ if [[ -n "${APPIMAGE:-}" \
 fi
 
 APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TITLE="Huzaifah Multi-Rice OFFLINE v3.0.0"
+TITLE="Huzaifah Multi-Rice OFFLINE v4.0.0"
 ENGINE="$APPDIR/install-offline.sh"
 
 is_arch_family() {
@@ -79,7 +79,7 @@ run_terminal() {
 #!/usr/bin/env bash
 set -o pipefail
 clear 2>/dev/null || true
-printf '\n  Huzaifah Multi-Rice OFFLINE v3.0.0\n'
+printf '\n  Huzaifah Multi-Rice OFFLINE v4.0.0\n'
 printf '  ===========================\n'
 printf '  Action: %s\n\n' $(printf '%q' "$action")
 bash $(printf '%q' "$ENGINE") $(printf '%q' "$action")
@@ -141,7 +141,7 @@ choose_action_gui() {
                 --text="Fully offline Multi-Rice installer & system setup toolbox\nDetected: $machine" \
                 --column="" --column="Action" --column="What it does" --print-column=2 \
                 TRUE preflight "Verify payload and machine; changes nothing" \
-                FALSE install "Install all five rices + switchers + Frieren SDDM" \
+                FALSE install "Install all six rices + switchers + Frieren SDDM" \
                 FALSE uninstall "Uninstall / restore exact pre-install desktop configuration" \
                 FALSE refresh "Hardware-aware refresh switcher" \
                 FALSE sddm "Frieren SDDM theme only" \
@@ -154,9 +154,9 @@ choose_action_gui() {
                 FALSE exit "Close installer" 2>/dev/null
             ;;
         kdialog)
-            kdialog --menu "Huzaifah Multi-Rice OFFLINE v3.0.0\n$machine\n\nChoose an action:" \
+            kdialog --menu "Huzaifah Multi-Rice OFFLINE v4.0.0\n$machine\n\nChoose an action:" \
                 preflight "Preflight — no changes" \
-                install "Install all five rices + SDDM + switchers" \
+                install "Install all six rices + SDDM + switchers" \
                 uninstall "Uninstall / restore previous desktop" \
                 refresh "Refresh-rate switcher" \
                 sddm "Frieren SDDM theme" \
@@ -174,7 +174,7 @@ choose_action_gui() {
 
 choose_action_terminal() {
     printf "
-Huzaifah Multi-Rice OFFLINE v3.0.0
+Huzaifah Multi-Rice OFFLINE v4.0.0
 "
     printf "==================================
 "

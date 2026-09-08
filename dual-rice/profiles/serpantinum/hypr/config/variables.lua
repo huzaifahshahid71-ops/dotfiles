@@ -1,0 +1,2 @@
+mainMod = "SUPER"
+terminal = "kitty"

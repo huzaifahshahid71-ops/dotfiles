@@ -6,8 +6,8 @@ TMP="$(mktemp -d)"
 WORK="$TMP/dotfiles"
 DIST="$ROOT/dist"
 OLD_OUT="$WORK/dist/Huzaifah-Triple-Rice-Offline-x86_64.AppImage"
-NEW_OUT="$DIST/Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.AppImage"
-NEW_SHA="$DIST/Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.sha256"
+NEW_OUT="$DIST/Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.AppImage"
+NEW_SHA="$DIST/Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.sha256"
 
 cleanup() { rm -rf "$TMP"; }
 trap cleanup EXIT

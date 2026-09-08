@@ -1,44 +1,410 @@
-diff --git a/modules/common/widgets/Player.qml b/modules/common/widgets/Player.qml
-index 16a966f..665480c 100644
---- a/modules/common/widgets/Player.qml
-+++ b/modules/common/widgets/Player.qml
-@@ -32,7 +32,7 @@ Item {
- 
-     property string displayedArtFilePath: {
-         if (!root.downloaded) return ""
--        if (root.artUrl.startsWith("file://")) return root.artUrl
-+        if (root.artUrl.startsWith("file://") || root.artUrl.startsWith("data:image/")) return root.artUrl
-         return Qt.resolvedUrl(artFilePath)
-     }
- 
-@@ -54,7 +54,7 @@ Item {
-             return
-         }
- 
--        if (root.artUrl.startsWith("file://")) {
-+        if (root.artUrl.startsWith("file://") || root.artUrl.startsWith("data:image/")) {
-             root.downloaded = true
-             return
-         }
 diff --git a/modules/ii/background/widgets/media/MediaWidget.qml b/modules/ii/background/widgets/media/MediaWidget.qml
-index 172fe5c..b1b4701 100644
+index 172fe5c..0a27a50 100644
 --- a/modules/ii/background/widgets/media/MediaWidget.qml
 +++ b/modules/ii/background/widgets/media/MediaWidget.qml
-@@ -95,7 +95,7 @@ AbstractBackgroundWidget {
+@@ -34,10 +34,9 @@ AbstractBackgroundWidget {
+         }
+         return MprisController.activePlayer
+     }
+-    property var artUrl: currentPlayer?.trackArtUrl
+-    property string artDownloadLocation: Directories.coverArt
+-    property string artFileName: Qt.md5(artUrl)
+-    property string artFilePath: `${artDownloadLocation}/${artFileName}`
++    property string externalArtUrl: ""
++    readonly property string externalArtStateFile:
++        (Quickshell.env("XDG_RUNTIME_DIR") ?? "") + "/end4-media/current.txt"
  
-     property string displayedArtFilePath: {
-         if (!root.downloaded) return ""
--        if (root.artUrl && root.artUrl.startsWith("file://")) return root.artUrl
-+        if (root.artUrl && root.artUrl.startsWith("file://") || root.artUrl.startsWith("data:image/")) return root.artUrl
-         return root.downloaded ? Qt.resolvedUrl(artFilePath) : ""
+     property real buttonSize: 34
+     property real buttonIconSize: 18
+@@ -90,41 +89,22 @@ AbstractBackgroundWidget {
+         animation: Appearance.animation.elementResize.numberAnimation.createObject(this)
      }
  
-@@ -109,7 +109,7 @@ AbstractBackgroundWidget {
-             root.downloaded = false
-             return
-         }
+-    property bool downloaded: false
+     property bool showLyrics: false
+-
+-    property string displayedArtFilePath: {
+-        if (!root.downloaded) return ""
+-        if (root.artUrl && root.artUrl.startsWith("file://")) return root.artUrl
+-        return root.downloaded ? Qt.resolvedUrl(artFilePath) : ""
+-    }
++    property string displayedArtFilePath: root.externalArtUrl
+ 
+     implicitHeight: card.implicitHeight
+     implicitWidth: card.implicitWidth
+ 
+-    onArtFilePathChanged: updateArt()
++    FileView {
++        id: externalArtFile
++        path: root.externalArtStateFile
++        watchChanges: true
+ 
+-    function updateArt() {
+-        if (!root.artUrl || root.artUrl.length === 0) {
+-            root.downloaded = false
+-            return
+-        }
 -        if (root.artUrl.startsWith("file://")) {
-+        if (root.artUrl.startsWith("file://") || root.artUrl.startsWith("data:image/")) {
-             root.downloaded = true
-             return
-         }
+-            root.downloaded = true
+-            return
+-        }
+-        coverArtDownloader.targetFile = root.artUrl
+-        coverArtDownloader.artFilePath = root.artFilePath
+-        root.downloaded = false
+-        coverArtDownloader.running = true
+-    }
++        onFileChanged: reload()
+ 
+-    Process {
+-        id: coverArtDownloader
+-        property string targetFile: root.artUrl
+-        property string artFilePath: root.artFilePath
+-        command: ["bash", "-c", `[ -f ${artFilePath} ] || curl -sSL '${targetFile}' -o '${artFilePath}'`]
+-        onExited: { root.downloaded = true }
++        onLoaded: {
++            root.externalArtUrl = externalArtFile.text().trim()
++        }
+     }
+ 
+     StyledRectangularShadow {
+@@ -171,7 +151,7 @@ AbstractBackgroundWidget {
+                     }
+                 }
+ 
+-                StyledImage {
++                Image {
+                     anchors.fill: parent
+                     source: root.displayedArtFilePath
+                     fillMode: Image.PreserveAspectCrop
+@@ -292,7 +272,7 @@ AbstractBackgroundWidget {
+                         }
+                     }
+ 
+-                    StyledImage {
++                    Image {
+                         anchors.fill: parent
+                         source: root.displayedArtFilePath
+                         fillMode: Image.PreserveAspectCrop
+@@ -442,7 +422,7 @@ AbstractBackgroundWidget {
+                             }
+                         }
+ 
+-                        StyledImage {
++                        Image {
+                             anchors.fill: parent
+                             source: root.displayedArtFilePath
+                             fillMode: Image.PreserveAspectCrop
+@@ -499,7 +479,7 @@ AbstractBackgroundWidget {
+                             }
+                         }
+ 
+-                        // Controls 
++                        // Controls
+                         Rectangle {
+                             id: controlsPill
+                             Layout.alignment: Qt.AlignRight
+@@ -512,7 +492,7 @@ AbstractBackgroundWidget {
+                                 id: controlsRow
+                                 anchors.centerIn: parent
+                                 spacing: 2
+-                        
++
+                                 RippleButton {
+                                     implicitWidth: root.buttonSize
+                                     implicitHeight: root.buttonSize
+@@ -659,7 +639,7 @@ AbstractBackgroundWidget {
+                                 }
+                             }
+ 
+-                            StyledImage {
++                            Image {
+                                 anchors.fill: parent
+                                 source: root.displayedArtFilePath
+                                 fillMode: Image.PreserveAspectCrop
+@@ -705,7 +685,7 @@ AbstractBackgroundWidget {
+                         }
+ 
+                         // Controls
+-                        RowLayout { 
++                        RowLayout {
+                             spacing: 2 // There were buttons here but I removed them.
+ 
+                             MaterialShapeWrappedMaterialSymbol {
+diff --git a/modules/ii/bar/Media.qml b/modules/ii/bar/Media.qml
+index d239759..1f3a77b 100644
+--- a/modules/ii/bar/Media.qml
++++ b/modules/ii/bar/Media.qml
+@@ -15,7 +15,7 @@ import Quickshell.Services.Mpris
+ 
+ Item {
+     id: root
+-    
++
+     property bool vertical: false
+     property bool borderless: Config.options.bar.borderless
+     property bool isMaterial: Config.options.bar.cornerStyle === 3
+@@ -33,52 +33,34 @@ Item {
+ 
+     readonly property string cleanedTitle: StringUtils.cleanMusicTitle(activePlayer?.trackTitle) || Translation.tr("No media")
+ 
+-    property var    artUrl:      activePlayer?.trackArtUrl ?? ""
+     property string trackTitle:  activePlayer?.trackTitle  ?? ""
+     property string trackArtist: activePlayer?.trackArtist ?? ""
+     property bool   isPlaying:   activePlayer?.isPlaying   ?? false
+     property bool   hasTrack:    trackTitle.length > 0
+ 
+-    property string artDownloadLocation: Directories.coverArt
+-    property string artFileName:         Qt.md5(artUrl)
+-    property string artFilePath:         `${artDownloadLocation}/${artFileName}`
+-    property bool   artDownloaded:       false
++    property string externalArtUrl: ""
++    readonly property string externalArtStateFile:
++        (Quickshell.env("XDG_RUNTIME_DIR") ?? "") + "/end4-media/current.txt"
+ 
+-    property string displayedArtFilePath: {
+-        if (!root.artDownloaded) return ""
+-        if (root.artUrl.startsWith("file://")) return root.artUrl
+-        return Qt.resolvedUrl(artFilePath)
+-    }
++    property string displayedArtFilePath: root.externalArtUrl
+ 
+-    onArtFilePathChanged: {
+-        if (!root.artUrl || root.artUrl.length === 0) {
+-            root.artDownloaded = false
+-            return
+-        }
+-        if (root.artUrl.startsWith("file://")) {
+-            root.artDownloaded = true
+-            return
+-        }
+-        artDownloader.targetFile  = root.artUrl
+-        artDownloader.artFilePath = root.artFilePath
+-        root.artDownloaded = false
+-        artDownloader.running = true
+-    }
++    FileView {
++        id: externalArtFile
++        path: root.externalArtStateFile
++        watchChanges: true
++
++        onFileChanged: reload()
+ 
+-    Process {
+-        id: artDownloader
+-        property string targetFile:  root.artUrl
+-        property string artFilePath: root.artFilePath
+-        command: ["bash", "-c",
+-            `[ -f ${artFilePath} ] || curl -sSL '${targetFile}' -o '${artFilePath}'`]
+-        onExited: { root.artDownloaded = true }
++        onLoaded: {
++            root.externalArtUrl = externalArtFile.text().trim()
++        }
+     }
+ 
+     Layout.fillHeight: true
+-    implicitWidth: vertical 
+-        ? Appearance.sizes.verticalBarWidth 
+-        : (isMaterial 
+-            ? materialRow.implicitWidth 
++    implicitWidth: vertical
++        ? Appearance.sizes.verticalBarWidth
++        : (isMaterial
++            ? materialRow.implicitWidth
+             : Math.max(
+                 Config.options.bar.media.minWidth,
+                 Math.min(rowLayout.implicitWidth + 8, Config.options.bar.media.maxWidth)
+@@ -139,7 +121,7 @@ Item {
+         radius: Appearance.rounding.full
+         implicitWidth: 32
+         implicitHeight: 32
+-        
++
+         MaterialSymbol {
+             anchors.centerIn: parent
+             fill: 1
+@@ -202,7 +184,7 @@ Item {
+             anchors.centerIn: parent
+             spacing: 6
+ 
+-            // No platyer 
++            // No platyer
+             Loader {
+                 active: !root.hasTrack
+                 visible: active
+@@ -231,8 +213,8 @@ Item {
+                         Image {
+                             id: avatarImage
+                             anchors.fill: parent
+-                            source: Config.options.profile.avatarPath !== "" 
+-                                ? "file://" + Config.options.profile.avatarPicture 
++                            source: Config.options.profile.avatarPath !== ""
++                                ? "file://" + Config.options.profile.avatarPicture
+                                 : "file:///home/" + (Quickshell.env("USER") ?? "user") + "/.face"
+                             sourceSize.width: avatarRect.width * 2
+                             sourceSize.height: avatarRect.height * 2
+diff --git a/modules/ii/sidebarLeft/SidebarPlayerControl.qml b/modules/ii/sidebarLeft/SidebarPlayerControl.qml
+index d055edd..b554cf6 100644
+--- a/modules/ii/sidebarLeft/SidebarPlayerControl.qml
++++ b/modules/ii/sidebarLeft/SidebarPlayerControl.qml
+@@ -16,10 +16,9 @@ import Quickshell.Services.Mpris
+ Item {
+     id: root
+     property var player: Mpris.players.values[playerSelector.currentIndex] ?? Mpris.players.values[0]
+-    property var artUrl: player?.trackArtUrl ?? ""
+-    property string artDownloadLocation: Directories.coverArt
+-    property string artFileName: Qt.md5(artUrl)
+-    property string artFilePath: `${artDownloadLocation}/${artFileName}`
++    property string externalArtUrl: ""
++    readonly property string externalArtStateFile:
++        (Quickshell.env("XDG_RUNTIME_DIR") ?? "") + "/end4-media/current.txt"
+     property color artDominantColor: Config.options.sidebar.media.artColors
+         ? ColorUtils.mix(
+             (colorQuantizer?.colors[0] ?? Appearance.colors.colPrimary),
+@@ -27,38 +26,30 @@ Item {
+             0.8
+           )
+         : Appearance.colors.colPrimaryContainer
+-    property bool downloaded: false
+     property list<real> visualizerPoints: []
+     property real maxVisualizerValue: 1000
+     property int visualizerSmoothing: 2
+     property real radius
+ 
+-    property string displayedArtFilePath: root.downloaded ? Qt.resolvedUrl(artFilePath) : ""
++    property string displayedArtFilePath: root.externalArtUrl
+ 
+     Timer {
+         running: root.player?.playbackState == MprisPlaybackState.Playing
+         interval: Config.options.resources.updateInterval
+         repeat: true
+-        onTriggered: root.player?.positionChanged()  
++        onTriggered: root.player?.positionChanged()
+     }
+ 
+-    onArtFilePathChanged: {
+-        if (!root.artUrl || root.artUrl.length == 0) {
+-            root.artDominantColor = Appearance.m3colors.m3secondaryContainer
+-            return
+-        }
+-        coverArtDownloader.targetFile = root.artUrl
+-        coverArtDownloader.artFilePath = root.artFilePath
+-        root.downloaded = false
+-        coverArtDownloader.running = true
+-    }
++    FileView {
++        id: externalArtFile
++        path: root.externalArtStateFile
++        watchChanges: true
++
++        onFileChanged: reload()
+ 
+-    Process {
+-        id: coverArtDownloader
+-        property string targetFile: root.artUrl
+-        property string artFilePath: root.artFilePath
+-        command: ["bash", "-c", `[ -f ${artFilePath} ] || curl -sSL '${targetFile}' -o '${artFilePath}'`]
+-        onExited: (exitCode, exitStatus) => { root.downloaded = true }
++        onLoaded: {
++            root.externalArtUrl = externalArtFile.text().trim()
++        }
+     }
+ 
+     ColorQuantizer {
+@@ -117,7 +108,7 @@ Item {
+ 
+                 MaterialSymbol {
+                     visible: MprisController.activePlayer === null
+-                    anchors.centerIn: parent 
++                    anchors.centerIn: parent
+                     fill: 1
+                     text: "music_note"
+                     color: Appearance.colors.colPrimary
+@@ -167,7 +158,7 @@ Item {
+                         id: artistText
+                         anchors.verticalCenter: parent.verticalCenter
+                         width: parent.width
+-                        font.pixelSize: Appearance.font.pixelSize.large 
++                        font.pixelSize: Appearance.font.pixelSize.large
+                         color: blendedColors.colSubtext
+                         horizontalAlignment: Text.AlignHCenter
+                         verticalAlignment: Text.AlignVCenter
+@@ -188,7 +179,7 @@ Item {
+             // ── Lyrics ──
+             Lyrics {
+                 id: lyricsComp
+-                opacity: MprisController.activePlayer !== null ? 1 : 0 
++                opacity: MprisController.activePlayer !== null ? 1 : 0
+                 Layout.fillWidth: true
+                 Layout.fillHeight: true
+                 textAlignment: Text.AlignHCenter
+@@ -227,7 +218,7 @@ Item {
+                     Loader {
+                         id: sliderLoader
+                         anchors.fill: parent
+-                        active: root.player?.canSeek ?? false  
++                        active: root.player?.canSeek ?? false
+                         sourceComponent: StyledSlider {
+                             configuration: StyledSlider.Configuration.Wavy
+                             highlightColor: blendedColors.colPrimary
+@@ -247,9 +238,9 @@ Item {
+                             left: parent.left
+                             right: parent.right
+                         }
+-                        active: !(root.player?.canSeek ?? false)  
++                        active: !(root.player?.canSeek ?? false)
+                         sourceComponent: StyledProgressBar {
+-                            wavy: root.player?.isPlaying ?? false  
++                            wavy: root.player?.isPlaying ?? false
+                             highlightColor: blendedColors.colPrimary
+                             trackColor: blendedColors.colSecondaryContainer
+                             value: (root.player?.position ?? 0) / (root.player?.length ?? 1)
+@@ -258,7 +249,7 @@ Item {
+                 }
+ 
+                 StyledText {
+-                    font.pixelSize: Appearance.font.pixelSize.normal 
++                    font.pixelSize: Appearance.font.pixelSize.normal
+                     color: blendedColors.colSubtext
+                     font.letterSpacing: -0.4
+                     font.features: { "tnum": 1 }
+@@ -295,11 +286,11 @@ Item {
+                     property real baseSize: Math.max(70, parent.parent.height * 0.1)
+                     Layout.fillWidth: true
+                     implicitHeight: baseSize
+-                    buttonRadius: (root.player?.isPlaying ?? false) ? Appearance.rounding.verylarge : baseSize / 2  
++                    buttonRadius: (root.player?.isPlaying ?? false) ? Appearance.rounding.verylarge : baseSize / 2
+                     colBackground: (root.player?.isPlaying ?? false) ? blendedColors.colPrimary : blendedColors.colSecondaryContainer
+                     colBackgroundHover: (root.player?.isPlaying ?? false) ? blendedColors.colPrimaryHover : blendedColors.colSecondaryContainerHover
+                     colRipple: (root.player?.isPlaying ?? false) ? blendedColors.colPrimaryActive : blendedColors.colSecondaryContainerActive
+-                    downAction: () => root.player?.togglePlaying()  
++                    downAction: () => root.player?.togglePlaying()
+                     contentItem: MaterialSymbol {
+                         iconSize: 50
+                         fill: 1
+@@ -346,7 +337,7 @@ Item {
+                     colBackgroundHover: blendedColors.colSecondaryContainerHover
+                     colRipple: blendedColors.colSecondaryContainerActive
+                     downAction: () => {
+-                        if (root.player) root.player.volume = (root.player.volume > 0) ? 0 : 1.0  
++                        if (root.player) root.player.volume = (root.player.volume > 0) ? 0 : 1.0
+                     }
+                     contentItem: MaterialSymbol {
+                         iconSize: 18
+@@ -368,7 +359,7 @@ Item {
+                     colBackgroundHover: blendedColors.colSecondaryContainerHover
+                     colRipple: blendedColors.colSecondaryContainerActive
+                     downAction: () => {
+-                        if (root.player) root.player.volume = Math.max(0, (root.player.volume ?? 1) - 0.1)  
++                        if (root.player) root.player.volume = Math.max(0, (root.player.volume ?? 1) - 0.1)
+                     }
+                     contentItem: MaterialSymbol {
+                         iconSize: 18
+@@ -388,7 +379,7 @@ Item {
+                     colBackgroundHover: blendedColors.colSecondaryContainerHover
+                     colRipple: blendedColors.colSecondaryContainerActive
+                     downAction: () => {
+-                        if (root.player) root.player.volume = Math.min(1.5, (root.player.volume ?? 1) + 0.1)  
++                        if (root.player) root.player.volume = Math.min(1.5, (root.player.volume ?? 1) + 0.1)
+                     }
+                     contentItem: MaterialSymbol {
+                         iconSize: 18

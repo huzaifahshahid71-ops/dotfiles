@@ -26,9 +26,9 @@ pretty_name() {
     case "$1" in
         caelestia) echo "Aether" ;;
         end4) echo "Obsidian" ;;
-        ambxst) echo "Aurora" ;;
+        ambxst) echo "Crimson" ;;
         dms) echo "Materia" ;;
-        serpantinum) echo "Ouroboros" ;;
+        serpantinum) echo "Aurora" ;;
         noctalia) echo "Nocturne" ;;
         *) echo "$1" ;;
     esac
@@ -95,7 +95,19 @@ current_profile() {
 
 switch_profile() {
     local profile="$1"
-    local target tmp
+    local target tmp current
+
+    current="$(current_profile)"
+
+    if [ "$current" = "serpantinum" ] && [ "$profile" != "serpantinum" ]; then
+        if command -v serpantinumd >/dev/null 2>&1; then
+            serpantinumd stop >/dev/null 2>&1 || true
+        fi
+    fi
+
+    if [ "$current" = "end4" ] && [ "$profile" != "end4" ]; then
+        systemctl --user stop end4-media-backend.service >/dev/null 2>&1 || true
+    fi
 
     target="$(profile_target "$profile")" || die "Unknown or incomplete profile: $profile"
 
@@ -109,6 +121,10 @@ switch_profile() {
     mv -Tf "$tmp" "$HYPR_LINK"
 
     printf '%s\n' "$profile" > "$ACTIVE_FILE"
+
+    if [ "$profile" = "end4" ]; then
+        systemctl --user start end4-media-backend.service >/dev/null 2>&1 || true
+    fi
 
     notify-send \
         "Desktop Profile" \

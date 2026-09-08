@@ -19,7 +19,15 @@ CLOSURE_FILE="$BUILD/closure.txt"
 
 END4_DOTS_SOURCE="${END4_DOTS_SOURCE:-$HOME/.local/src/end4-dots}"
 END4_PC_SOURCE="${END4_PC_SOURCE:-$HOME/.config/quickshell/end4-pC}"
+END4_PC_EXPECTED_COMMIT="51a1347612a9b92971ee6845bb583067a1ce5eb7"
+END4_PC_PATCH_FILE="$ROOT/dual-rice/versions/end4-pC-local.patch"
+END4_PC_STAGE="$BUILD/end4-pC-source"
 AMBXST_SOURCE="${AMBXST_SOURCE:-$HOME/.local/src/ambxst}"
+SERPANTINUM_SOURCE="${SERPANTINUM_SOURCE:-$HOME/.local/src/serpantinum-v4}"
+SERPANTINUM_EXPECTED_COMMIT="d6f5a6ded066811ad301ff8c45ec434c343b8b4b"
+SERPANTINUM_TARGETS_FILE="$SRC/serpantinum-targets.txt"
+SERPANTINUM_PATCH_FILE="$ROOT/dual-rice/versions/serpantinum-local.patch"
+SERPANTINUM_STAGE="$BUILD/serpantinum-source"
 AXCTL_SOURCE="${AXCTL_SOURCE:-$(command -v axctl 2>/dev/null || true)}"
 SKIP_SYSTEM_UPDATE=0
 
@@ -30,14 +38,14 @@ die()  { printf '\033[1;31mERROR:\033[0m %s\n' "$*" >&2; exit 1; }
 
 usage() {
     cat <<'EOF'
-Build the complete no-internet Huzaifah Triple-Rice AppImage.
+Build the complete no-internet Huzaifah Multi-Rice v4.0.0 AppImage.
 
 Usage:
   bash installer-appimage-offline/build.sh [--skip-system-update]
 
 Default builder behaviour:
   1. Fully updates the Arch/CachyOS build machine.
-  2. Installs any direct triple-rice packages missing from the build machine.
+  2. Installs any direct Multi-Rice packages missing from the build machine.
   3. Resolves the exact installed dependency closure, including virtual providers.
   4. Preserves exact cached AUR archives when available and rebuilds only missing
      AUR archives, one package at a time to avoid virtual-provider conflicts.
@@ -319,19 +327,35 @@ is_arch_family || die "Build the offline image on an Arch/CachyOS-family x86_64 
 [[ -f "$ONLINE_SRC/huzaifah-triple-rice-installer.svg" ]] || die "Installer SVG icon is missing"
 [[ -d "$ROOT/machine/sddm/themes/sddm-frieren-theme" ]] || die "Frieren SDDM theme assets are missing from the repository"
 [[ -d "$END4_DOTS_SOURCE" ]] || die "end4-dots source not found at $END4_DOTS_SOURCE"
-[[ -d "$END4_PC_SOURCE" ]] || die "end4-pC source not found at $END4_PC_SOURCE"
+[[ -d "$END4_PC_SOURCE/.git" ]] || die "end4-pC Git source not found at $END4_PC_SOURCE"
+[[ -f "$END4_PC_PATCH_FILE" ]] || die "end4-pC local patch not found at $END4_PC_PATCH_FILE"
+
+END4_PC_ACTUAL_COMMIT="$(git -C "$END4_PC_SOURCE" rev-parse HEAD)"
+[[ "$END4_PC_ACTUAL_COMMIT" == "$END4_PC_EXPECTED_COMMIT" ]]     || die "end4-pC source is at $END4_PC_ACTUAL_COMMIT, expected $END4_PC_EXPECTED_COMMIT"
+
+git -C "$END4_PC_SOURCE" cat-file -e "${END4_PC_EXPECTED_COMMIT}^{commit}"     || die "Pinned end4-pC commit is unavailable in the local source repository"
 [[ -d "$AMBXST_SOURCE" ]] || die "Ambxst source not found at $AMBXST_SOURCE"
+[[ -d "$SERPANTINUM_SOURCE/.git" ]] || die "Serpantinum Git source not found at $SERPANTINUM_SOURCE"
+[[ -f "$SERPANTINUM_TARGETS_FILE" ]] || die "Serpantinum target list not found at $SERPANTINUM_TARGETS_FILE"
+[[ -f "$SERPANTINUM_PATCH_FILE" ]] || die "Serpantinum local patch not found at $SERPANTINUM_PATCH_FILE"
+
+SERPANTINUM_ACTUAL_COMMIT="$(git -C "$SERPANTINUM_SOURCE" rev-parse HEAD)"
+[[ "$SERPANTINUM_ACTUAL_COMMIT" == "$SERPANTINUM_EXPECTED_COMMIT" ]] || die "Serpantinum source is at $SERPANTINUM_ACTUAL_COMMIT, expected $SERPANTINUM_EXPECTED_COMMIT"
+
+git -C "$SERPANTINUM_SOURCE" cat-file -e "${SERPANTINUM_EXPECTED_COMMIT}^{commit}"     || die "Pinned Serpantinum commit is unavailable in the local source repository"
 [[ -n "$AXCTL_SOURCE" && -x "$AXCTL_SOURCE" ]] || die "axctl binary not found; set AXCTL_SOURCE if necessary"
 
-for cmd in python3 git curl rsync jq sha256sum find tar zstd repo-add; do
+for cmd in python3 git curl rsync jq sha256sum find tar zstd repo-add patch; do
     command -v "$cmd" >/dev/null 2>&1 || die "$cmd is required"
 done
 
 mkdir -p "$BUILD" "$DIST"
 extract_targets > "$TARGETS_FILE"
+cat "$SERPANTINUM_TARGETS_FILE" >> "$TARGETS_FILE"
+sort -u -o "$TARGETS_FILE" "$TARGETS_FILE"
 TARGET_COUNT="$(wc -l < "$TARGETS_FILE")"
 
-printf '\nHuzaifah Triple-Rice OFFLINE Builder\n'
+printf '\nHuzaifah Multi-Rice v4.0.0 OFFLINE Builder\n'
 printf '=====================================\n'
 printf 'Direct package targets (including SDDM): %s\n' "$TARGET_COUNT"
 printf 'Output: %s\n\n' "$OUT"
@@ -356,7 +380,7 @@ log "Installing any missing direct Multi-Rice targets on the build machine"
 # expose legacy noctalia-qs as a Quickshell provider, which can make paru choose it
 # and conflict with the exact quickshell-git package already used by this setup.
 if printf '%s
-' "${TARGETS[@]}" | grep -Fxq quickshell-git; then
+' "${TARGETS[@]}" | grep -Fx quickshell-git >/dev/null; then
 if pacman -Q quickshell-git >/dev/null 2>&1; then
 log "Keeping installed quickshell-git as the exact Quickshell provider"
 elif pacman -Q noctalia-qs >/dev/null 2>&1; then
@@ -414,6 +438,26 @@ mapfile -d '' PACKAGE_ARCHIVES < <(find "$PKG_DIR" -maxdepth 1 -type f -name '*.
 ((${#PACKAGE_ARCHIVES[@]})) || die "No package archives were staged"
 repo-add -q "$PKG_DIR/huzaifah-offline.db.tar.gz" "${PACKAGE_ARCHIVES[@]}"
 
+# HUZ_V4_VALIDATE_LITERAL_QUICKSHELL
+# A provider such as noctalia-qs is NOT sufficient here. Rollback-safe
+# offline migration requires an actual package named quickshell-git.
+log "Validating literal quickshell-git in the offline repository"
+
+QUICKSHELL_ARCHIVE=""
+for archive in "${PACKAGE_ARCHIVES[@]}"; do
+    pkg_name="$(LC_ALL=C pacman -Qp "$archive" 2>/dev/null | awk '{print $1}' || true)"
+    if [[ "$pkg_name" == "quickshell-git" ]]; then
+        QUICKSHELL_ARCHIVE="$archive"
+        break
+    fi
+done
+
+[[ -n "$QUICKSHELL_ARCHIVE" ]]     || die "Offline payload has no literal quickshell-git package archive"
+
+tar -xOzf "$PKG_DIR/huzaifah-offline.db.tar.gz" --wildcards "*/desc" 2>/dev/null     | awk '$0 == "%NAME%" { getline; print }'     | grep -Fx quickshell-git >/dev/null     || die "Embedded pacman repository database has no literal quickshell-git entry"
+
+ok "Literal quickshell-git archive and repository entry verified"
+
 log "Bundling the current dotfiles working tree"
 copy_tree "$ROOT" "$PAYLOAD/repo"
 
@@ -427,10 +471,34 @@ fi
     || die "Bundled refresh switcher installer is not executable after staging"
 
 
+log "Preparing reproducible end4-pC source"
+rm -rf "$END4_PC_STAGE"
+mkdir -p "$END4_PC_STAGE"
+
+git -C "$END4_PC_SOURCE" archive "$END4_PC_EXPECTED_COMMIT"     | tar -x -C "$END4_PC_STAGE"
+
+(
+    cd "$END4_PC_STAGE"
+    git apply --check "$END4_PC_PATCH_FILE"         || die "end4-pC local patch does not apply cleanly to pinned source"
+
+    git apply --whitespace=nowarn "$END4_PC_PATCH_FILE"         || die "Failed to apply end4-pC local patch to pinned source"
+)
+
+log "Preparing reproducible Serpantinum 2.1.2 source"
+rm -rf "$SERPANTINUM_STAGE"
+mkdir -p "$SERPANTINUM_STAGE"
+
+git -C "$SERPANTINUM_SOURCE" archive "$SERPANTINUM_EXPECTED_COMMIT"     | tar -x -C "$SERPANTINUM_STAGE"
+
+patch --batch --forward --fuzz=0     -d "$SERPANTINUM_STAGE" -p1     < "$SERPANTINUM_PATCH_FILE"     || die "Failed to apply Serpantinum local patch to pinned source"
+
+[[ "$(cat "$SERPANTINUM_STAGE/version.txt")" == "2.1.2" ]]     || die "Staged Serpantinum source is not version 2.1.2"
+
 log "Bundling current local rice source trees (including local patches)"
 copy_tree "$END4_DOTS_SOURCE" "$PAYLOAD/sources/end4-dots"
-copy_tree "$END4_PC_SOURCE" "$PAYLOAD/sources/end4-pC"
+copy_tree "$END4_PC_STAGE" "$PAYLOAD/sources/end4-pC"
 copy_tree "$AMBXST_SOURCE" "$PAYLOAD/sources/ambxst"
+copy_tree "$SERPANTINUM_STAGE" "$PAYLOAD/sources/serpantinum"
 install -m 0755 "$AXCTL_SOURCE" "$PAYLOAD/bin/axctl"
 cp "$TARGETS_FILE" "$PAYLOAD/targets.txt"
 cp "$CLOSURE_FILE" "$PAYLOAD/closure.txt"
@@ -441,6 +509,10 @@ cp "$CLOSURE_FILE" "$PAYLOAD/closure.txt"
     printf 'builder_host=%s\n' "$(hostname)"
     printf 'architecture=%s\n' "$(uname -m)"
     printf 'dotfiles_commit=%s\n' "$(git -C "$ROOT" rev-parse HEAD 2>/dev/null || echo unknown)"
+    printf 'end4_pc_commit=%s\n' "$END4_PC_EXPECTED_COMMIT"
+printf 'end4_pc_patch_sha256=%s\n' "$(sha256sum "$END4_PC_PATCH_FILE" | awk '{print $1}')"
+printf 'serpantinum_commit=%s\n' "$SERPANTINUM_EXPECTED_COMMIT"
+printf 'serpantinum_patch_sha256=%s\n' "$(sha256sum "$SERPANTINUM_PATCH_FILE" | awk '{print $1}')"
     if git -C "$ROOT" diff --quiet --ignore-submodules HEAD -- 2>/dev/null && git -C "$ROOT" diff --cached --quiet --ignore-submodules HEAD -- 2>/dev/null; then
         printf 'dotfiles_worktree=clean\n'
     else

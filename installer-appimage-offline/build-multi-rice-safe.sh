@@ -203,13 +203,14 @@ if (( CACHE_AUDIT_ONLY )); then
         python-materialyoucolor
         python312
         quickshell-git
+        wl-gammarelay-rs
         ttf-league-gothic
         ttf-phosphor-icons
         ttf-readex-pro
         ttf-rubik-vf
     )
 
-    log "Auditing exact cached archives for the 11 foreign/AUR packages"
+    log "Auditing exact cached archives for the 12 foreign/AUR packages"
     missing=0
     for pkg in "${audit_pkgs[@]}"; do
         if ! installed="$(pacman -Q "$pkg" 2>/dev/null)"; then
@@ -261,12 +262,12 @@ log "Starting corrected Multi-Rice offline build"
     bash installer-appimage-offline/build-multi-rice.sh "${FORWARD_ARGS[@]}"
 )
 
-for name in Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.AppImage Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.sha256; do
+for name in Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.AppImage Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.sha256; do
     [[ -f "$WORK/dist/$name" ]] || die "Corrected builder finished without producing $name"
     cp -f "$WORK/dist/$name" "$DIST/$name"
 done
-chmod +x "$DIST/Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.AppImage"
-(cd "$DIST" && sha256sum Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.AppImage > Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.sha256)
+chmod +x "$DIST/Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.AppImage"
+(cd "$DIST" && sha256sum Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.AppImage > Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.sha256)
 
 printf '\nBuilt successfully:\n'
-ls -lh "$DIST/Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.AppImage" "$DIST/Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.sha256"
+ls -lh "$DIST/Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.AppImage" "$DIST/Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.sha256"

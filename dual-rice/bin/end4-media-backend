@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -u
+
+RUNTIME="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/end4-media"
+COVERS="$RUNTIME/covers"
+READY="$RUNTIME/current.txt"
+
+mkdir -p "$COVERS"
+touch "$READY"
+
+update_cover() {
+    local url="$1"
+    local path key out tmp
+
+    [ -n "$url" ] || return 0
+    [[ "$url" == file://* ]] || return 0
+
+    path="$(python3 -c 'import sys,urllib.parse; u=urllib.parse.urlparse(sys.argv[1]); print(urllib.parse.unquote(u.path))' "$url")"
+    [ -f "$path" ] || return 0
+
+    key="$(printf "%s" "$url" | sha256sum | cut -d" " -f1)"
+    out="$COVERS/$key.png"
+
+    if [ ! -s "$out" ]; then
+        tmp="$out.tmp.$$"
+        rm -f "$tmp"
+
+        if ffmpeg -v error -i "$path"             -map 0:v:0 -frames:v 1             -f image2pipe -vcodec png -             > "$tmp" 2>/dev/null             && [ -s "$tmp" ]; then
+
+            mv -f "$tmp" "$out"
+        else
+            rm -f "$tmp"
+            return 0
+        fi
+    fi
+
+    printf "file://%s
+" "$out" > "$READY.tmp"
+    mv -f "$READY.tmp" "$READY"
+}
+
+while true; do
+    current="$(playerctl metadata xesam:url 2>/dev/null || true)"
+    [ -n "$current" ] && update_cover "$current"
+
+    playerctl --follow metadata --format "{{xesam:url}}" 2>/dev/null |
+    while IFS= read -r url; do
+        [ -n "$url" ] && update_cover "$url"
+    done
+
+    sleep 1
+done

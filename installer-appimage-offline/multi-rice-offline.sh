@@ -84,7 +84,7 @@ rewrite_home_paths_json() {
 
 
 # HUZ_V3_TRANSACTIONAL_ROLLBACK
-# v3.0.0 records the machine state BEFORE any Multi-Rice mutation.
+# v4.0.0 records the machine state BEFORE any Multi-Rice mutation.
 # The snapshot preserves files/directories/symlinks exactly with tar.
 
 managed_user_paths() {
@@ -95,20 +95,26 @@ managed_user_paths() {
         ".config/ambxst" \
         ".config/DankMaterialShell" \
         ".config/noctalia" \
+        ".config/serpantinum" \
         ".config/desktop-switcher" \
         ".config/desktop-profile" \
         ".config/quickshell/ii" \
         ".config/quickshell/end4-pC" \
         ".config/systemd/user/background-music.service" \
         ".config/systemd/user/dms.service" \
+        ".config/systemd/user/end4-media-backend.service" \
         ".local/share/desktop-profiles" \
         ".local/share/ambxst" \
+        ".local/share/serpantinum" \
         ".local/state/noctalia" \
         ".local/src/ambxst" \
         ".local/src/end4-dots" \
         ".local/bin/desktop-switch" \
         ".local/bin/recover-caelestia" \
         ".local/bin/ambxst" \
+        ".local/bin/serpantinum" \
+        ".local/bin/serpantinumd" \
+        ".local/bin/end4-media-backend" \
         ".local/bin/refresh-switch" \
         ".cache/ambxst/wallpapers.json"
 }
@@ -150,7 +156,7 @@ create_install_snapshot() {
     HUZ_INSTALL_STATE="$state"
     HUZ_SYSTEM_STATE="$system_state"
 
-    log "Creating transactional v3.0.0 rollback snapshot BEFORE installation"
+    log "Creating transactional v4.0.0 rollback snapshot BEFORE installation"
     mkdir -p "$state/packages"
     sudo mkdir -p "$system_state"
 
@@ -170,6 +176,13 @@ create_install_snapshot() {
 
     systemctl --user is-enabled dms.service > "$state/dms-enabled-before.txt" 2>&1 || true
     systemctl --user is-active dms.service > "$state/dms-active-before.txt" 2>&1 || true
+    systemctl --user is-active end4-media-backend.service > "$state/end4-media-backend-active-before.txt" 2>&1 || true
+
+    if command -v serpantinumd >/dev/null 2>&1 &&        serpantinumd status 2>/dev/null | grep -qi "running"; then
+        echo active > "$state/serpantinum-active-before.txt"
+    else
+        echo inactive > "$state/serpantinum-active-before.txt"
+    fi
 
     if [[ -L "$HOME/.config/hypr" ]]; then
         readlink "$HOME/.config/hypr" > "$state/hypr-target-before.txt" || true
@@ -256,6 +269,7 @@ uninstall_multi_rice() {
     local state root system_state rel legacy_archive=""
     local -a added=()
     local dms_enabled="" dms_active=""
+    local end4_backend_active="" serpantinum_active=""
 
     state="$(latest_install_snapshot || true)"
 
@@ -271,12 +285,12 @@ uninstall_multi_rice() {
     fi
 
     if [[ -f "$state/restored-at" ]]; then
-        printf "\nThis v3.0.0 rollback snapshot has already been restored.\n"
+        printf "\nThis v4.0.0 rollback snapshot has already been restored.\n"
         printf "Nothing was changed.\n"
         return 0
     fi
 
-    printf "\nHuzaifah Multi-Rice v3.0.0 rollback\n"
+    printf "\nHuzaifah Multi-Rice v4.0.0 rollback\n"
     printf "====================================\n"
     printf "Snapshot: %s\n\n" "$state"
 
@@ -290,6 +304,11 @@ uninstall_multi_rice() {
 
     root="$HOME/.local/share/huzaifah-multi-rice/installations"
     system_state="$(grep "^system_snapshot=" "$state/manifest" | cut -d= -f2- || true)"
+
+    systemctl --user stop end4-media-backend.service >/dev/null 2>&1 || true
+    if command -v serpantinumd >/dev/null 2>&1; then
+        serpantinumd stop >/dev/null 2>&1 || true
+    fi
 
     log "Removing Multi-Rice-managed user paths"
     while IFS= read -r rel; do
@@ -326,6 +345,31 @@ uninstall_multi_rice() {
     case "$dms_active" in
         active) systemctl --user start dms.service >/dev/null 2>&1 || true ;;
         inactive|failed) systemctl --user stop dms.service >/dev/null 2>&1 || true ;;
+    esac
+
+    end4_backend_active="$(head -n1 "$state/end4-media-backend-active-before.txt" 2>/dev/null || true)"
+    serpantinum_active="$(head -n1 "$state/serpantinum-active-before.txt" 2>/dev/null || true)"
+
+    case "$end4_backend_active" in
+        active)
+            systemctl --user start end4-media-backend.service >/dev/null 2>&1 || true
+            ;;
+        inactive|failed)
+            systemctl --user stop end4-media-backend.service >/dev/null 2>&1 || true
+            ;;
+    esac
+
+    case "$serpantinum_active" in
+        active)
+            if command -v serpantinumd >/dev/null 2>&1; then
+                serpantinumd start >/dev/null 2>&1 || true
+            fi
+            ;;
+        *)
+            if command -v serpantinumd >/dev/null 2>&1; then
+                serpantinumd stop >/dev/null 2>&1 || true
+            fi
+            ;;
     esac
 
     if [[ -n "$legacy_archive" ]]; then
@@ -365,7 +409,7 @@ preflight_payload() {
     [[ -d "$PKG_DIR" ]] || die "Offline payload is missing package archives"
     [[ -f "$PKG_DIR/huzaifah-offline.db" || -f "$PKG_DIR/huzaifah-offline.db.tar.gz" ]] || die "Offline pacman repository database is missing"
     [[ -s "$TARGETS_FILE" ]] || die "Offline target package list is missing"
-    for profile in caelestia end4 ambxst dms noctalia; do
+    for profile in caelestia end4 ambxst dms serpantinum noctalia; do
         [[ -f "$REPO/dual-rice/profiles/$profile/hypr/hyprland.lua" ]] || die "Missing $profile profile in offline payload"
     done
     [[ -f "$REPO/dual-rice/noctalia/config.toml" ]] || die "Missing Noctalia config in offline payload"
@@ -373,6 +417,14 @@ preflight_payload() {
     [[ -d "$SOURCE_DIR/end4-dots" ]] || die "Bundled end4-dots source is missing"
     [[ -d "$SOURCE_DIR/end4-pC" ]] || die "Bundled end4-pC source is missing"
     [[ -d "$SOURCE_DIR/ambxst" ]] || die "Bundled Ambxst source is missing"
+    [[ -d "$SOURCE_DIR/serpantinum/src" ]] || die "Bundled Serpantinum source is missing"
+    [[ -x "$SOURCE_DIR/serpantinum/bin/serpantinum" ]] || die "Bundled serpantinum launcher is missing"
+    [[ -x "$SOURCE_DIR/serpantinum/bin/serpantinumd" ]] || die "Bundled serpantinum daemon is missing"
+    [[ -f "$SOURCE_DIR/serpantinum/config/serpantinum/settings.json" ]] || die "Bundled Serpantinum settings are missing"
+    [[ -f "$SOURCE_DIR/serpantinum/version.txt" ]] || die "Bundled Serpantinum version marker is missing"
+    [[ "$(cat "$SOURCE_DIR/serpantinum/version.txt")" == "2.1.2" ]] || die "Bundled Serpantinum source is not version 2.1.2"
+    [[ -x "$REPO/dual-rice/bin/end4-media-backend" ]] || die "Bundled End4 artwork backend is missing"
+    [[ -f "$REPO/dual-rice/systemd/user/end4-media-backend.service" ]] || die "Bundled End4 artwork service is missing"
     [[ -x "$BIN_DIR/axctl" ]] || die "Bundled axctl binary is missing"
     [[ -x "$REPO/scripts/install-refresh-switcher.sh" ]] || die "Bundled refresh switcher installer is missing"
     [[ -d "$REPO/machine/sddm/themes/sddm-frieren-theme" ]] || die "Bundled Frieren SDDM theme is missing"
@@ -482,6 +534,12 @@ restore_profiles_and_configs() {
     backup_path "$HOME/.config/DankMaterialShell" dms-config
     backup_path "$HOME/.config/noctalia" noctalia-config
     backup_path "$HOME/.local/state/noctalia" noctalia-state
+    backup_path "$HOME/.config/serpantinum" serpantinum-config
+    backup_path "$HOME/.local/share/serpantinum" serpantinum-share
+    backup_path "$HOME/.local/bin/serpantinum" serpantinum-launcher
+    backup_path "$HOME/.local/bin/serpantinumd" serpantinum-daemon
+    backup_path "$HOME/.local/bin/end4-media-backend" end4-media-backend
+    backup_path "$HOME/.config/systemd/user/end4-media-backend.service" end4-media-backend-service
     backup_path "$HOME/.local/share/ambxst" ambxst-share
     backup_path "$HOME/.local/src/ambxst" ambxst-source
     backup_path "$HOME/.cache/ambxst/wallpapers.json" ambxst-wallpapers.json
@@ -490,8 +548,8 @@ restore_profiles_and_configs() {
     backup_path "$HOME/.local/bin/desktop-switch" desktop-switch
     backup_path "$HOME/.local/bin/recover-caelestia" recover-caelestia
 
-    log "Restoring Caelestia, end4-pC, Ambxst, DMS and Noctalia profiles"
-    for profile in caelestia end4 ambxst dms noctalia; do
+    log "Restoring Caelestia, end4-pC, Ambxst, DMS, Serpantinum and Noctalia profiles"
+    for profile in caelestia end4 ambxst dms serpantinum noctalia; do
         mkdir -p "$PROFILE_ROOT/$profile/hypr"
         rsync -a --delete "$src/profiles/$profile/hypr/" "$PROFILE_ROOT/$profile/hypr/"
     done
@@ -537,10 +595,20 @@ restore_profiles_and_configs() {
     for bin in desktop-switch recover-caelestia; do
         [[ -f "$src/bin/$bin" ]] && install -m 0755 "$src/bin/$bin" "$HOME/.local/bin/$bin"
     done
+
+    if [[ -f "$src/bin/end4-media-backend" ]]; then
+        rm -rf "$HOME/.local/bin/end4-media-backend"
+        install -m 0755 "$src/bin/end4-media-backend" "$HOME/.local/bin/end4-media-backend"
+    fi
+
+    if [[ -f "$src/systemd/user/end4-media-backend.service" ]]; then
+        rm -rf "$HOME/.config/systemd/user/end4-media-backend.service"
+        install -Dm644             "$src/systemd/user/end4-media-backend.service"             "$HOME/.config/systemd/user/end4-media-backend.service"
+    fi
 }
 
 restore_bundled_sources() {
-    log "Installing bundled end4-pC, end4-dots and Ambxst source snapshots"
+    log "Installing bundled end4-pC, end4-dots, Ambxst and Serpantinum source snapshots"
     mkdir -p "$HOME/.config/quickshell" "$HOME/.local/src" "$HOME/.local/bin"
     rm -rf "$HOME/.local/src/end4-dots" "$HOME/.config/quickshell/end4-pC" "$HOME/.local/src/ambxst" "$HOME/.config/quickshell/ii"
     cp -a "$SOURCE_DIR/end4-dots" "$HOME/.local/src/end4-dots"
@@ -564,6 +632,24 @@ EOF
 exec "$HOME/.local/bin/ambxst" "$@"
 EOF
     sudo chmod +x /usr/local/bin/ambxst
+
+    log "Installing bundled Serpantinum 2.1.2 runtime"
+
+    rm -rf         "$HOME/.local/share/serpantinum"         "$HOME/.config/serpantinum"         "$HOME/.local/bin/serpantinum"         "$HOME/.local/bin/serpantinumd"
+
+    mkdir -p         "$HOME/.local/share/serpantinum"         "$HOME/.config/serpantinum"
+
+    cp -a "$SOURCE_DIR/serpantinum/bin" "$HOME/.local/share/serpantinum/bin"
+    cp -a "$SOURCE_DIR/serpantinum/src" "$HOME/.local/share/serpantinum/src"
+    cp -a "$SOURCE_DIR/serpantinum/version.txt" "$HOME/.local/share/serpantinum/version.txt"
+
+    install -m 0644         "$SOURCE_DIR/serpantinum/config/serpantinum/settings.json"         "$HOME/.config/serpantinum/settings.json"
+
+    chmod 0755         "$HOME/.local/share/serpantinum/bin/serpantinum"         "$HOME/.local/share/serpantinum/bin/serpantinumd"
+
+    ln -sfn         "$HOME/.local/share/serpantinum/bin/serpantinum"         "$HOME/.local/bin/serpantinum"
+
+    ln -sfn         "$HOME/.local/share/serpantinum/bin/serpantinumd"         "$HOME/.local/bin/serpantinumd"
     command -v fish >/dev/null 2>&1 && fish -c 'fish_add_path ~/.local/bin' >/dev/null 2>&1 || true
 }
 
@@ -577,6 +663,22 @@ configure_end4_search_only() {
     mv "$tmp" "$config"
 }
 
+activate_sddm_for_next_boot() {
+    local sddm_unit="/usr/lib/systemd/system/sddm.service"
+    local dm_link="/etc/systemd/system/display-manager.service"
+
+    [[ -f "$sddm_unit" ]] || die "sddm.service is missing after package installation"
+
+    log "Selecting SDDM as the display manager for the next boot"
+
+    sudo ln -sfn "$sddm_unit" "$dm_link"
+    sudo systemctl daemon-reload
+    sudo systemctl enable --force sddm.service >/dev/null 2>&1 || true
+    sudo systemctl set-default graphical.target >/dev/null
+
+    ok "SDDM selected for next boot; current graphical session was left running"
+}
+
 install_frieren_theme() {
     local theme_src="$REPO/machine/sddm/themes/sddm-frieren-theme"
     local theme_dst="/usr/share/sddm/themes/sddm-frieren-theme"
@@ -587,17 +689,35 @@ install_frieren_theme() {
     sudo rm -rf "$theme_dst"
     sudo cp -a "$theme_src" "$theme_dst"
     printf '[Theme]\nCurrent=sddm-frieren-theme\n' | sudo tee /etc/sddm.conf.d/90-huzaifah-theme.conf >/dev/null
-    ok "Frieren SDDM login theme installed; display-manager/autologin state unchanged"
+    ok "Frieren SDDM login theme installed"
 }
 
 activate_saved_profile() {
     local active=caelestia
     [[ -f "$REPO/dual-rice/state/active" ]] && active="$(tr -d '[:space:]' < "$REPO/dual-rice/state/active")"
-    case "$active" in caelestia|end4|ambxst|dms|noctalia) ;; *) active=caelestia ;; esac
+    case "$active" in caelestia|end4|ambxst|dms|serpantinum|noctalia) ;; *) active=caelestia ;; esac
     rm -rf "$HOME/.config/hypr"
     ln -s "$PROFILE_ROOT/$active/hypr" "$HOME/.config/hypr"
     mkdir -p "$HOME/.config/desktop-profile"
     printf '%s\n' "$active" > "$HOME/.config/desktop-profile/active"
+    systemctl --user daemon-reload >/dev/null 2>&1 || true
+
+    systemctl --user stop end4-media-backend.service >/dev/null 2>&1 || true
+
+    if command -v serpantinumd >/dev/null 2>&1; then
+        serpantinumd stop >/dev/null 2>&1 || true
+    fi
+
+    case "$active" in
+        end4)
+            systemctl --user start end4-media-backend.service >/dev/null 2>&1 || true
+            ;;
+        serpantinum)
+            if command -v serpantinumd >/dev/null 2>&1; then
+                serpantinumd start >/dev/null 2>&1 || true
+            fi
+            ;;
+    esac
 }
 
 install_refresh_switcher() {
@@ -616,8 +736,9 @@ install_multi_rice() {
     activate_saved_profile
     install_refresh_switcher
     install_frieren_theme
+    activate_sddm_for_next_boot
     finalize_install_snapshot
-    ok "Fully offline Multi-Rice v3.0.0 installation completed"
+    ok "Fully offline Multi-Rice v4.0.0 installation completed"
     printf "Transactional rollback snapshot: %s
 " "$HUZ_INSTALL_STATE"
     printf "No internet connection was required.
@@ -730,7 +851,7 @@ uninstall_multi_rice_packages() {
     fi
 
     if [[ -z "$state" || ! -f "$state/packages-added.txt" ]]; then
-        printf "\nNo v3.0.0 package-addition manifest was found.\n"
+        printf "\nNo v4.0.0 package-addition manifest was found.\n"
         printf "Nothing was removed.\n"
         return 0
     fi
@@ -746,7 +867,7 @@ uninstall_multi_rice_packages() {
         return 0
     fi
 
-    printf "\nPackages recorded as added by this v3.0.0 installation:\n\n"
+    printf "\nPackages recorded as added by this v4.0.0 installation:\n\n"
     printf "  %s\n" "${installed[@]}"
 
     printf "\nOnly packages absent before installation are candidates.\n"
@@ -779,10 +900,10 @@ Usage: install-offline.sh ACTION
 
 Actions:
   preflight     Verify payload and target-machine readiness without changing it
-  install       Install all five rices + switchers + Frieren SDDM theme
+  install       Install all six rices + switchers + Frieren SDDM theme
   uninstall     Restore the exact pre-install desktop snapshot
   uninstall-packages
-                Remove packages recorded as added by the v3.0.0 installation
+                Remove packages recorded as added by the v4.0.0 installation
   refresh       Install/reconfigure SUPER+SHIFT+R refresh switcher
   sddm          Install Frieren SDDM theme only
   asus          Install generic ASUS support (asusctl/ROG Control Center)
