@@ -108,47 +108,17 @@ The default installer sets up:
 - ◈ **end4-pC** rice based on pctrade/end4-pC
 - ◆ **Ambxst** rice with axctl compositor integration
 - ● **DankMaterialShell (DMS)** as an isolated rice
+- ◇ **Serpantinum 2.1.2 / Aurora** as an isolated rice
 - ◉ **Noctalia v5** with its own portable Hyprland profile and configuration
 - a separate Hyprland profile for every rice
-- a dynamic `SUPER + SHIFT + D` five-profile Multi-Rice switcher
+- a dynamic `SUPER + SHIFT + D` six-profile Multi-Rice switcher
 - an auto-detected `SUPER + SHIFT + R` refresh-rate switcher
 - saved end4 widget/top-bar layout and local album-art patches
 - search-only end4 launcher with the workspace grid hidden
 - **Frieren SDDM login theme**
-- transactional pre-install backup and exact desktop rollback support in the v3 offline installer
+- transactional pre-install backup and exact desktop rollback support in the v4 offline installer
 
 **The installer does not choose or replace your desktop wallpaper.** The Frieren image belongs to the SDDM login theme only.
-
-## 🚀 Install
-
-Requirements:
-
-- Arch Linux / CachyOS-family installation
-- internet access
-- `sudo` access
-
-Run:
-
-```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/huzaifahshahid71-ops/dotfiles/main/install.sh)"
-```
-
-With no flags, the installer sets up the complete Multi-Rice desktop:
-
-```text
-Huzaifah Desktop
-├── ✦ Caelestia
-├── ◈ end4-pC
-├── ◆ Ambxst + axctl
-├── ● DankMaterialShell
-├── ◉ Noctalia v5
-├── 🔎 Search-only end4 launcher
-├── 🌙 Frieren SDDM login theme
-├── ⇄ SUPER + SHIFT + D dynamic Multi-Rice switcher
-└── ↻ SUPER + SHIFT + R refresh-rate switcher
-```
-
-When installation finishes, log out and back into Hyprland.
 
 ## ⇄ Switching rices
 
@@ -165,10 +135,11 @@ The preferred order is:
 ◈ end4-pC
 ◆ Ambxst
 ● DankMaterialShell
+◇ Serpantinum / Aurora
 ◉ Noctalia v5
 ```
 
-The switcher includes those five preferred profiles and also discovers additional valid profiles placed under `~/.local/share/desktop-profiles`.
+The switcher includes those six preferred profiles and also discovers additional valid profiles placed under `~/.local/share/desktop-profiles`.
 
 CLI examples:
 
@@ -179,6 +150,7 @@ desktop-switch caelestia --now
 desktop-switch end4 --now
 desktop-switch ambxst --now
 desktop-switch dms --now
+desktop-switch serpantinum --now
 desktop-switch noctalia --now
 ```
 
@@ -192,7 +164,7 @@ Press:
 SUPER + SHIFT + R
 ```
 
-The refresh switcher uses the same Fuzzel styling as the Multi-Rice switcher and is installed into all five Hyprland profiles.
+The refresh switcher uses the same Fuzzel styling as the Multi-Rice switcher and is installed into all six Hyprland profiles.
 
 The installer reads the machine DMI vendor/product automatically:
 
@@ -260,7 +232,7 @@ Its isolated profile lives at:
 | --- | --- |
 | `--customization` | Full customization; same as no flags |
 | `--multi-rice` | Full customization alias |
-| `--multi-rice-only` | Install all five rices without changing SDDM |
+| `--multi-rice-only` | Install all six rices without changing SDDM |
 | `--no-sddm-theme` | Install Multi-Rice but skip SDDM |
 | `--sddm-theme-only` | Install only the Frieren SDDM login theme |
 | `--refresh-switcher` | Install/reconfigure refresh switcher with DMI auto-detection |
@@ -287,28 +259,28 @@ Other machine-specific extras remain opt-in:
 --hibernate
 ```
 
-## 📦 Fully offline AppImage — v3.0.0
+## 📦 Fully offline AppImage — v4.0.0
 
-**Huzaifah Multi-Rice OFFLINE v3.0.0** is the current x86_64 fully-offline release. It bundles the five-rice desktop payload and its package closure so installation does not require a network connection.
+**Huzaifah Multi-Rice OFFLINE v4.0.0** is the current x86_64 fully-offline release. It bundles the six-rice desktop payload and its package closure so installation does not require a network connection.
 
 Release assets:
 
 ```text
-Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.AppImage
-Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.sha256
+Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.AppImage
+Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.sha256
 ```
 
 Verify and run:
 
 ```bash
-sha256sum -c Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.sha256
-chmod +x Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.AppImage
-./Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.AppImage
+sha256sum -c Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.sha256
+chmod +x Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.AppImage
+./Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.AppImage
 ```
 
-The v3.0.0 build was validated in a CachyOS QEMU VM with networking disabled, with 685 package archives bundled. The same validation covered all five rices, Noctalia startup, and transactional uninstall/desktop restoration.
+The v4.0.0 build was validated in a CachyOS QEMU VM with networking disabled, with 685 package archives bundled. The same validation covered all six rices, Noctalia startup, and transactional uninstall/desktop restoration.
 
-Release: https://github.com/huzaifahshahid71-ops/dotfiles/releases/tag/v3.0.0
+Release: https://github.com/huzaifahshahid71-ops/dotfiles/releases/tag/v4.0.0
 
 ## 🌙 Frieren SDDM theme
 
@@ -340,7 +312,7 @@ Timestamped safety backups are stored under:
 ~/.local/share/desktop-profile-backups/
 ```
 
-The v3 offline installer additionally keeps transactional install snapshots under:
+The v4 offline installer additionally keeps transactional install snapshots under:
 
 ```text
 ~/.local/share/huzaifah-multi-rice/installations/
@@ -361,7 +333,7 @@ To review, commit, and push the snapshot automatically:
 ./scripts/backup-dual-rice.sh --push
 ```
 
-The backup/restore workflow covers all five Hyprland profiles, including Noctalia, together with the saved rice configuration, switcher files, package/version manifests, pinned source revisions, local patches, and selected portable state. Caches, `.env` files, private keys, and obvious credential/token files are excluded or block automatic pushing.
+The backup/restore workflow covers all six Hyprland profiles, including Noctalia, together with the saved rice configuration, switcher files, package/version manifests, pinned source revisions, local patches, and selected portable state. Caches, `.env` files, private keys, and obvious credential/token files are excluded or block automatic pushing.
 
 ## 📁 Repository layout
 
