@@ -1,0 +1,256 @@
+#!/usr/bin/env bash
+set -u
+
+APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TITLE="Huzaifah Utilities"
+ENGINE="$APPDIR/install-utilities.sh"
+
+is_arch_family() {
+    [[ -r /etc/os-release ]] || return 1
+    . /etc/os-release
+    [[ "${ID:-}" == "arch" || "${ID:-}" == "cachyos" || "${ID_LIKE:-}" == *arch* ]]
+}
+
+machine_name() {
+    printf '%s / %s' \
+        "$(cat /sys/class/dmi/id/sys_vendor 2>/dev/null || echo unknown)" \
+        "$(cat /sys/class/dmi/id/product_name 2>/dev/null || echo unknown)"
+}
+
+find_gui() {
+    if command -v zenity >/dev/null 2>&1; then echo zenity; return; fi
+    if command -v kdialog >/dev/null 2>&1; then echo kdialog; return; fi
+    if command -v yad >/dev/null 2>&1; then echo yad; return; fi
+    echo none
+}
+
+find_terminal() {
+    local candidates=()
+    [[ -n "${TERMINAL:-}" ]] && candidates+=("$TERMINAL")
+    candidates+=(foot kitty alacritty konsole wezterm gnome-terminal xfce4-terminal xterm)
+    local t
+    for t in "${candidates[@]}"; do
+        command -v "$t" >/dev/null 2>&1 && { echo "$t"; return 0; }
+    done
+    return 1
+}
+
+show_error() {
+    local gui="$1" msg="$2"
+    case "$gui" in
+        zenity) zenity --error --title="$TITLE" --width=650 --text="$msg" ;;
+        kdialog) kdialog --error "$msg" --title "$TITLE" ;;
+        yad) yad --error --title="$TITLE" --width=650 --text="$msg" ;;
+        *) printf '%s: %s\n' "$TITLE" "$msg" >&2 ;;
+    esac
+}
+
+show_info() {
+    local gui="$1" msg="$2"
+    case "$gui" in
+        zenity) zenity --info --title="$TITLE" --width=700 --text="$msg" ;;
+        kdialog) kdialog --msgbox "$msg" --title "$TITLE" ;;
+        yad) yad --info --title="$TITLE" --width=700 --text="$msg" ;;
+        *) printf '%b\n' "$msg" ;;
+    esac
+}
+
+bootstrap_gui_if_needed() {
+    local gui terminal wrapper
+    gui="$(find_gui)"
+    [[ "$gui" != none ]] && return 0
+
+    terminal="$(find_terminal || true)"
+    [[ -n "$terminal" ]] || return 1
+    wrapper="$(mktemp --suffix=.sh)"
+    cat > "$wrapper" <<'EOS'
+#!/usr/bin/env bash
+printf '\nHuzaifah Utilities needs a small GUI helper (zenity).\n'
+printf 'Installing zenity from the official repositories...\n\n'
+sudo pacman -S --needed zenity
+rc=$?
+printf '\n'
+if [[ $rc -eq 0 ]]; then
+  printf 'Zenity installed. Close this terminal and launch Utilities again.\n'
+else
+  printf 'Zenity installation failed with status %s.\n' "$rc"
+fi
+read -r -p 'Press Enter to close...'
+EOS
+    chmod +x "$wrapper"
+    case "$terminal" in
+        foot) foot -e bash "$wrapper" ;;
+        kitty) kitty bash "$wrapper" ;;
+        alacritty) alacritty -e bash "$wrapper" ;;
+        konsole) konsole -e bash "$wrapper" ;;
+        wezterm) wezterm start --always-new-process -- bash "$wrapper" ;;
+        gnome-terminal) gnome-terminal --wait -- bash "$wrapper" ;;
+        xfce4-terminal) xfce4-terminal --disable-server -x bash "$wrapper" ;;
+        xterm) xterm -e bash "$wrapper" ;;
+        *) "$terminal" -e bash "$wrapper" ;;
+    esac
+    rm -f "$wrapper"
+    return 1
+}
+
+choose_action() {
+    local gui="$1"
+    case "$gui" in
+        zenity)
+            zenity --list --radiolist \
+                --title="$TITLE" --width=850 --height=430 \
+                --text="<b>Online post-install toolbox</b>\nDetected: $(machine_name)\n\nInstalls current packages from Arch/CachyOS repositories and the AUR." \
+                --column="" --column="Action" --column="What it does" --print-column=2 \
+                TRUE install "Choose and install utilities" \
+                FALSE status "Show what is already installed" \
+                FALSE exit "Close Utilities" 2>/dev/null
+            ;;
+        kdialog)
+            kdialog --menu "Huzaifah Utilities\n$(machine_name)" \
+                install "Choose and install utilities" \
+                status "Show installed status" \
+                exit "Exit" --title "$TITLE" 2>/dev/null
+            ;;
+        yad)
+            yad --list --radiolist --title="$TITLE" --width=850 --height=430 \
+                --text="Online post-install toolbox\nDetected: $(machine_name)" \
+                --column="" --column="Action" --column="What it does" --print-column=2 \
+                TRUE install "Choose and install utilities" \
+                FALSE status "Show installed status" \
+                FALSE exit "Close Utilities" 2>/dev/null
+            ;;
+        *) return 1 ;;
+    esac
+}
+
+choose_utilities() {
+    local gui="$1"
+    case "$gui" in
+        zenity)
+            zenity --list --checklist \
+                --title="$TITLE — Select utilities" --width=980 --height=620 \
+                --text="Select what you want. Already-installed packages are safely skipped.\n\nDolphin is currently used for the file explorer entry and is easy to swap later." \
+                --column="Install" --column="ID" --column="Utility" --column="Details" \
+                --print-column=2 --separator='|' \
+                TRUE chrome "Google Chrome" "Stable Google Chrome from the AUR" \
+                TRUE onlyoffice "ONLYOFFICE" "ONLYOFFICE Desktop Editors from the AUR" \
+                TRUE waydroid "Waydroid" "Android container; installs, initializes and enables the container service" \
+                TRUE vm "Virtual Machines" "QEMU/KVM + virt-manager + libvirt + UEFI + TPM/NAT support" \
+                TRUE btop "btop" "Terminal resource monitor" \
+                TRUE dolphin "Dolphin" "Graphical file manager / file tree explorer" 2>/dev/null
+            ;;
+        yad)
+            yad --list --checklist --title="$TITLE — Select utilities" --width=980 --height=620 \
+                --text="Select what you want. Already-installed packages are safely skipped." \
+                --column="Install" --column="ID" --column="Utility" --column="Details" \
+                --print-column=2 --separator='|' \
+                TRUE chrome "Google Chrome" "Stable Google Chrome from the AUR" \
+                TRUE onlyoffice "ONLYOFFICE" "Desktop Editors from the AUR" \
+                TRUE waydroid "Waydroid" "Android container" \
+                TRUE vm "Virtual Machines" "QEMU/KVM + virt-manager + libvirt" \
+                TRUE btop "btop" "Terminal resource monitor" \
+                TRUE dolphin "Dolphin" "Graphical file manager / file tree explorer" 2>/dev/null
+            ;;
+        kdialog)
+            kdialog --checklist "Select utilities to install:" \
+                chrome "Google Chrome" on \
+                onlyoffice "ONLYOFFICE Desktop Editors" on \
+                waydroid "Waydroid" on \
+                vm "QEMU/KVM + virt-manager" on \
+                btop "btop" on \
+                dolphin "Dolphin file manager" on \
+                --title "$TITLE" 2>/dev/null | tr ' ' '|' | tr -d '"'
+            ;;
+        *) return 1 ;;
+    esac
+}
+
+run_terminal() {
+    local terminal="$1" action="$2" status="$3"
+    shift 3
+    local wrapper
+    wrapper="$(mktemp --suffix=.sh)"
+    {
+        echo '#!/usr/bin/env bash'
+        echo 'set -o pipefail'
+        echo 'clear 2>/dev/null || true'
+        printf 'printf "\\n  Huzaifah Utilities\\n  ===================\\n\\n"\n'
+        printf 'bash %q %q' "$ENGINE" "$action"
+        local arg
+        for arg in "$@"; do printf ' %q' "$arg"; done
+        echo
+        echo 'rc=$?'
+        printf 'printf "%%s\\n" "$rc" > %q\n' "$status"
+        echo 'printf "\n"'
+        echo 'if [[ $rc -eq 0 ]]; then printf "✓ Completed successfully.\n"; else printf "✗ Finished with status %s.\n" "$rc"; fi'
+        echo 'printf "\n"'
+        echo "read -r -p 'Press Enter to return to Utilities...'"
+    } > "$wrapper"
+    chmod +x "$wrapper"
+
+    case "$terminal" in
+        foot) foot -e bash "$wrapper" ;;
+        kitty) kitty bash "$wrapper" ;;
+        alacritty) alacritty -e bash "$wrapper" ;;
+        konsole) konsole -e bash "$wrapper" ;;
+        wezterm) wezterm start --always-new-process -- bash "$wrapper" ;;
+        gnome-terminal) gnome-terminal --wait -- bash "$wrapper" ;;
+        xfce4-terminal) xfce4-terminal --disable-server -x bash "$wrapper" ;;
+        xterm) xterm -e bash "$wrapper" ;;
+        *) "$terminal" -e bash "$wrapper" ;;
+    esac
+    rm -f "$wrapper"
+}
+
+main() {
+    local gui terminal action selected status_file rc
+
+    if ! is_arch_family; then
+        gui="$(find_gui)"
+        show_error "$gui" "Utilities supports Arch/CachyOS-family systems only."
+        exit 1
+    fi
+    if [[ "$(uname -m)" != x86_64 ]]; then
+        gui="$(find_gui)"
+        show_error "$gui" "Utilities currently targets x86_64 systems only."
+        exit 1
+    fi
+    [[ -x "$ENGINE" ]] || { printf 'Missing installer engine: %s\n' "$ENGINE" >&2; exit 1; }
+
+    bootstrap_gui_if_needed || exit 0
+    gui="$(find_gui)"
+    terminal="$(find_terminal || true)"
+    [[ -n "$terminal" ]] || { show_error "$gui" "No supported terminal was found."; exit 1; }
+
+    while true; do
+        action="$(choose_action "$gui" || true)"
+        [[ -z "$action" || "$action" == exit ]] && exit 0
+
+        status_file="$(mktemp)"
+        case "$action" in
+            install)
+                selected="$(choose_utilities "$gui" || true)"
+                if [[ -z "$selected" ]]; then
+                    rm -f "$status_file"
+                    continue
+                fi
+                IFS='|' read -r -a items <<< "$selected"
+                run_terminal "$terminal" install "$status_file" "${items[@]}"
+                ;;
+            status)
+                run_terminal "$terminal" status "$status_file"
+                ;;
+            *)
+                rm -f "$status_file"
+                continue
+                ;;
+        esac
+        rc="$(cat "$status_file" 2>/dev/null || echo 1)"
+        rm -f "$status_file"
+        if [[ "$action" == install && "$rc" == 0 ]]; then
+            show_info "$gui" "Selected utilities finished installing.\n\nVM setup may require a logout/login before new libvirt/kvm group membership is active. Waydroid initialization may also require a reboot if the kernel exposes its binder support only after restart."
+        fi
+    done
+}
+
+main "$@"

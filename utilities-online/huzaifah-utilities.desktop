@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Utilities
+Comment=Online post-install software toolbox for CachyOS/Arch
+Exec=huzaifah-utilities
+Icon=huzaifah-utilities
+Terminal=false
+Categories=System;Utility;
+StartupNotify=true
