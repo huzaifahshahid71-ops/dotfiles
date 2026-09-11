@@ -6,10 +6,12 @@ on:
     branches: [main]
     paths:
       - 'utilities-online/**'
+      - '!utilities-online/Huzaifah-Utilities-ONLINE-*.AppImage'
+      - '!utilities-online/Huzaifah-Utilities-ONLINE-*.AppImage.sha256'
       - '.github/workflows/utilities-appimage.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -17,6 +19,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Build Utilities AppImage
         run: |
@@ -32,3 +36,16 @@ jobs:
           path: |
             utilities-online/Huzaifah-Utilities-ONLINE-v1.0.0-x86_64.AppImage
             utilities-online/Huzaifah-Utilities-ONLINE-v1.0.0-x86_64.AppImage.sha256
+
+      - name: Commit built AppImage to main
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add utilities-online/Huzaifah-Utilities-ONLINE-v1.0.0-x86_64.AppImage \
+                  utilities-online/Huzaifah-Utilities-ONLINE-v1.0.0-x86_64.AppImage.sha256
+          if git diff --cached --quiet; then
+            echo 'Built files are already up to date.'
+          else
+            git commit -m 'Update built Utilities AppImage'
+            git push origin HEAD:main
+          fi
