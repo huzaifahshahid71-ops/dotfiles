@@ -103,6 +103,8 @@ managed_user_paths() {
         ".config/systemd/user/background-music.service" \
         ".local/bin/background-music" \
         ".local/bin/background-music-stop" \
+        ".local/bin/toggle-night-light" \
+        ".config/huzaifah/hyprsunset.conf" \
         "Music/Favorites.m3u8" \
         ".config/systemd/user/dms.service" \
         ".config/systemd/user/end4-media-backend.service" \
@@ -182,6 +184,8 @@ create_install_snapshot() {
     systemctl --user is-active end4-media-backend.service > "$state/end4-media-backend-active-before.txt" 2>&1 || true
     systemctl --user is-enabled background-music.service > "$state/background-music-enabled-before.txt" 2>&1 || true
     systemctl --user is-active background-music.service > "$state/background-music-active-before.txt" 2>&1 || true
+    systemctl --user is-enabled hyprsunset.service > "$state/hyprsunset-enabled-before.txt" 2>&1 || true
+    systemctl --user is-active hyprsunset.service > "$state/hyprsunset-active-before.txt" 2>&1 || true
 
     if command -v serpantinumd >/dev/null 2>&1 &&        serpantinumd status 2>/dev/null | grep -qi "running"; then
         echo active > "$state/serpantinum-active-before.txt"
@@ -312,6 +316,7 @@ uninstall_multi_rice() {
     system_state="$(grep "^system_snapshot=" "$state/manifest" | cut -d= -f2- || true)"
 
     systemctl --user stop background-music.service >/dev/null 2>&1 || true
+    systemctl --user stop hyprsunset.service >/dev/null 2>&1 || true
     systemctl --user stop end4-media-backend.service >/dev/null 2>&1 || true
     if command -v serpantinumd >/dev/null 2>&1; then
         serpantinumd stop >/dev/null 2>&1 || true
@@ -366,6 +371,20 @@ uninstall_multi_rice() {
     case "$background_music_active" in
         active) systemctl --user start background-music.service >/dev/null 2>&1 || true ;;
         inactive|failed) systemctl --user stop background-music.service >/dev/null 2>&1 || true ;;
+    esac
+
+    hyprsunset_enabled="$(head -n1 "$state/hyprsunset-enabled-before.txt" 2>/dev/null || true)"
+    hyprsunset_active="$(head -n1 "$state/hyprsunset-active-before.txt" 2>/dev/null || true)"
+
+    case "$hyprsunset_enabled" in
+        enabled) systemctl --user enable hyprsunset.service >/dev/null 2>&1 || true ;;
+        disabled) systemctl --user disable hyprsunset.service >/dev/null 2>&1 || true ;;
+        masked) systemctl --user mask hyprsunset.service >/dev/null 2>&1 || true ;;
+    esac
+
+    case "$hyprsunset_active" in
+        active) systemctl --user start hyprsunset.service >/dev/null 2>&1 || true ;;
+        inactive|failed) systemctl --user stop hyprsunset.service >/dev/null 2>&1 || true ;;
     esac
 
     end4_backend_active="$(head -n1 "$state/end4-media-backend-active-before.txt" 2>/dev/null || true)"
@@ -449,6 +468,8 @@ preflight_payload() {
     [[ -x "$REPO/dual-rice/bin/background-music" ]] || die "Bundled background-music command is missing"
     [[ -f "$REPO/dual-rice/systemd/user/background-music.service" ]] || die "Bundled background music service is missing"
     [[ -s "$REPO/dual-rice/music/Favorites.m3u8" ]] || die "Bundled Favorites.m3u8 playlist is missing"
+    [[ -x "$REPO/dual-rice/bin/toggle-night-light" ]] || die "Bundled night-light toggle is missing"
+    grep -qxF "hyprsunset" "$TARGETS_FILE" || die "Offline target list is missing hyprsunset"
     [[ -x "$BIN_DIR/axctl" ]] || die "Bundled axctl binary is missing"
     [[ -x "$REPO/scripts/install-refresh-switcher.sh" ]] || die "Bundled refresh switcher installer is missing"
     [[ -d "$REPO/machine/sddm/themes/sddm-frieren-theme" ]] || die "Bundled Frieren SDDM theme is missing"
@@ -568,6 +589,9 @@ restore_profiles_and_configs() {
     backup_path "$HOME/.local/bin/background-music-stop" background-music-stop
     backup_path "$HOME/.config/systemd/user/background-music.service" background-music-service
     backup_path "$HOME/Music/Favorites.m3u8" background-music-playlist
+    backup_path "$HOME/.local/bin/toggle-night-light" toggle-night-light
+    backup_path "$HOME/.config/huzaifah/hyprsunset.conf" hyprsunset-shared-config
+    backup_path "$HOME/.config/hypr/hyprsunset.conf" hyprsunset-active-config
     backup_path "$HOME/.local/share/ambxst" ambxst-share
     backup_path "$HOME/.local/src/ambxst" ambxst-source
     backup_path "$HOME/.cache/ambxst/wallpapers.json" ambxst-wallpapers.json
@@ -792,6 +816,49 @@ install_background_music() {
     fi
 }
 
+install_night_light() {
+    local src="$REPO/dual-rice"
+    local shared="$HOME/.config/huzaifah/hyprsunset.conf"
+
+    log "Installing shared night-light controls"
+
+    command -v hyprsunset >/dev/null 2>&1 ||
+        die "hyprsunset is missing after offline package installation"
+
+    mkdir -p         "$HOME/.local/bin"         "$HOME/.config/huzaifah"
+
+    install -m 0755         "$src/bin/toggle-night-light"         "$HOME/.local/bin/toggle-night-light"
+
+    # Preserve an existing shared state when reinstalling v4.1.
+    # On first migration, preserve the previous active rice state.
+    if [[ ! -s "$shared" ]]; then
+        if [[ -s "$BACKUP/hyprsunset-shared-config" ]]; then
+            cp -a "$BACKUP/hyprsunset-shared-config" "$shared"
+        elif [[ -s "$BACKUP/hyprsunset-active-config" ]]; then
+            cp -a "$BACKUP/hyprsunset-active-config" "$shared"
+        else
+            printf "profile {
+    time = 00:00
+    identity = true
+}
+" > "$shared"
+        fi
+    fi
+
+    # This also creates/repairs the shared hyprsunset.conf symlink
+    # inside every installed rice.
+    "$HOME/.local/bin/toggle-night-light" status >/dev/null
+
+    systemctl --user daemon-reload
+    systemctl --user enable hyprsunset.service >/dev/null 2>&1 || true
+
+    if systemctl --user restart hyprsunset.service >/dev/null 2>&1; then
+        ok "Shared night-light configuration installed"
+    else
+        warn "Night-light configuration installed, but hyprsunset could not start in the current session"
+    fi
+}
+
 install_refresh_switcher() {
     install_named_local jq fuzzel upower
     bash "$REPO/scripts/install-refresh-switcher.sh" --auto
@@ -803,6 +870,7 @@ install_multi_rice() {
     install_all_local_packages
     systemctl --user disable --now dms.service >/dev/null 2>&1 || true
     restore_profiles_and_configs
+    install_night_light
     install_background_music
     restore_bundled_sources
     configure_end4_search_only

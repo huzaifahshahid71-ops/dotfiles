@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SHARED_DIR="$HOME/.config/huzaifah"
+SHARED_CFG="$SHARED_DIR/hyprsunset.conf"
+PROFILE_ROOT="$HOME/.local/share/desktop-profiles"
+
+profiles=(
+    caelestia
+    end4
+    ambxst
+    dms
+    serpantinum
+    noctalia
+)
+
+mkdir -p "$SHARED_DIR"
+
+write_on() {
+    printf "profile {
+    time = 00:00
+    temperature = 4000
+}
+" > "$SHARED_CFG"
+}
+
+write_off() {
+    printf "profile {
+    time = 00:00
+    identity = true
+}
+" > "$SHARED_CFG"
+}
+
+if [[ ! -f "$SHARED_CFG" ]]; then
+    write_off
+fi
+
+for profile in "${profiles[@]}"; do
+    hypr_dir="$PROFILE_ROOT/$profile/hypr"
+    [[ -d "$hypr_dir" ]] || continue
+
+    rm -f "$hypr_dir/hyprsunset.conf"
+    ln -s "$SHARED_CFG" "$hypr_dir/hyprsunset.conf"
+done
+
+case "${1:-toggle}" in
+    toggle)
+        if grep -Eq "^[[:space:]]*temperature[[:space:]]*=[[:space:]]*4000" "$SHARED_CFG"; then
+            write_off
+            echo "Night Light: OFF"
+        else
+            write_on
+            echo "Night Light: ON (4000K)"
+        fi
+        ;;
+
+    on)
+        write_on
+        echo "Night Light: ON (4000K)"
+        ;;
+
+    off)
+        write_off
+        echo "Night Light: OFF"
+        ;;
+
+    status)
+        if grep -Eq "^[[:space:]]*temperature[[:space:]]*=[[:space:]]*4000" "$SHARED_CFG"; then
+            echo "Night Light: ON (4000K)"
+        else
+            echo "Night Light: OFF"
+        fi
+        exit 0
+        ;;
+
+    *)
+        echo "Usage: toggle-night-light [toggle|on|off|status]" >&2
+        exit 2
+        ;;
+esac
+
+systemctl --user restart hyprsunset.service
