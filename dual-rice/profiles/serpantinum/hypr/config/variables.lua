@@ -1,2 +1,2 @@
 mainMod = "SUPER"
-terminal = "kitty"
+terminal = "foot"

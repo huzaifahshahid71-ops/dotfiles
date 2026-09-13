@@ -35,3 +35,20 @@ hl.bind(
     hl.dsp.exec_cmd(home .. "/.local/bin/refresh-switch"),
     { description = "Display: Switch refresh rate" }
 )
+
+-- Huzaifah canonical terminal bindings.
+-- Override Ambxst SUPER+T tmux-manager binding.
+hl.unbind("SUPER + T")
+hl.unbind("SUPER + RETURN")
+
+hl.bind(
+    "SUPER + T",
+    hl.dsp.exec_cmd("foot"),
+    { description = "Terminal: Foot" }
+)
+
+hl.bind(
+    "SUPER + RETURN",
+    hl.dsp.exec_cmd("foot"),
+    { description = "Terminal: Foot" }
+)

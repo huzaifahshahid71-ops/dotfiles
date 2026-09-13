@@ -1,5 +1,5 @@
 local mainMod = _G.mainMod or "SUPER"
-local terminal = _G.terminal or "kitty"
+local terminal = _G.terminal or "foot"
 
 hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })
