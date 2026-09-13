@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SERVICE="background-music.service"
+MUSIC_DIR="${MUSIC_DIR:-$HOME/Music}"
+PLAYLIST="${BACKGROUND_MUSIC_PLAYLIST:-$MUSIC_DIR/Favorites.m3u8}"
+RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+SOCKET="$RUNTIME_DIR/mpv-background-music.sock"
+
+die() {
+    printf 'background-music: %s\n' "$*" >&2
+    exit 1
+}
+
+service_active() {
+    systemctl --user is-active --quiet "$SERVICE"
+}
+
+wait_for_socket() {
+    local i
+    for i in {1..50}; do
+        ipc '{"command":["get_property","pause"]}' >/dev/null 2>&1 && return 0
+        sleep 0.1
+    done
+    return 1
+}
+
+ipc() {
+    local json="$1"
+    [[ -S "$SOCKET" ]] || return 1
+
+    BACKGROUND_MUSIC_SOCKET="$SOCKET" \
+    BACKGROUND_MUSIC_JSON="$json" \
+    python3 -c 'import os,socket; p=os.environ["BACKGROUND_MUSIC_SOCKET"]; d=(os.environ["BACKGROUND_MUSIC_JSON"]+"\n").encode(); s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM); s.settimeout(2); s.connect(p); s.sendall(d); r=s.recv(65536); print(r.decode(), end="")'
+}
+
+run_player() {
+    mkdir -p "$HOME/.local/state/background-music"
+    rm -f "$SOCKET"
+
+    [[ -s "$PLAYLIST" ]] || die "playlist missing or empty: $PLAYLIST"
+    [[ -x /usr/bin/mpv ]] || die "mpv is not installed"
+
+    exec /usr/bin/mpv \
+        --no-video \
+        --audio-display=no \
+        --force-window=no \
+        --terminal=no \
+        --pause \
+        --save-position-on-quit \
+        --resume-playback=yes \
+        --playlist-start=auto \
+        --write-filename-in-watch-later-config \
+        "--input-ipc-server=$SOCKET" \
+        --loop-playlist=inf \
+        "--playlist=$PLAYLIST"
+}
+
+quit_player() {
+    ipc '{"command":["quit-watch-later"]}' >/dev/null 2>&1 || true
+}
+
+start_music() {
+    systemctl --user start "$SERVICE"
+    wait_for_socket || die "service started but MPV IPC socket did not appear"
+    ipc '{"command":["set_property","pause",false]}' >/dev/null
+}
+
+stop_music() {
+    systemctl --user stop "$SERVICE"
+}
+
+restart_music() {
+    systemctl --user restart "$SERVICE"
+    wait_for_socket || die "service restarted but MPV IPC socket did not appear"
+}
+
+toggle_music() {
+    if ! service_active; then
+        start_music
+        return
+    fi
+
+    if ! ipc '{"command":["cycle","pause"]}' >/dev/null; then
+        systemctl --user restart "$SERVICE"
+        wait_for_socket || die "unable to recover background music service"
+        ipc '{"command":["set_property","pause",false]}' >/dev/null
+    fi
+}
+
+show_status() {
+    printf 'Service:  %s
+' "$(systemctl --user is-active "$SERVICE" 2>/dev/null || true)"
+printf 'Enabled:  %s
+' "$(systemctl --user is-enabled "$SERVICE" 2>/dev/null || true)"
+printf 'Playlist: %s
+' "$PLAYLIST"
+
+if ipc '{"command":["get_property","pause"]}' >/dev/null 2>&1; then
+printf 'Socket:   ready
+'
+elif [[ -S "$SOCKET" ]]; then
+printf 'Socket:   stale
+'
+else
+printf 'Socket:   unavailable
+'
+fi
+}
+
+usage() {
+    cat <<'EOF'
+Usage: background-music <command>
+
+Commands:
+  toggle      Play/pause; starts the service if needed
+  start       Start the service and begin playback
+  stop        Stop playback and save the current position
+  restart     Restart the background music service
+  status      Show service, playlist, and IPC status
+  next        Skip to the next track
+  previous    Go to the previous track
+  run         Internal: run MPV for systemd
+  quit        Internal: save position and ask MPV to exit
+EOF
+}
+
+case "${1:-}" in
+    toggle)   toggle_music ;;
+    start)    start_music ;;
+    stop)     stop_music ;;
+    restart)  restart_music ;;
+    status)   show_status ;;
+    next)     ipc '{"command":["playlist-next","force"]}' >/dev/null || die "background music is not running" ;;
+    previous) ipc '{"command":["playlist-prev","force"]}' >/dev/null || die "background music is not running" ;;
+    run)      run_player ;;
+    quit)     quit_player ;;
+    -h|--help|help|"") usage ;;
+    *) die "unknown command: $1" ;;
+esac

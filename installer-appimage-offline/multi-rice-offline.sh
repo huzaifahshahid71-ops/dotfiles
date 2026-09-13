@@ -101,6 +101,9 @@ managed_user_paths() {
         ".config/quickshell/ii" \
         ".config/quickshell/end4-pC" \
         ".config/systemd/user/background-music.service" \
+        ".local/bin/background-music" \
+        ".local/bin/background-music-stop" \
+        "Music/Favorites.m3u8" \
         ".config/systemd/user/dms.service" \
         ".config/systemd/user/end4-media-backend.service" \
         ".local/share/desktop-profiles" \
@@ -177,6 +180,8 @@ create_install_snapshot() {
     systemctl --user is-enabled dms.service > "$state/dms-enabled-before.txt" 2>&1 || true
     systemctl --user is-active dms.service > "$state/dms-active-before.txt" 2>&1 || true
     systemctl --user is-active end4-media-backend.service > "$state/end4-media-backend-active-before.txt" 2>&1 || true
+    systemctl --user is-enabled background-music.service > "$state/background-music-enabled-before.txt" 2>&1 || true
+    systemctl --user is-active background-music.service > "$state/background-music-active-before.txt" 2>&1 || true
 
     if command -v serpantinumd >/dev/null 2>&1 &&        serpantinumd status 2>/dev/null | grep -qi "running"; then
         echo active > "$state/serpantinum-active-before.txt"
@@ -269,6 +274,7 @@ uninstall_multi_rice() {
     local state root system_state rel legacy_archive=""
     local -a added=()
     local dms_enabled="" dms_active=""
+    local background_music_enabled="" background_music_active=""
     local end4_backend_active="" serpantinum_active=""
 
     state="$(latest_install_snapshot || true)"
@@ -305,6 +311,7 @@ uninstall_multi_rice() {
     root="$HOME/.local/share/huzaifah-multi-rice/installations"
     system_state="$(grep "^system_snapshot=" "$state/manifest" | cut -d= -f2- || true)"
 
+    systemctl --user stop background-music.service >/dev/null 2>&1 || true
     systemctl --user stop end4-media-backend.service >/dev/null 2>&1 || true
     if command -v serpantinumd >/dev/null 2>&1; then
         serpantinumd stop >/dev/null 2>&1 || true
@@ -345,6 +352,20 @@ uninstall_multi_rice() {
     case "$dms_active" in
         active) systemctl --user start dms.service >/dev/null 2>&1 || true ;;
         inactive|failed) systemctl --user stop dms.service >/dev/null 2>&1 || true ;;
+    esac
+
+    background_music_enabled="$(head -n1 "$state/background-music-enabled-before.txt" 2>/dev/null || true)"
+    background_music_active="$(head -n1 "$state/background-music-active-before.txt" 2>/dev/null || true)"
+
+    case "$background_music_enabled" in
+        enabled) systemctl --user enable background-music.service >/dev/null 2>&1 || true ;;
+        disabled) systemctl --user disable background-music.service >/dev/null 2>&1 || true ;;
+        masked) systemctl --user mask background-music.service >/dev/null 2>&1 || true ;;
+    esac
+
+    case "$background_music_active" in
+        active) systemctl --user start background-music.service >/dev/null 2>&1 || true ;;
+        inactive|failed) systemctl --user stop background-music.service >/dev/null 2>&1 || true ;;
     esac
 
     end4_backend_active="$(head -n1 "$state/end4-media-backend-active-before.txt" 2>/dev/null || true)"
@@ -425,6 +446,9 @@ preflight_payload() {
     [[ "$(cat "$SOURCE_DIR/serpantinum/version.txt")" == "2.1.2" ]] || die "Bundled Serpantinum source is not version 2.1.2"
     [[ -x "$REPO/dual-rice/bin/end4-media-backend" ]] || die "Bundled End4 artwork backend is missing"
     [[ -f "$REPO/dual-rice/systemd/user/end4-media-backend.service" ]] || die "Bundled End4 artwork service is missing"
+    [[ -x "$REPO/dual-rice/bin/background-music" ]] || die "Bundled background-music command is missing"
+    [[ -f "$REPO/dual-rice/systemd/user/background-music.service" ]] || die "Bundled background music service is missing"
+    [[ -s "$REPO/dual-rice/music/Favorites.m3u8" ]] || die "Bundled Favorites.m3u8 playlist is missing"
     [[ -x "$BIN_DIR/axctl" ]] || die "Bundled axctl binary is missing"
     [[ -x "$REPO/scripts/install-refresh-switcher.sh" ]] || die "Bundled refresh switcher installer is missing"
     [[ -d "$REPO/machine/sddm/themes/sddm-frieren-theme" ]] || die "Bundled Frieren SDDM theme is missing"
@@ -540,6 +564,10 @@ restore_profiles_and_configs() {
     backup_path "$HOME/.local/bin/serpantinumd" serpantinum-daemon
     backup_path "$HOME/.local/bin/end4-media-backend" end4-media-backend
     backup_path "$HOME/.config/systemd/user/end4-media-backend.service" end4-media-backend-service
+    backup_path "$HOME/.local/bin/background-music" background-music
+    backup_path "$HOME/.local/bin/background-music-stop" background-music-stop
+    backup_path "$HOME/.config/systemd/user/background-music.service" background-music-service
+    backup_path "$HOME/Music/Favorites.m3u8" background-music-playlist
     backup_path "$HOME/.local/share/ambxst" ambxst-share
     backup_path "$HOME/.local/src/ambxst" ambxst-source
     backup_path "$HOME/.cache/ambxst/wallpapers.json" ambxst-wallpapers.json
@@ -720,6 +748,50 @@ activate_saved_profile() {
     esac
 }
 
+install_background_music() {
+    local src="$REPO/dual-rice"
+    local playlist="$HOME/Music/Favorites.m3u8"
+
+    log "Installing background music service and controls"
+
+    mkdir -p \
+        "$HOME/.local/bin" \
+        "$HOME/.config/systemd/user" \
+        "$HOME/Music"
+
+    install -m 0755 \
+        "$src/bin/background-music" \
+        "$HOME/.local/bin/background-music"
+
+    install -m 0644 \
+        "$src/systemd/user/background-music.service" \
+        "$HOME/.config/systemd/user/background-music.service"
+
+    # v4.1 replaces the old separate stop helper with:
+    # background-music quit
+    rm -f "$HOME/.local/bin/background-music-stop"
+
+    # Preserve an existing personal playlist. Use the bundled one only
+    # when no playlist exists yet.
+    if [[ ! -s "$playlist" ]]; then
+        cp -a "$src/music/Favorites.m3u8" "$playlist"
+    fi
+
+    # Make old /home/<username>/Music paths portable across reinstalls.
+    if [[ -f "$playlist" ]]; then
+        sed -Ei "s#^/home/[^/]+/Music/#$HOME/Music/#" "$playlist"
+    fi
+
+    systemctl --user daemon-reload
+    systemctl --user enable background-music.service >/dev/null 2>&1 || true
+
+    if "$HOME/.local/bin/background-music" restart >/dev/null 2>&1; then
+        ok "Background music service installed and running"
+    else
+        warn "Background music was installed and enabled, but no playable local music was available to start it now"
+    fi
+}
+
 install_refresh_switcher() {
     install_named_local jq fuzzel upower
     bash "$REPO/scripts/install-refresh-switcher.sh" --auto
@@ -731,6 +803,7 @@ install_multi_rice() {
     install_all_local_packages
     systemctl --user disable --now dms.service >/dev/null 2>&1 || true
     restore_profiles_and_configs
+    install_background_music
     restore_bundled_sources
     configure_end4_search_only
     activate_saved_profile

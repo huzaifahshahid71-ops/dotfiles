@@ -4,8 +4,8 @@ After=pipewire.service
 
 [Service]
 Type=simple
-ExecStart=%h/.local/bin/background-music
-ExecStop=%h/.local/bin/background-music-stop
+ExecStart=%h/.local/bin/background-music run
+ExecStop=%h/.local/bin/background-music quit
 TimeoutStopSec=15
 Restart=no
 
