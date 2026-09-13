@@ -122,10 +122,6 @@ switch_profile() {
 
     printf '%s\n' "$profile" > "$ACTIVE_FILE"
 
-    if [ "$profile" = "end4" ]; then
-        systemctl --user start end4-media-backend.service >/dev/null 2>&1 || true
-    fi
-
     notify-send \
         "Desktop Profile" \
         "$(pretty_name "$profile") selected" \
