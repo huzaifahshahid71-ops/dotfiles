@@ -18,7 +18,8 @@ TARGETS_FILE="$BUILD/targets.txt"
 CLOSURE_FILE="$BUILD/closure.txt"
 
 END4_DOTS_SOURCE="${END4_DOTS_SOURCE:-$HOME/.local/src/end4-dots}"
-END4_PC_SOURCE="${END4_PC_SOURCE:-$HOME/.config/quickshell/end4-pC}"
+END4_PC_REPO_URL="${END4_PC_REPO_URL:-https://github.com/pctrade/end4-pC.git}"
+END4_PC_SOURCE="${END4_PC_SOURCE:-$BUILD/end4-pC-upstream}"
 END4_PC_EXPECTED_COMMIT="51a1347612a9b92971ee6845bb583067a1ce5eb7"
 END4_PC_PATCH_FILE="$ROOT/dual-rice/versions/end4-pC-local.patch"
 END4_PC_STAGE="$BUILD/end4-pC-source"
@@ -327,13 +328,27 @@ is_arch_family || die "Build the offline image on an Arch/CachyOS-family x86_64 
 [[ -f "$ONLINE_SRC/huzaifah-triple-rice-installer.svg" ]] || die "Installer SVG icon is missing"
 [[ -d "$ROOT/machine/sddm/themes/sddm-frieren-theme" ]] || die "Frieren SDDM theme assets are missing from the repository"
 [[ -d "$END4_DOTS_SOURCE" ]] || die "end4-dots source not found at $END4_DOTS_SOURCE"
-[[ -d "$END4_PC_SOURCE/.git" ]] || die "end4-pC Git source not found at $END4_PC_SOURCE"
 [[ -f "$END4_PC_PATCH_FILE" ]] || die "end4-pC local patch not found at $END4_PC_PATCH_FILE"
 
-END4_PC_ACTUAL_COMMIT="$(git -C "$END4_PC_SOURCE" rev-parse HEAD)"
-[[ "$END4_PC_ACTUAL_COMMIT" == "$END4_PC_EXPECTED_COMMIT" ]]     || die "end4-pC source is at $END4_PC_ACTUAL_COMMIT, expected $END4_PC_EXPECTED_COMMIT"
+mkdir -p "$BUILD"
 
-git -C "$END4_PC_SOURCE" cat-file -e "${END4_PC_EXPECTED_COMMIT}^{commit}"     || die "Pinned end4-pC commit is unavailable in the local source repository"
+if [[ ! -d "$END4_PC_SOURCE/.git" ]]; then
+    log "Cloning upstream end4-pC source for reproducible build"
+    rm -rf "$END4_PC_SOURCE"
+    git clone "$END4_PC_REPO_URL" "$END4_PC_SOURCE" ||
+        die "Failed to clone upstream end4-pC source"
+else
+    git -C "$END4_PC_SOURCE" remote set-url origin "$END4_PC_REPO_URL"
+fi
+
+if ! git -C "$END4_PC_SOURCE" cat-file -e "${END4_PC_EXPECTED_COMMIT}^{commit}" 2>/dev/null; then
+    log "Fetching pinned end4-pC commit"
+    git -C "$END4_PC_SOURCE" fetch origin "$END4_PC_EXPECTED_COMMIT" ||
+        die "Failed to fetch pinned end4-pC commit"
+fi
+
+git -C "$END4_PC_SOURCE" cat-file -e "${END4_PC_EXPECTED_COMMIT}^{commit}" ||
+    die "Pinned end4-pC commit is unavailable"
 [[ -d "$AMBXST_SOURCE" ]] || die "Ambxst source not found at $AMBXST_SOURCE"
 [[ -d "$SERPANTINUM_SOURCE/.git" ]] || die "Serpantinum Git source not found at $SERPANTINUM_SOURCE"
 [[ -f "$SERPANTINUM_TARGETS_FILE" ]] || die "Serpantinum target list not found at $SERPANTINUM_TARGETS_FILE"
