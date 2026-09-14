@@ -18,8 +18,6 @@ The current offline control-center edition bundles:
 - fonts, icons, Qt, Quickshell and Hyprland dependencies
 - ASUS support packages (`asusctl`, ROG Control Center, power-profiles-daemon)
 - guarded Zephyrus G16 extras (`supergfxctl` is bundled but GPU mode is never switched automatically)
-- rEFInd + `efibootmgr`
-- `sbctl` for an explicitly gated Secure Boot workflow
 - Btrfs hibernation tooling
 - the current dotfiles working-tree snapshot
 
@@ -27,16 +25,14 @@ The current offline control-center edition bundles:
 
 Launching the AppImage presents a control-center menu rather than immediately modifying the machine:
 
-1. **Preflight** — validates the embedded payload, DMI model, UEFI/Secure-Boot state and known package conflicts without changing the system.
-2. **Install Multi-Rice** — installs all five rices, switchers and Frieren SDDM from the embedded package repository.
+1. **Preflight** — validates the embedded payload, DMI model and known package conflicts without changing the system.
+2. **Install Multi-Rice** — installs all six rices, switchers and Frieren SDDM from the embedded package repository.
 3. **Refresh switcher** — installs/reconfigures the hardware-aware refresh switcher.
 4. **Frieren SDDM** — theme only; does not replace the configured display manager or enable autologin.
 5. **ASUS support** — generic ASUS tooling with DMI warning on non-ASUS machines.
 6. **Zephyrus G16 extras** — guarded G16-specific support.
-7. **rEFInd** — safe rEFInd install/config using the portable saved theme and machine-generated kernel options. Captured root-device lines are never copied blindly.
-8. **Secure Boot** — guided `sbctl` setup. It does not clear firmware keys or enable Secure Boot automatically. Firmware must already be in Setup Mode, and the user must type `ENROLL` before key enrollment. Microsoft keys are included with `sbctl enroll-keys -m` to preserve normal Windows/Microsoft trust.
-9. **Hibernation** — guarded Btrfs swap-storage setup.
-10. **Status** — shows machine, rEFInd, ASUS, refresh, Secure Boot and payload status.
+7. **Hibernation** — guarded Btrfs swap-storage setup.
+8. **Status** — shows machine, ASUS, refresh and payload status.
 
 Dangerous actions remain opt-in and include additional confirmation gates.
 
@@ -50,7 +46,7 @@ git pull --ff-only
 bash installer-appimage-offline/build-multi-rice.sh
 ```
 
-The wrapper uses the proven dependency-closure builder in an isolated temporary copy of the repository. It adds the offline toolbox packages to the bundle without making the normal online installer install ASUS/rEFInd/Secure-Boot packages on every machine.
+The wrapper uses the proven dependency-closure builder in an isolated temporary copy of the repository. It adds the offline ASUS/G16 and hibernation toolbox packages to the bundle without making the normal online installer install them on every machine.
 
 To intentionally skip the builder's full system update:
 
@@ -63,8 +59,8 @@ The normal build is recommended.
 Output:
 
 ```text
-dist/Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.AppImage
-dist/Huzaifah-Multi-Rice-OFFLINE-v3.0.0-x86_64.sha256
+dist/Huzaifah-Multi-Rice-OFFLINE-v4.1.0-x86_64.AppImage
+dist/Huzaifah-Multi-Rice-OFFLINE-v4.1.0-x86_64.sha256
 ```
 
 The build step itself needs internet because it resolves/rebuilds AUR packages and downloads exact official package archives. **The resulting AppImage does not require internet for installation or for the bundled setup tools.**
@@ -78,19 +74,5 @@ The offline image avoids GitHub/AUR/DNS/mirror failures during installation by u
 The target machine can still have local incompatibilities. The preflight therefore reports known provider conflicts before the full restore. In particular, if `noctalia-qs` is installed, the Multi-Rice install can explicitly replace that provider with the bundled `quickshell-git` before the rest of the package transaction.
 
 Arch is rolling release, so for the most predictable result use the image on Arch/CachyOS systems reasonably close in age to the build snapshot.
-
-## Secure Boot safety
-
-Secure Boot is intentionally not a one-click operation. The AppImage:
-
-- requires UEFI boot
-- requires firmware **Setup Mode** before enrollment
-- refuses enrollment if a known rEFInd EFI binary is not present
-- requires the literal confirmation `ENROLL`
-- uses `sbctl enroll-keys -m` so Microsoft's keys remain trusted
-- signs/registers the detected rEFInd binary and conventional `/boot/vmlinuz-*` kernel images with `sbctl -s`
-- does **not** toggle the firmware Secure Boot setting itself
-
-Firmware key enrollment is hardware-sensitive. The menu keeps this separate from normal Multi-Rice installation and never runs it automatically.
 
 The Frieren asset is used only by SDDM; the installer does not replace the desktop wallpaper.

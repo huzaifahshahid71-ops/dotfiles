@@ -18,7 +18,7 @@ if [[ -n "${APPIMAGE:-}" \
 fi
 
 APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TITLE="Huzaifah Multi-Rice OFFLINE v4.0.0"
+TITLE="Huzaifah Multi-Rice OFFLINE v4.1.0"
 ENGINE="$APPDIR/install-offline.sh"
 
 is_arch_family() {
@@ -79,7 +79,7 @@ run_terminal() {
 #!/usr/bin/env bash
 set -o pipefail
 clear 2>/dev/null || true
-printf '\n  Huzaifah Multi-Rice OFFLINE v4.0.0\n'
+printf '\n  Huzaifah Multi-Rice OFFLINE v4.1.0\n'
 printf '  ===========================\n'
 printf '  Action: %s\n\n' $(printf '%q' "$action")
 bash $(printf '%q' "$ENGINE") $(printf '%q' "$action")
@@ -122,17 +122,15 @@ choose_action_gui() {
                 --title="$TITLE" --width=920 --height=610 \
                 --text="<b>Fully offline Multi-Rice installer & system setup toolbox</b>\nDetected: $machine\n\nNothing uses GitHub, AUR or online mirrors at install time." \
                 --column="" --column="Action" --column="What it does" --print-column=2 \
-                TRUE  preflight  "Verify payload, machine, Secure Boot state and known package conflicts — changes nothing" \
+                TRUE  preflight  "Verify payload, machine and known package conflicts — changes nothing" \
                 FALSE install     "Install Caelestia + end4-pC + Ambxst + DMS + Noctalia v5, Frieren SDDM and switchers" \
                 FALSE uninstall   "Uninstall / restore the exact pre-install desktop configuration" \
                 FALSE refresh     "Install/reconfigure hardware-aware refresh switcher; G16 gets tested custom profile, others OEM only" \
                 FALSE sddm        "Install Frieren SDDM login theme only; does not enable/replace the display manager" \
                 FALSE asus        "Generic ASUS support: asusctl, ROG Control Center and safe power-profile setup" \
                 FALSE g16         "Guarded Zephyrus G16 extras and optional GPU-switching tools" \
-                FALSE refind      "Safe rEFInd install/config + portable theme + machine-generated kernel options" \
-                FALSE secureboot  "Guided sbctl Secure Boot setup; explicit ENROLL gate; Microsoft keys retained" \
                 FALSE hibernate   "Guarded Btrfs hibernation swap-storage setup" \
-                FALSE status      "Show DMI model, rEFInd, ASUS, refresh, Secure Boot and payload status" \
+                FALSE status      "Show DMI model, ASUS, refresh and payload status" \
                 FALSE exit        "Close installer" 2>/dev/null
             ;;
         yad)
@@ -147,14 +145,12 @@ choose_action_gui() {
                 FALSE sddm "Frieren SDDM theme only" \
                 FALSE asus "Generic ASUS support" \
                 FALSE g16 "Zephyrus G16 guarded extras" \
-                FALSE refind "Safe rEFInd configuration" \
-                FALSE secureboot "Guided sbctl Secure Boot setup" \
                 FALSE hibernate "Btrfs hibernation storage" \
                 FALSE status "System/payload status" \
                 FALSE exit "Close installer" 2>/dev/null
             ;;
         kdialog)
-            kdialog --menu "Huzaifah Multi-Rice OFFLINE v4.0.0\n$machine\n\nChoose an action:" \
+            kdialog --menu "Huzaifah Multi-Rice OFFLINE v4.1.0\n$machine\n\nChoose an action:" \
                 preflight "Preflight — no changes" \
                 install "Install all six rices + SDDM + switchers" \
                 uninstall "Uninstall / restore previous desktop" \
@@ -162,8 +158,6 @@ choose_action_gui() {
                 sddm "Frieren SDDM theme" \
                 asus "Generic ASUS support" \
                 g16 "Zephyrus G16 extras" \
-                refind "rEFInd setup" \
-                secureboot "Secure Boot setup" \
                 hibernate "Hibernation storage" \
                 status "System status" \
                 exit "Exit" --title "$TITLE" 2>/dev/null
@@ -174,7 +168,7 @@ choose_action_gui() {
 
 choose_action_terminal() {
     printf "
-Huzaifah Multi-Rice OFFLINE v4.0.0
+Huzaifah Multi-Rice OFFLINE v4.1.0
 "
     printf "==================================
 "
@@ -195,13 +189,9 @@ Huzaifah Multi-Rice OFFLINE v4.0.0
 "
     printf "  7) Zephyrus G16 extras
 "
-    printf "  8) rEFInd setup
+    printf "  8) Btrfs hibernation storage
 "
-    printf "  9) Secure Boot setup
-"
-    printf " 10) Btrfs hibernation storage
-"
-    printf " 11) System/payload status
+    printf "  9) System/payload status
 "
     printf "  0) Exit
 
@@ -215,10 +205,8 @@ Huzaifah Multi-Rice OFFLINE v4.0.0
         5) echo sddm ;;
         6) echo asus ;;
         7) echo g16 ;;
-        8) echo refind ;;
-        9) echo secureboot ;;
-        10) echo hibernate ;;
-        11) echo status ;;
+        8) echo hibernate ;;
+        9) echo status ;;
         0) echo exit ;;
         *) echo invalid ;;
     esac
@@ -232,8 +220,6 @@ confirm_dangerous_action() {
         uninstall) msg="Restore the exact desktop/configuration snapshot from before Multi-Rice was installed?
 
 System packages added by Multi-Rice will be left installed by default for safety." ;;
-        refind) msg="Open the guarded rEFInd setup?\n\nIt can write the EFI System Partition and UEFI boot entries. Existing config and BootOrder are protected by the bundled setup script." ;;
-        secureboot) msg="Open the guided Secure Boot setup?\n\nFirmware key enrollment is NEVER automatic. The terminal requires typing ENROLL before sbctl is allowed to change UEFI Secure Boot keys." ;;
         hibernate) msg="Open Btrfs hibernation storage setup?\n\nIt can create a swap subvolume/file and edit /etc/fstab, but asks again before making those changes." ;;
         *) return 0 ;;
     esac

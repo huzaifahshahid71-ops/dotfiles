@@ -314,7 +314,7 @@ activate_saved_profile() {
 
 main() {
     clear 2>/dev/null || true
-    printf '\n  Huzaifah Triple-Rice OFFLINE Installer\n'
+    printf '\n  Huzaifah Multi-Rice OFFLINE v4.1.0 Installer\n'
     printf '  =======================================\n\n'
     printf '  ✦ Caelestia\n  ◈ end4-pC\n  ◆ Ambxst\n  🌙 Frieren SDDM login theme\n'
     printf '  ⇄ SUPER + SHIFT + D switcher\n\n'

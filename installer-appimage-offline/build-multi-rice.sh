@@ -5,9 +5,9 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP="$(mktemp -d)"
 WORK="$TMP/dotfiles"
 DIST="$ROOT/dist"
-OLD_OUT="$WORK/dist/Huzaifah-Triple-Rice-Offline-x86_64.AppImage"
-NEW_OUT="$DIST/Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.AppImage"
-NEW_SHA="$DIST/Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.sha256"
+BUILT_OUT="$WORK/dist/Huzaifah-Multi-Rice-OFFLINE-v4.1.0-x86_64.AppImage"
+NEW_OUT="$DIST/Huzaifah-Multi-Rice-OFFLINE-v4.1.0-x86_64.AppImage"
+NEW_SHA="$DIST/Huzaifah-Multi-Rice-OFFLINE-v4.1.0-x86_64.sha256"
 
 cleanup() { rm -rf "$TMP"; }
 trap cleanup EXIT
@@ -43,7 +43,7 @@ p = Path(sys.argv[1])
 s = p.read_text()
 needle = "    adw-gtk-theme inter-font ttf-fira-code\n"
 addition = "    adw-gtk-theme inter-font ttf-fira-code \\" + "\n" + \
-           "    sbctl refind efibootmgr asusctl rog-control-center supergfxctl btrfs-progs\n"
+           "    asusctl rog-control-center supergfxctl btrfs-progs\n"
 if needle not in s:
     raise SystemExit("Could not locate the final Multi-Rice package line in restore-dual-rice.sh")
 p.write_text(s.replace(needle, addition, 1))
@@ -204,7 +204,7 @@ cat > "$WORK/installer-appimage-offline/huzaifah-triple-rice-offline.desktop" <<
 [Desktop Entry]
 Type=Application
 Name=Huzaifah Multi-Rice OFFLINE
-Comment=Offline Multi-Rice installer, ASUS/G16 tools, rEFInd and guided Secure Boot setup
+Comment=Offline Multi-Rice installer with ASUS/G16 and hibernation tools
 Exec=AppRun
 Icon=huzaifah-triple-rice-offline
 Terminal=false
@@ -223,11 +223,11 @@ log "Running the proven dependency-closure offline builder"
     bash installer-appimage-offline/build.sh "$@"
 )
 
-[[ -f "$OLD_OUT" ]] || die "Underlying builder completed without producing the expected AppImage"
+[[ -f "$BUILT_OUT" ]] || die "Underlying builder completed without producing the expected AppImage"
 
 log "Publishing Multi-Rice offline artifact"
 rm -f "$NEW_OUT" "$NEW_SHA"
-mv "$OLD_OUT" "$NEW_OUT"
+mv "$BUILT_OUT" "$NEW_OUT"
 chmod +x "$NEW_OUT"
 sha256sum "$NEW_OUT" > "$NEW_SHA"
 
@@ -237,6 +237,5 @@ printf '\nThis AppImage contains:\n'
 printf '  ✦ Caelestia\n  ◈ end4-pC\n  ◆ Ambxst\n  ● DankMaterialShell\n'
 printf '  ⇄ Multi-Rice switcher\n  ↻ hardware-aware refresh switcher\n'
 printf '  🌙 Frieren SDDM theme\n  ◇ ASUS / Zephyrus G16 setup tools\n'
-printf '  ◇ rEFInd configuration\n  ◇ guided sbctl Secure Boot setup\n'
 printf '  ◇ guarded Btrfs hibernation storage setup\n'
 printf '\nInstallation/runtime network requirement: none.\n'

@@ -12,8 +12,8 @@ PAYLOAD="$APPDIR/payload"
 PKG_DIR="$PAYLOAD/packages"
 DIST="$ROOT/dist"
 TOOL="$BUILD/appimagetool-modern-x86_64.AppImage"
-OUT="$DIST/Huzaifah-Triple-Rice-Offline-x86_64.AppImage"
-OUT_SHA="$DIST/Huzaifah-Triple-Rice-Offline-x86_64.sha256"
+OUT="$DIST/Huzaifah-Multi-Rice-OFFLINE-v4.1.0-x86_64.AppImage"
+OUT_SHA="$DIST/Huzaifah-Multi-Rice-OFFLINE-v4.1.0-x86_64.sha256"
 TARGETS_FILE="$BUILD/targets.txt"
 CLOSURE_FILE="$BUILD/closure.txt"
 
@@ -45,7 +45,7 @@ die()  { printf '\033[1;31mERROR:\033[0m %s\n' "$*" >&2; exit 1; }
 
 usage() {
     cat <<'EOF'
-Build the complete no-internet Huzaifah Multi-Rice v4.0.0 AppImage.
+Build the complete no-internet Huzaifah Multi-Rice v4.1.0 AppImage.
 
 Usage:
   bash installer-appimage-offline/build.sh [--skip-system-update]
@@ -409,7 +409,7 @@ cat "$SERPANTINUM_TARGETS_FILE" >> "$TARGETS_FILE"
 sort -u -o "$TARGETS_FILE" "$TARGETS_FILE"
 TARGET_COUNT="$(wc -l < "$TARGETS_FILE")"
 
-printf '\nHuzaifah Multi-Rice v4.0.0 OFFLINE Builder\n'
+printf '\nHuzaifah Multi-Rice v4.1.0 OFFLINE Builder\n'
 printf '=====================================\n'
 printf 'Direct package targets (including SDDM): %s\n' "$TARGET_COUNT"
 printf 'Output: %s\n\n' "$OUT"

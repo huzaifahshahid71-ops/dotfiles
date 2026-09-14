@@ -50,22 +50,6 @@ is_g16() {
     [[ "$p" =~ GU60[35] || "$p" == *"Zephyrus G16"* || "$p" == *"ROG Zephyrus G16"* ]]
 }
 
-secure_boot_enabled() {
-    [[ -d /sys/firmware/efi/efivars ]] || return 1
-    local var
-    var="$(find /sys/firmware/efi/efivars -maxdepth 1 -name 'SecureBoot-*' -print -quit 2>/dev/null || true)"
-    [[ -n "$var" ]] || return 1
-    od -An -t u1 -j 4 -N 1 "$var" 2>/dev/null | grep -Eq '[[:space:]]1[[:space:]]*$'
-}
-
-setup_mode_enabled() {
-    [[ -d /sys/firmware/efi/efivars ]] || return 1
-    local var
-    var="$(find /sys/firmware/efi/efivars -maxdepth 1 -name 'SetupMode-*' -print -quit 2>/dev/null || true)"
-    [[ -n "$var" ]] || return 1
-    od -An -t u1 -j 4 -N 1 "$var" 2>/dev/null | grep -Eq '[[:space:]]1[[:space:]]*$'
-}
-
 backup_path() {
     local path="$1" name="$2"
     [[ -e "$path" || -L "$path" ]] || return 0
@@ -84,7 +68,7 @@ rewrite_home_paths_json() {
 
 
 # HUZ_V3_TRANSACTIONAL_ROLLBACK
-# v4.0.0 records the machine state BEFORE any Multi-Rice mutation.
+# v4.1.0 records the machine state BEFORE any Multi-Rice mutation.
 # The snapshot preserves files/directories/symlinks exactly with tar.
 
 managed_user_paths() {
@@ -171,12 +155,12 @@ create_install_snapshot() {
     HUZ_INSTALL_STATE="$state"
     HUZ_SYSTEM_STATE="$system_state"
 
-    log "Creating transactional v4.0.0 rollback snapshot BEFORE installation"
+    log "Creating transactional v4.1.0 rollback snapshot BEFORE installation"
     mkdir -p "$state/packages"
     sudo mkdir -p "$system_state"
 
     {
-        printf "version=3.0.0\n"
+        printf "version=4.1.0\n"
         printf "install_id=%s\n" "$STAMP"
         printf "created=%s\n" "$(date --iso-8601=seconds)"
         printf "user=%s\n" "$USER"
@@ -305,12 +289,12 @@ uninstall_multi_rice() {
     fi
 
     if [[ -f "$state/restored-at" ]]; then
-        printf "\nThis v4.0.0 rollback snapshot has already been restored.\n"
+        printf "\nThis v4.1.0 rollback snapshot has already been restored.\n"
         printf "Nothing was changed.\n"
         return 0
     fi
 
-    printf "\nHuzaifah Multi-Rice v4.0.0 rollback\n"
+    printf "\nHuzaifah Multi-Rice v4.1.0 rollback\n"
     printf "====================================\n"
     printf "Snapshot: %s\n\n" "$state"
 
@@ -531,15 +515,17 @@ EOF
 }
 
 local_repo_has() {
-    local pkg="$1" conf
+    local pkg="$1" conf rc
     conf="$(mktemp --suffix=.conf)"
     make_pacman_conf "$conf"
-    pacman --config "$conf" -Sl huzaifah-offline 2>/dev/null | awk '{print $2}' | grep -Fxq "$pkg"
-    local rc=$?
+    if pacman --config "$conf" -Sl huzaifah-offline 2>/dev/null | awk -v want="$pkg" '$2 == want { found=1 } END { exit !found }'; then
+        rc=0
+    else
+        rc=$?
+    fi
     rm -f "$conf"
     return "$rc"
 }
-
 install_named_local() {
     local conf
     conf="$(mktemp --suffix=.conf)"
@@ -585,8 +571,6 @@ preflight_report() {
     printf 'Architecture:  %s\n' "$(uname -m)"
     printf 'Machine:       %s / %s\n' "$(current_vendor)" "$(current_product)"
     printf 'UEFI boot:     %s\n' "$([[ -d /sys/firmware/efi ]] && echo yes || echo no)"
-    printf 'Secure Boot:   %s\n' "$(secure_boot_enabled && echo enabled || echo disabled)"
-    printf 'Setup Mode:    %s\n' "$(setup_mode_enabled && echo enabled || echo disabled)"
     printf 'G16 profile:   %s\n' "$(is_g16 && echo yes || echo no)"
     printf 'Free space /:  %s\n' "$(df -h --output=avail / | tail -1 | xargs)"
     if pacman -Q noctalia-qs >/dev/null 2>&1; then
@@ -982,7 +966,7 @@ install_multi_rice() {
     install_frieren_theme
     activate_sddm_for_next_boot
     finalize_install_snapshot
-    ok "Fully offline Multi-Rice v4.0.0 installation completed"
+    ok "Fully offline Multi-Rice v4.1.0 installation completed"
     printf "Transactional rollback snapshot: %s
 " "$HUZ_INSTALL_STATE"
     printf "No internet connection was required.
@@ -993,87 +977,6 @@ run_system_setup() {
     local cmd="$1"; shift || true
     [[ -x "$REPO/system-setup.sh" ]] || die "Bundled system-setup.sh is missing"
     bash "$REPO/system-setup.sh" "$cmd" "$@"
-}
-
-find_refind_binary() {
-    local esp p
-    for esp in /boot/efi /efi /boot; do
-        for p in "$esp/EFI/refind/refind_x64.efi" "$esp/EFI/REFIND/refind_x64.efi"; do
-            [[ -f "$p" ]] && { printf '%s\n' "$p"; return 0; }
-        done
-    done
-    return 1
-}
-
-sign_known_secure_boot_files() {
-    local refind kernel
-    refind="$(find_refind_binary || true)"
-    [[ -n "$refind" ]] || die "rEFInd EFI binary was not found. Configure rEFInd first, then rerun Secure Boot setup."
-
-    log "Registering/signing rEFInd with sbctl"
-    sudo sbctl sign -s "$refind"
-
-    local found=0
-    for kernel in /boot/vmlinuz-*; do
-        [[ -f "$kernel" ]] || continue
-        found=1
-        log "Registering/signing $(basename "$kernel")"
-        sudo sbctl sign -s "$kernel"
-    done
-    (( found )) || warn "No /boot/vmlinuz-* kernel images were found; verify your UKI/kernel signing separately."
-}
-
-secure_boot_setup() {
-    [[ -d /sys/firmware/efi ]] || die "System was not booted in UEFI mode"
-    verify_payload
-    install_named_local sbctl
-
-    printf '\nCurrent Secure Boot status:\n'
-    sudo sbctl status || true
-
-    if secure_boot_enabled; then
-        ok "Secure Boot is already enabled in firmware"
-        printf '\nVerification only; no firmware keys will be changed.\n'
-        sudo sbctl verify || true
-        return 0
-    fi
-
-    if ! setup_mode_enabled; then
-        warn "Firmware is not in Secure Boot Setup Mode."
-        printf '\nBefore key enrollment, reboot into firmware settings and:\n'
-        printf '  1. Disable Secure Boot.\n'
-        printf '  2. Clear/delete the existing Secure Boot keys or select Custom/Setup Mode.\n'
-        printf '  3. Boot Linux again and rerun this Secure Boot option.\n'
-        printf '\nNo firmware keys were changed.\n'
-        return 2
-    fi
-
-    [[ -n "$(find_refind_binary || true)" ]] || die "Configure rEFInd first. Secure Boot setup will not enroll keys without a known rEFInd binary to sign."
-
-    warn "SECURE BOOT KEY ENROLLMENT CHANGES UEFI FIRMWARE VARIABLES."
-    warn "This guided flow enrolls your sbctl keys together with Microsoft's keys (-m), preserving normal Windows/Microsoft trust."
-    warn "Firmware implementations vary; incorrect key enrollment can make some pre-boot devices unavailable."
-    printf '\nType ENROLL to continue, or anything else to cancel: '
-    local ans
-    read -r ans < /dev/tty || true
-    [[ "$ans" == ENROLL ]] || { log "Secure Boot enrollment cancelled"; return 0; }
-
-    if ! sudo test -d /var/lib/sbctl/keys; then
-        sudo sbctl create-keys
-    else
-        log "Existing sbctl key directory detected; keeping the existing keys"
-    fi
-
-    sudo sbctl enroll-keys -m
-    sign_known_secure_boot_files
-
-    printf '\nPost-enrollment verification:\n'
-    sudo sbctl status || true
-    sudo sbctl verify || true
-
-    ok "Keys enrolled and known Linux/rEFInd boot files registered with sbctl"
-    printf '\nNext step is MANUAL: reboot into firmware and enable Secure Boot.\n'
-    printf 'Do not delete Microsoft keys; this flow intentionally enrolled them alongside your keys.\n'
 }
 
 uninstall_multi_rice_packages() {
@@ -1095,7 +998,7 @@ uninstall_multi_rice_packages() {
     fi
 
     if [[ -z "$state" || ! -f "$state/packages-added.txt" ]]; then
-        printf "\nNo v4.0.0 package-addition manifest was found.\n"
+        printf "\nNo v4.1.0 package-addition manifest was found.\n"
         printf "Nothing was removed.\n"
         return 0
     fi
@@ -1111,7 +1014,7 @@ uninstall_multi_rice_packages() {
         return 0
     fi
 
-    printf "\nPackages recorded as added by this v4.0.0 installation:\n\n"
+    printf "\nPackages recorded as added by this v4.1.0 installation:\n\n"
     printf "  %s\n" "${installed[@]}"
 
     printf "\nOnly packages absent before installation are candidates.\n"
@@ -1131,8 +1034,6 @@ status_report() {
     printf '==================================\n'
     printf 'Machine:       %s / %s\n' "$(current_vendor)" "$(current_product)"
     printf 'G16 detected:  %s\n' "$(is_g16 && echo yes || echo no)"
-    printf 'Secure Boot:   %s\n' "$(secure_boot_enabled && echo enabled || echo disabled)"
-    printf 'Setup Mode:    %s\n' "$(setup_mode_enabled && echo enabled || echo disabled)"
     [[ -f "$PAYLOAD/manifest.txt" ]] && { printf '\nPayload manifest:\n'; cat "$PAYLOAD/manifest.txt"; }
     printf '\nSystem setup status:\n'
     run_system_setup status || true
@@ -1147,13 +1048,11 @@ Actions:
   install       Install all six rices + switchers + Frieren SDDM theme
   uninstall     Restore the exact pre-install desktop snapshot
   uninstall-packages
-                Remove packages recorded as added by the v4.0.0 installation
+                Remove packages recorded as added by the v4.1.0 installation
   refresh       Install/reconfigure SUPER+SHIFT+R refresh switcher
   sddm          Install Frieren SDDM theme only
   asus          Install generic ASUS support (asusctl/ROG Control Center)
   g16           Install guarded Zephyrus G16 extras
-  refind        Configure rEFInd safely using the bundled theme
-  secureboot    Guided sbctl Secure Boot setup with explicit enrollment gate
   hibernate     Configure guarded Btrfs hibernation storage
   status        Show machine/offline-payload status
 EOF
@@ -1172,8 +1071,6 @@ main() {
         sddm) verify_payload; install_named_local sddm rsync; install_frieren_theme ;;
         asus) verify_payload; install_named_local asusctl rog-control-center power-profiles-daemon; run_system_setup asus ;;
         g16) verify_payload; install_named_local asusctl rog-control-center power-profiles-daemon supergfxctl; run_system_setup g16 ;;
-        refind) verify_payload; install_named_local refind efibootmgr; run_system_setup refind ;;
-        secureboot) secure_boot_setup ;;
         hibernate) verify_payload; install_named_local btrfs-progs; run_system_setup hibernate ;;
         status) status_report ;;
         help|-h|--help) usage ;;

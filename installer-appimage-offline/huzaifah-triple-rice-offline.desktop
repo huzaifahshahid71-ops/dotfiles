@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
-Name=Huzaifah Multi-Rice OFFLINE v3.0.0
-Comment=Offline Multi-Rice installer, ASUS/G16 tools, rEFInd and guided Secure Boot setup
+Name=Huzaifah Multi-Rice OFFLINE v4.1.0
+Comment=Offline Multi-Rice installer with ASUS/G16 and hibernation tools
 Exec=AppRun
 Icon=huzaifah-triple-rice-offline
 Terminal=false
