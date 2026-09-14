@@ -29,8 +29,9 @@ MPV_MPRIS_COMMIT_FILE="$ROOT/dual-rice/versions/mpv-mpris-upstream-commit.txt"
 MPV_MPRIS_PATCH_FILE="$ROOT/dual-rice/versions/mpv-mpris-embedded-art-file-url.patch"
 MPV_MPRIS_STAGE="$BUILD/mpv-mpris-source"
 AMBXST_SOURCE="${AMBXST_SOURCE:-$HOME/.local/src/ambxst}"
-SERPANTINUM_SOURCE="${SERPANTINUM_SOURCE:-$HOME/.local/src/serpantinum-v4}"
-SERPANTINUM_EXPECTED_COMMIT="d6f5a6ded066811ad301ff8c45ec434c343b8b4b"
+SERPANTINUM_REPO_URL="${SERPANTINUM_REPO_URL:-https://github.com/ilyamiro/serpantinum.git}"
+SERPANTINUM_SOURCE="${SERPANTINUM_SOURCE:-$BUILD/serpantinum-upstream}"
+SERPANTINUM_COMMIT_FILE="$ROOT/dual-rice/versions/serpantinum.commit"
 SERPANTINUM_TARGETS_FILE="$SRC/serpantinum-targets.txt"
 SERPANTINUM_PATCH_FILE="$ROOT/dual-rice/versions/serpantinum-local.patch"
 SERPANTINUM_STAGE="$BUILD/serpantinum-source"
@@ -375,14 +376,27 @@ fi
 
 git -C "$MPV_MPRIS_SOURCE" cat-file -e "${MPV_MPRIS_EXPECTED_COMMIT}^{commit}" || die "Pinned mpv-mpris commit is unavailable"
 [[ -d "$AMBXST_SOURCE" ]] || die "Ambxst source not found at $AMBXST_SOURCE"
-[[ -d "$SERPANTINUM_SOURCE/.git" ]] || die "Serpantinum Git source not found at $SERPANTINUM_SOURCE"
+[[ -f "$SERPANTINUM_COMMIT_FILE" ]] || die "Serpantinum upstream commit file is missing"
 [[ -f "$SERPANTINUM_TARGETS_FILE" ]] || die "Serpantinum target list not found at $SERPANTINUM_TARGETS_FILE"
 [[ -f "$SERPANTINUM_PATCH_FILE" ]] || die "Serpantinum local patch not found at $SERPANTINUM_PATCH_FILE"
 
-SERPANTINUM_ACTUAL_COMMIT="$(git -C "$SERPANTINUM_SOURCE" rev-parse HEAD)"
-[[ "$SERPANTINUM_ACTUAL_COMMIT" == "$SERPANTINUM_EXPECTED_COMMIT" ]] || die "Serpantinum source is at $SERPANTINUM_ACTUAL_COMMIT, expected $SERPANTINUM_EXPECTED_COMMIT"
+SERPANTINUM_EXPECTED_COMMIT="$(tr -d "[:space:]" < "$SERPANTINUM_COMMIT_FILE")"
+[[ "$SERPANTINUM_EXPECTED_COMMIT" =~ ^[0-9a-f]{40}$ ]] || die "Invalid Serpantinum pinned commit: $SERPANTINUM_EXPECTED_COMMIT"
 
-git -C "$SERPANTINUM_SOURCE" cat-file -e "${SERPANTINUM_EXPECTED_COMMIT}^{commit}"     || die "Pinned Serpantinum commit is unavailable in the local source repository"
+if [[ ! -d "$SERPANTINUM_SOURCE/.git" ]]; then
+    log "Cloning upstream Serpantinum source for reproducible build"
+    rm -rf "$SERPANTINUM_SOURCE"
+    git clone "$SERPANTINUM_REPO_URL" "$SERPANTINUM_SOURCE" || die "Failed to clone upstream Serpantinum source"
+else
+    git -C "$SERPANTINUM_SOURCE" remote set-url origin "$SERPANTINUM_REPO_URL"
+fi
+
+if ! git -C "$SERPANTINUM_SOURCE" cat-file -e "${SERPANTINUM_EXPECTED_COMMIT}^{commit}" 2>/dev/null; then
+    log "Fetching pinned Serpantinum commit"
+    git -C "$SERPANTINUM_SOURCE" fetch origin "$SERPANTINUM_EXPECTED_COMMIT" || die "Failed to fetch pinned Serpantinum commit"
+fi
+
+git -C "$SERPANTINUM_SOURCE" cat-file -e "${SERPANTINUM_EXPECTED_COMMIT}^{commit}" || die "Pinned Serpantinum commit is unavailable"
 [[ -n "$AXCTL_SOURCE" && -x "$AXCTL_SOURCE" ]] || die "axctl binary not found; set AXCTL_SOURCE if necessary"
 
 for cmd in python3 git curl rsync jq sha256sum find tar zstd repo-add patch; do
@@ -545,15 +559,17 @@ fi
 install -m 0755 "$MPV_MPRIS_STAGE/mpris.so" "$PAYLOAD/bin/mpv-mpris-huzaifah.so"
 ok "Patched mpv-mpris module built and bundled"
 
-log "Preparing reproducible Serpantinum 2.1.2 source"
+log "Preparing reproducible Serpantinum 2.1.6 source"
 rm -rf "$SERPANTINUM_STAGE"
 mkdir -p "$SERPANTINUM_STAGE"
 
 git -C "$SERPANTINUM_SOURCE" archive "$SERPANTINUM_EXPECTED_COMMIT"     | tar -x -C "$SERPANTINUM_STAGE"
 
+patch --dry-run --batch --forward --fuzz=0     -d "$SERPANTINUM_STAGE" -p1     < "$SERPANTINUM_PATCH_FILE"     || die "Serpantinum local patch does not apply cleanly to pinned source"
+
 patch --batch --forward --fuzz=0     -d "$SERPANTINUM_STAGE" -p1     < "$SERPANTINUM_PATCH_FILE"     || die "Failed to apply Serpantinum local patch to pinned source"
 
-[[ "$(cat "$SERPANTINUM_STAGE/version.txt")" == "2.1.2" ]]     || die "Staged Serpantinum source is not version 2.1.2"
+[[ "$(cat "$SERPANTINUM_STAGE/version.txt")" == "2.1.6" ]]     || die "Staged Serpantinum source is not version 2.1.6"
 
 log "Bundling current local rice source trees (including local patches)"
 copy_tree "$END4_DOTS_SOURCE" "$PAYLOAD/sources/end4-dots"

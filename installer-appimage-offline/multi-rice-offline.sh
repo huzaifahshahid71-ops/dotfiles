@@ -100,6 +100,7 @@ managed_user_paths() {
         ".config/DankMaterialShell" \
         ".config/noctalia" \
         ".config/serpantinum" \
+        ".local/state/serpantinum" \
         ".config/desktop-switcher" \
         ".config/desktop-profile" \
         ".config/quickshell/ii" \
@@ -450,6 +451,7 @@ uninstall_multi_rice() {
 
 
 preflight_payload() {
+    local expected_serp_commit payload_serp_commit
     [[ -d "$REPO/dual-rice" ]] || die "Offline payload is missing the dotfiles snapshot"
     [[ -f "$REPO/foot/.config/foot/foot.ini" ]] || die "Bundled Foot configuration is missing"
     [[ -f "$REPO/fish/.config/fish/functions/foot_cmd_start.fish" ]] || die "Bundled Fish Foot preexec hook is missing"
@@ -471,7 +473,17 @@ preflight_payload() {
     [[ -x "$SOURCE_DIR/serpantinum/bin/serpantinumd" ]] || die "Bundled serpantinum daemon is missing"
     [[ -f "$SOURCE_DIR/serpantinum/config/serpantinum/settings.json" ]] || die "Bundled Serpantinum settings are missing"
     [[ -f "$SOURCE_DIR/serpantinum/version.txt" ]] || die "Bundled Serpantinum version marker is missing"
-    [[ "$(cat "$SOURCE_DIR/serpantinum/version.txt")" == "2.1.2" ]] || die "Bundled Serpantinum source is not version 2.1.2"
+    [[ "$(cat "$SOURCE_DIR/serpantinum/version.txt")" == "2.1.6" ]] || die "Bundled Serpantinum source is not version 2.1.6"
+    [[ -f "$REPO/dual-rice/versions/serpantinum.commit" ]] || die "Bundled Serpantinum commit marker is missing"
+
+    expected_serp_commit="$(tr -d "[:space:]" < "$REPO/dual-rice/versions/serpantinum.commit")"
+    [[ "$expected_serp_commit" =~ ^[0-9a-f]{40}$ ]] || die "Bundled Serpantinum commit marker is invalid"
+
+    if [[ -f "$PAYLOAD/manifest.txt" ]]; then
+        payload_serp_commit="$(grep -m1 "^serpantinum_commit=" "$PAYLOAD/manifest.txt" 2>/dev/null | cut -d= -f2- || true)"
+        [[ -n "$payload_serp_commit" ]] || die "Payload manifest is missing the Serpantinum commit"
+        [[ "$payload_serp_commit" == "$expected_serp_commit" ]] || die "Payload Serpantinum commit does not match the bundled pin"
+    fi
     [[ -x "$REPO/dual-rice/bin/end4-media-backend" ]] || die "Bundled End4 artwork backend is missing"
     [[ -f "$REPO/dual-rice/systemd/user/end4-media-backend.service" ]] || die "Bundled End4 artwork service is missing"
     [[ -x "$REPO/dual-rice/bin/background-music" ]] || die "Bundled background-music command is missing"
@@ -594,6 +606,7 @@ restore_profiles_and_configs() {
     backup_path "$HOME/.config/noctalia" noctalia-config
     backup_path "$HOME/.local/state/noctalia" noctalia-state
     backup_path "$HOME/.config/serpantinum" serpantinum-config
+    backup_path "$HOME/.local/state/serpantinum" serpantinum-state
     backup_path "$HOME/.local/share/serpantinum" serpantinum-share
     backup_path "$HOME/.local/bin/serpantinum" serpantinum-launcher
     backup_path "$HOME/.local/bin/serpantinumd" serpantinum-daemon
@@ -706,24 +719,72 @@ exec "$HOME/.local/bin/ambxst" "$@"
 EOF
     sudo chmod +x /usr/local/bin/ambxst
 
-    log "Installing bundled Serpantinum 2.1.2 runtime"
+    log "Installing bundled Serpantinum 2.1.6 runtime"
 
-    rm -rf         "$HOME/.local/share/serpantinum"         "$HOME/.config/serpantinum"         "$HOME/.local/bin/serpantinum"         "$HOME/.local/bin/serpantinumd"
+    rm -rf         "$HOME/.local/share/serpantinum"         "$HOME/.local/bin/serpantinum"         "$HOME/.local/bin/serpantinumd"
 
-    mkdir -p         "$HOME/.local/share/serpantinum"         "$HOME/.config/serpantinum"
+    mkdir -p         "$HOME/.local/share/serpantinum"         "$HOME/.config/serpantinum"         "$HOME/.local/state/serpantinum"
 
     cp -a "$SOURCE_DIR/serpantinum/bin" "$HOME/.local/share/serpantinum/bin"
     cp -a "$SOURCE_DIR/serpantinum/src" "$HOME/.local/share/serpantinum/src"
     cp -a "$SOURCE_DIR/serpantinum/version.txt" "$HOME/.local/share/serpantinum/version.txt"
 
-    install -m 0644         "$SOURCE_DIR/serpantinum/config/serpantinum/settings.json"         "$HOME/.config/serpantinum/settings.json"
+    # Our bundled layout puts version.txt one directory above src.
+    ln -sfn ../version.txt "$HOME/.local/share/serpantinum/src/version.txt"
 
-    chmod 0755         "$HOME/.local/share/serpantinum/bin/serpantinum"         "$HOME/.local/share/serpantinum/bin/serpantinumd"
+    # Reinstall/upgrade must not reset user-selected scale or other preferences.
+    if [[ -f "$HOME/.config/serpantinum/settings.json" ]]; then
+        log "Preserving existing Serpantinum settings"
+    else
+        install -m 0644 \
+            "$SOURCE_DIR/serpantinum/config/serpantinum/settings.json" \
+            "$HOME/.config/serpantinum/settings.json"
 
-    ln -sfn         "$HOME/.local/share/serpantinum/bin/serpantinum"         "$HOME/.local/bin/serpantinum"
+        # Aurora canonical default for the built-in laptop panel.
+        # Existing installations are never overwritten above.
+        local tmp_settings
+        tmp_settings="$(mktemp)"
+        jq '
+            .display = (.display // {}) |
+            .display.monitors = (.display.monitors // {}) |
+            .display.monitors["eDP-1"] =
+                ((.display.monitors["eDP-1"] // {}) + {"scale": 1.25})
+        ' "$HOME/.config/serpantinum/settings.json" > "$tmp_settings"
+        mv "$tmp_settings" "$HOME/.config/serpantinum/settings.json"
+    fi
 
-    ln -sfn         "$HOME/.local/share/serpantinum/bin/serpantinumd"         "$HOME/.local/bin/serpantinumd"
-    command -v fish >/dev/null 2>&1 && fish -c 'fish_add_path ~/.local/bin' >/dev/null 2>&1 || true
+    chmod 0755 \
+        "$HOME/.local/share/serpantinum/bin/serpantinum" \
+        "$HOME/.local/share/serpantinum/bin/serpantinumd"
+
+    ln -sfn \
+        "$HOME/.local/share/serpantinum/bin/serpantinum" \
+        "$HOME/.local/bin/serpantinum"
+
+    ln -sfn \
+        "$HOME/.local/share/serpantinum/bin/serpantinumd" \
+        "$HOME/.local/bin/serpantinumd"
+
+    local serp_version serp_commit version_state
+    serp_version="$(tr -d "[:space:]" < "$SOURCE_DIR/serpantinum/version.txt")"
+    serp_commit="$(tr -d "[:space:]" < "$REPO/dual-rice/versions/serpantinum.commit")"
+    version_state="$HOME/.local/state/serpantinum/version"
+
+    touch "$version_state"
+
+    if grep -q "^SERPANTINUM_VERSION=" "$version_state"; then
+        sed -i "s|^SERPANTINUM_VERSION=.*|SERPANTINUM_VERSION=\"$serp_version\"|" "$version_state"
+    else
+        printf 'SERPANTINUM_VERSION="%s"\n' "$serp_version" >> "$version_state"
+    fi
+
+    if grep -q "^SERPANTINUM_COMMIT=" "$version_state"; then
+        sed -i "s|^SERPANTINUM_COMMIT=.*|SERPANTINUM_COMMIT=\"$serp_commit\"|" "$version_state"
+    else
+        printf 'SERPANTINUM_COMMIT="%s"\n' "$serp_commit" >> "$version_state"
+    fi
+
+    command -v fish >/dev/null 2>&1 && fish -c "fish_add_path ~/.local/bin" >/dev/null 2>&1 || true
 }
 
 configure_end4_search_only() {
