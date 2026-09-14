@@ -52,3 +52,13 @@ hl.bind(
     hl.dsp.exec_cmd("foot"),
     { description = "Terminal: Foot" }
 )
+
+
+-- Huzaifah canonical close-window binding.
+hl.unbind("SUPER + Q")
+
+hl.bind(
+    "SUPER + Q",
+    hl.dsp.window.close(),
+    { description = "Window: Close" }
+)
