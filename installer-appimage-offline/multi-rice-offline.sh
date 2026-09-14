@@ -93,6 +93,7 @@ managed_user_paths() {
         ".config/foot/foot.ini" \
         ".config/fish/functions/foot_cmd_start.fish" \
         ".config/fish/functions/foot_cmd_end.fish" \
+        ".config/fish/conf.d/foot-command-markers.fish" \
         ".config/caelestia" \
         ".config/illogical-impulse" \
         ".config/ambxst" \
@@ -452,6 +453,7 @@ preflight_payload() {
     [[ -f "$REPO/foot/.config/foot/foot.ini" ]] || die "Bundled Foot configuration is missing"
     [[ -f "$REPO/fish/.config/fish/functions/foot_cmd_start.fish" ]] || die "Bundled Fish Foot preexec hook is missing"
     [[ -f "$REPO/fish/.config/fish/functions/foot_cmd_end.fish" ]] || die "Bundled Fish Foot postexec hook is missing"
+    [[ -f "$REPO/fish/.config/fish/conf.d/foot-command-markers.fish" ]] || die "Bundled Fish Foot marker loader is missing"
     [[ -d "$PKG_DIR" ]] || die "Offline payload is missing package archives"
     [[ -f "$PKG_DIR/huzaifah-offline.db" || -f "$PKG_DIR/huzaifah-offline.db.tar.gz" ]] || die "Offline pacman repository database is missing"
     [[ -s "$TARGETS_FILE" ]] || die "Offline target package list is missing"
@@ -582,6 +584,7 @@ restore_profiles_and_configs() {
     backup_path "$HOME/.config/foot/foot.ini" foot.ini
     backup_path "$HOME/.config/fish/functions/foot_cmd_start.fish" foot_cmd_start.fish
     backup_path "$HOME/.config/fish/functions/foot_cmd_end.fish" foot_cmd_end.fish
+    backup_path "$HOME/.config/fish/conf.d/foot-command-markers.fish" foot-command-markers.fish
     backup_path "$HOME/.config/caelestia" caelestia
     backup_path "$HOME/.config/illogical-impulse" illogical-impulse
     backup_path "$HOME/.config/ambxst" ambxst-config
@@ -613,6 +616,7 @@ restore_profiles_and_configs() {
     install -Dm644 "$REPO/foot/.config/foot/foot.ini" "$HOME/.config/foot/foot.ini"
     install -Dm644 "$REPO/fish/.config/fish/functions/foot_cmd_start.fish" "$HOME/.config/fish/functions/foot_cmd_start.fish"
     install -Dm644 "$REPO/fish/.config/fish/functions/foot_cmd_end.fish" "$HOME/.config/fish/functions/foot_cmd_end.fish"
+    install -Dm644 "$REPO/fish/.config/fish/conf.d/foot-command-markers.fish" "$HOME/.config/fish/conf.d/foot-command-markers.fish"
 
     log "Restoring Caelestia, end4-pC, Ambxst, DMS, Serpantinum and Noctalia profiles"
     for profile in caelestia end4 ambxst dms serpantinum noctalia; do
