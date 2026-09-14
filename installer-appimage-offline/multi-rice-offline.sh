@@ -91,9 +91,13 @@ managed_user_paths() {
     printf "%s\n" \
         ".config/hypr" \
         ".config/foot/foot.ini" \
+        ".config/fish/config.fish" \
+        ".config/fish/functions/fish_greeting.fish" \
         ".config/fish/functions/foot_cmd_start.fish" \
         ".config/fish/functions/foot_cmd_end.fish" \
+        ".config/fish/conf.d/99-huz-fastfetch.fish" \
         ".config/fish/conf.d/foot-command-markers.fish" \
+        ".local/share/huz-terminal/fastfetch.jsonc" \
         ".config/caelestia" \
         ".config/illogical-impulse" \
         ".config/ambxst" \
@@ -454,9 +458,13 @@ preflight_payload() {
     local expected_serp_commit payload_serp_commit
     [[ -d "$REPO/dual-rice" ]] || die "Offline payload is missing the dotfiles snapshot"
     [[ -f "$REPO/foot/.config/foot/foot.ini" ]] || die "Bundled Foot configuration is missing"
+    [[ -f "$REPO/fish/.config/fish/config.fish" ]] || die "Bundled Fish configuration is missing"
+    [[ -f "$REPO/fish/.config/fish/functions/fish_greeting.fish" ]] || die "Bundled Fish greeting is missing"
     [[ -f "$REPO/fish/.config/fish/functions/foot_cmd_start.fish" ]] || die "Bundled Fish Foot preexec hook is missing"
     [[ -f "$REPO/fish/.config/fish/functions/foot_cmd_end.fish" ]] || die "Bundled Fish Foot postexec hook is missing"
+    [[ -f "$REPO/fish/.config/fish/conf.d/99-huz-fastfetch.fish" ]] || die "Bundled Fish Fastfetch hook is missing"
     [[ -f "$REPO/fish/.config/fish/conf.d/foot-command-markers.fish" ]] || die "Bundled Fish Foot marker loader is missing"
+    [[ -f "$REPO/fish/.local/share/huz-terminal/fastfetch.jsonc" ]] || die "Bundled Fastfetch configuration is missing"
     [[ -d "$PKG_DIR" ]] || die "Offline payload is missing package archives"
     [[ -f "$PKG_DIR/huzaifah-offline.db" || -f "$PKG_DIR/huzaifah-offline.db.tar.gz" ]] || die "Offline pacman repository database is missing"
     [[ -s "$TARGETS_FILE" ]] || die "Offline target package list is missing"
@@ -596,9 +604,13 @@ restore_profiles_and_configs() {
     mkdir -p "$BACKUP"
     backup_path "$HOME/.config/hypr" hypr
     backup_path "$HOME/.config/foot/foot.ini" foot.ini
+    backup_path "$HOME/.config/fish/config.fish" config.fish
+    backup_path "$HOME/.config/fish/functions/fish_greeting.fish" fish_greeting.fish
     backup_path "$HOME/.config/fish/functions/foot_cmd_start.fish" foot_cmd_start.fish
     backup_path "$HOME/.config/fish/functions/foot_cmd_end.fish" foot_cmd_end.fish
+    backup_path "$HOME/.config/fish/conf.d/99-huz-fastfetch.fish" 99-huz-fastfetch.fish
     backup_path "$HOME/.config/fish/conf.d/foot-command-markers.fish" foot-command-markers.fish
+    backup_path "$HOME/.local/share/huz-terminal/fastfetch.jsonc" huz-fastfetch.jsonc
     backup_path "$HOME/.config/caelestia" caelestia
     backup_path "$HOME/.config/illogical-impulse" illogical-impulse
     backup_path "$HOME/.config/ambxst" ambxst-config
@@ -630,9 +642,13 @@ restore_profiles_and_configs() {
 
     log "Installing canonical Foot + fish terminal configuration"
     install -Dm644 "$REPO/foot/.config/foot/foot.ini" "$HOME/.config/foot/foot.ini"
+    install -Dm644 "$REPO/fish/.config/fish/config.fish" "$HOME/.config/fish/config.fish"
+    install -Dm644 "$REPO/fish/.config/fish/functions/fish_greeting.fish" "$HOME/.config/fish/functions/fish_greeting.fish"
     install -Dm644 "$REPO/fish/.config/fish/functions/foot_cmd_start.fish" "$HOME/.config/fish/functions/foot_cmd_start.fish"
     install -Dm644 "$REPO/fish/.config/fish/functions/foot_cmd_end.fish" "$HOME/.config/fish/functions/foot_cmd_end.fish"
+    install -Dm644 "$REPO/fish/.config/fish/conf.d/99-huz-fastfetch.fish" "$HOME/.config/fish/conf.d/99-huz-fastfetch.fish"
     install -Dm644 "$REPO/fish/.config/fish/conf.d/foot-command-markers.fish" "$HOME/.config/fish/conf.d/foot-command-markers.fish"
+    install -Dm644 "$REPO/fish/.local/share/huz-terminal/fastfetch.jsonc" "$HOME/.local/share/huz-terminal/fastfetch.jsonc"
 
     log "Restoring Caelestia, end4-pC, Ambxst, DMS, Serpantinum and Noctalia profiles"
     for profile in caelestia end4 ambxst dms serpantinum noctalia; do

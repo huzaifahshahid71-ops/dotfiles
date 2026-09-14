@@ -1,0 +1,285 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/master/doc/json_schema.json",
+  "logo": {
+    "type": "none"
+  },
+  "display": {
+    "color": {
+      "keys": "cyan"
+    },
+    "separator": "",
+    "constants": [
+      "──────────────────────────────────────────────────────", // {$1} - horizontal line for borders
+      "\u001b[55D", // {$2} - move cursor left 55 columns
+      "\u001b[55C", // {$3} - move cursor right 55 columns
+      "\u001b[54C" // {$4} - move cursor right 54 columns
+    ],
+    "brightColor": true
+  },
+  "modules": [
+    "break",
+    {
+      "type": "custom",
+      "key": "┌────────────┬─{$1}┐\u001b[37D",
+      "format": "\u001b[1m{#keys}"
+    },
+    {
+      "type": "os",
+      "key": "│ 󰍹 \u001b[s{sysname}\u001b[u\u001b[9C│{$3}│{$2}"
+    },
+    {
+      "type": "kernel",
+      "key": "│ 󰒋 \u001b[sKernel\u001b[u\u001b[9C│{$3}│{$2}"
+    },
+    {
+      "type": "datetime",
+      "key": "│ 󰅐 Fetched  │{$3}│{$2}",
+      "format": "{day-pretty}-{month-pretty}-{year} {hour-pretty}:{minute-pretty}:{second-pretty} {timezone-name}"
+    },
+    {
+      "type": "locale",
+      "key": "│ 󰊄 Locale   │{$3}│{$2}"
+    },
+    {
+      "type": "custom",
+      "key": "├────────────┴─{$1}┤", // Bottom border of the entire layout
+      "format": ""
+    },
+    // Hardware section with cyan color theme
+    {
+      "type": "custom",
+      "key": "│{#white}┌───────────┬{$1}┐{#keys}│\u001b[37D",
+      "format": "{#bright_white} Hardware "
+    },
+    {
+      "type": "chassis",
+      "key": "│{#white}│ 󰇅 Chassis │{$4}│{#keys}│{$2}"
+    },
+    {
+      "type": "cpu",
+      "key": "│{#white}│  CPU     │{$4}│{#keys}│{$2}",
+      "format": "{name} @{freq-max}",
+      "showPeCoreCount": false
+    },
+    {
+      "type": "gpu",
+      "key": "│{#white}│ 󰍹 GPU     │{$4}│{#keys}│{$2}",
+      "format": "{2}"
+    },
+    {
+      "type": "memory",
+      "key": "│{#white}│ 󰍛 RAM     │{$4}│{#keys}│{$2}",
+      // "keyColor": "34",
+      "percent": {
+        "type": 3, // 3 = show number + bar + percentage
+        "green": 30, // <30% is green
+        "yellow": 70 // 30-70% is yellow, >70% is red
+      }
+    },
+    {
+      "type": "swap",
+      "key": "│{#white}│ 󰍛 SWAP    │{$4}│{#keys}│{$2}",
+      // "keyColor": "34",
+      "percent": {
+        "type": 3, // 3 = show number + bar + percentage
+        "green": 30, // <30% is green
+        "yellow": 70 // 30-70% is yellow, >70% is red
+      }
+    },
+    {
+      "type": "disk",
+      "key": "│{#white}│ 󰋊 Disk    │{$4}│{#keys}│{$2}",
+      "percent": {
+        "type": 3, // 3 = show number + bar + percentage
+        "green": 30, // <30% is green
+        "yellow": 70 // 30-70% is yellow, >70% is red
+      },
+    },
+    {
+      "type": "battery",
+      "key": "│{#white}│ Battery   │{$4}│{#keys}│{$2}"
+    },
+    {
+      "type": "custom",
+      "key": "│{#white}└───────────┴{$1}┘{#keys}│",
+      "format": ""
+    },
+    // Desktop section with green color theme
+    {
+      "type": "custom",
+      "key": "│{#green}┌───────────┬{$1}┐{#keys}│\u001b[37D",
+      "format": "{#bright_green} Desktop "
+    },
+    {
+      "type": "de",
+      "key": "│{#green}│ Desktop   │{$4}│{#keys}│{$2}"
+    },
+    {
+      "type": "wm",
+      "key": "│{#green}│ Session   │{$4}│{#keys}│{$2}"
+    },
+    {
+      "type": "display",
+      "key": "│{#green}│ Display   │{$4}│{#keys}│{$2}",
+      // "compactType": "original-with-refresh-rate"
+    },
+    {
+      "type": "custom",
+      "key": "│{#green}└───────────┴{$1}┘{#keys}│",
+      "format": ""
+    },
+    // Terminal section with yellow color theme
+    {
+      "type": "custom",
+      "key": "│{#yellow}┌───────────┬{$1}┐{#keys}│\u001b[37D",
+      "format": "{#bright_yellow} Terminal "
+    },
+    {
+      "type": "shell",
+      "key": "│{#yellow}│ Shell     │{$4}│{#keys}│{$2}"
+    },
+    {
+      "type": "terminal",
+      "key": "│{#yellow}│ Terminal  │{$4}│{#keys}│{$2}"
+    },
+    {
+      "type": "terminalfont",
+      "key": "│{#yellow}│ Term Font │{$4}│{#keys}│{$2}"
+    },
+    {
+      "type": "packages",
+      "key": "│{#yellow}│ Packages  │{$4}│{#keys}│{$2}"
+    },
+    {
+      "type": "custom",
+      "key": "│{#yellow}└───────────┴{$1}┘{#keys}│",
+      "format": ""
+    },
+    // Uptime section with magenta color theme
+    {
+      "type": "custom",
+      "key": "│{#magenta}┌───────────┬{$1}┐{#keys}│\u001b[37D",
+      "format": "{#bright_magenta} Uptime "
+    },
+    {
+      "type": "uptime",
+      "key": "│{#magenta}│ 󰅐 Uptime  │{$4}│{#keys}│{$2}"
+    },
+    // {
+    //   "type": "users",
+    //   "myselfOnly": true, // Only show current user
+    //   "key": "│{#magenta}│  Login   │{$4}│{#keys}│{$2}"
+    // },
+    {
+      "condition": { // Conditional module: only show on non-macOS
+        "!system": "macOS"
+      },
+      "type": "disk",
+      "key": "│{#magenta}│  OS Age  │{$4}│{#keys}│{$2}",
+      "folders": "/", // Check root filesystem
+      "format": "{create-time:10} [{days} days]" // Show creation time and age in days
+    },
+    {
+      "condition": { // Conditional module: only show on macOS
+        "system": "macOS"
+      },
+      "type": "disk",
+      "key": "│{#white}│ OS Age    │{$4}│{#keys}│{$2}",
+      "folders": "/System/Volumes/VM", // Work around for APFS on macOS
+      "format": "{create-time:10} [{days} days]"
+    },
+    {
+      "type": "custom",
+      "key": "│{#magenta}└───────────┴{$1}┘{#keys}│",
+      "format": ""
+    },
+    // Development section with red color theme
+    // {
+    //     "type": "custom",
+    //     "key": "│{#red}┌───────────┬{$1}┐{#keys}│\u001b[37D",
+    //     "format": "{#bright_red} Development "
+    // },
+    // {
+    //     "type": "command",
+    //     "key": "│{#red}│ Rust      │{$4}│{#keys}│{$2}",
+    //     "text": "rustc --version",
+    //     "format": "rustc {~6,13}"                         // Print 6th to 13th characters (version number)
+    // },
+    // {
+    //     "type": "command",
+    //     "condition": {
+    //         "!system": "Windows"                          // Posix version
+    //     },
+    //     "key": "│{#red}│ Clang     │{$4}│{#keys}│{$2}",
+    //     "text": "clang --version | head -1 | awk '{print $NF}'",
+    //     "format": "clang {}"
+    // },
+    // {
+    //     "type": "command",
+    //     "condition": {
+    //         "system": "Windows"                           // Windows version
+    //     },
+    //     "key": "│{#red}│ Clang     │{$4}│{#keys}│{$2}",
+    //     "text": "clang --version | findstr version",      // Finds the line with "version"
+    //     "format": "clang {~-6}"                           // Prints the last 6 characters (version number)
+    // },
+    // {
+    //     "type": "command",
+    //     "key": "│{#red}│ NodeJS    │{$4}│{#keys}│{$2}",
+    //     "text": "node --version",
+    //     "format": "node {~1}"                             // {~1} removes first character (v)
+    // },
+    // {
+    //     "type": "command",
+    //     "key": "│{#red}│ Go        │{$4}│{#keys}│{$2}",
+    //     "text": "go version | cut -d' ' -f3",
+    //     "format": "go {~2}"                               // {~2} removes first 2 characters (go)
+    // },
+    // {
+    //     "type": "command",
+    //     "key": "│{#red}│ Zig       │{$4}│{#keys}│{$2}",
+    //     "text": "zig version",
+    //     "format": "zig {}"
+    // },
+    // {
+    //     "type": "editor",
+    //     "key": "│{#red}│ Editor    │{$4}│{#keys}│{$2}"
+    // },
+    // {
+    //     "type": "command",
+    //     "key": "│{#red}│ Git       │{$4}│{#keys}│{$2}",
+    //     "text": "git version",
+    //     "format": "git {~12}"
+    // },
+    // {
+    //     "type": "font",
+    //     "key": "│{#red}│ Interface │{$4}│{#keys}│{$2}",
+    //     "format": "{font1}"
+    // },
+    // {
+    //     "type": "custom",
+    //     "key": "│{#red}└───────────┴{$1}┘{#keys}│",
+    //     "format": ""
+    // },
+    {
+      "type": "custom",
+      "key": "│ {$3}            │{$2}",
+      "format": "     {#37}󰮯 {#37} • {#37}• {#37}• {#31} 󰊠 {#32} 󰊠 {#33} 󰊠 {#34} 󰊠 {#35} 󰊠 {#36} 󰊠"
+      // "format":"{#37}󰮯 {#31} 󰧞 {#32} 󰧞 {#33} 󰧞 {#36} 󰊠 {#35} 󰊠 {#34} 󰊠 {#33} 󰊠 {#32} 󰊠 {#31} 󰊠 "
+    },
+    {
+      "type": "custom",
+      "key": "└──────────────{$1}┘", // Bottom border of the entire layout
+      "format": ""
+    },
+    // End with color palette and line break
+    // {
+    //   "type": "colors",
+    //   "block": {
+    //     "width": 3,
+    //     "range": [0, 7]
+    //   }
+    // },                                             // Add a blank line
+    "break"
+  ]
+}

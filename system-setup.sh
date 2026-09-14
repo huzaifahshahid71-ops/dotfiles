@@ -219,6 +219,7 @@ capture_dotfiles() {
     log "Synchronizing current user configuration into Stow packages"
     sync_dir "$HOME/.config/caelestia" "$REPO_DIR/caelestia/.config/caelestia"
     sync_dir "$HOME/.config/fish" "$REPO_DIR/fish/.config/fish" --exclude 'fish_variables'
+    sync_dir "$HOME/.local/share/huz-terminal" "$REPO_DIR/fish/.local/share/huz-terminal"
     sync_dir "$HOME/.config/hypr" "$REPO_DIR/hypr/.config/hypr"
     sync_dir "$HOME/.config/mpv" "$REPO_DIR/mpv/.config/mpv"
     sync_dir "$HOME/.config/systemd/user" "$REPO_DIR/systemd/.config/systemd/user"
