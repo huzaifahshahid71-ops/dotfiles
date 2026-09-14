@@ -106,6 +106,7 @@ managed_user_paths() {
         ".config/quickshell/end4-pC" \
         ".config/systemd/user/background-music.service" \
         ".local/bin/background-music" \
+        ".local/lib/huzaifah/mpv-mpris/mpris.so" \
         ".local/bin/background-music-stop" \
         ".local/bin/toggle-night-light" \
         ".config/huzaifah/hyprsunset.conf" \
@@ -474,6 +475,7 @@ preflight_payload() {
     [[ -x "$REPO/dual-rice/bin/end4-media-backend" ]] || die "Bundled End4 artwork backend is missing"
     [[ -f "$REPO/dual-rice/systemd/user/end4-media-backend.service" ]] || die "Bundled End4 artwork service is missing"
     [[ -x "$REPO/dual-rice/bin/background-music" ]] || die "Bundled background-music command is missing"
+    [[ -f "$BIN_DIR/mpv-mpris-huzaifah.so" ]] || die "Bundled patched mpv-mpris module is missing"
     [[ -f "$REPO/dual-rice/systemd/user/background-music.service" ]] || die "Bundled background music service is missing"
     [[ -s "$REPO/dual-rice/music/Favorites.m3u8" ]] || die "Bundled Favorites.m3u8 playlist is missing"
     [[ -x "$REPO/dual-rice/bin/toggle-night-light" ]] || die "Bundled night-light toggle is missing"
@@ -598,6 +600,7 @@ restore_profiles_and_configs() {
     backup_path "$HOME/.local/bin/end4-media-backend" end4-media-backend
     backup_path "$HOME/.config/systemd/user/end4-media-backend.service" end4-media-backend-service
     backup_path "$HOME/.local/bin/background-music" background-music
+    backup_path "$HOME/.local/lib/huzaifah/mpv-mpris/mpris.so" mpv-mpris-huzaifah-so
     backup_path "$HOME/.local/bin/background-music-stop" background-music-stop
     backup_path "$HOME/.config/systemd/user/background-music.service" background-music-service
     backup_path "$HOME/Music/Favorites.m3u8" background-music-playlist
@@ -799,11 +802,16 @@ install_background_music() {
     mkdir -p \
         "$HOME/.local/bin" \
         "$HOME/.config/systemd/user" \
+        "$HOME/.local/lib/huzaifah/mpv-mpris" \
         "$HOME/Music"
 
     install -m 0755 \
         "$src/bin/background-music" \
         "$HOME/.local/bin/background-music"
+
+    install -m 0755 \
+        "$BIN_DIR/mpv-mpris-huzaifah.so" \
+        "$HOME/.local/lib/huzaifah/mpv-mpris/mpris.so"
 
     install -m 0644 \
         "$src/systemd/user/background-music.service" \

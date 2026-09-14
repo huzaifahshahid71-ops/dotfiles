@@ -6,6 +6,7 @@ MUSIC_DIR="${MUSIC_DIR:-$HOME/Music}"
 PLAYLIST="${BACKGROUND_MUSIC_PLAYLIST:-$MUSIC_DIR/Favorites.m3u8}"
 RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 SOCKET="$RUNTIME_DIR/mpv-background-music.sock"
+MPRIS_PLUGIN="${BACKGROUND_MUSIC_MPRIS_PLUGIN:-$HOME/.local/lib/huzaifah/mpv-mpris/mpris.so}"
 
 die() {
     printf 'background-music: %s\n' "$*" >&2
@@ -40,8 +41,11 @@ run_player() {
 
     [[ -s "$PLAYLIST" ]] || die "playlist missing or empty: $PLAYLIST"
     [[ -x /usr/bin/mpv ]] || die "mpv is not installed"
+    [[ -r "$MPRIS_PLUGIN" ]] || die "patched MPRIS plugin is missing: $MPRIS_PLUGIN"
 
     exec /usr/bin/mpv \
+        --load-scripts=no \
+        "--script=$MPRIS_PLUGIN" \
         --no-video \
         --audio-display=no \
         --force-window=no \

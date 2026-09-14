@@ -1,0 +1,67 @@
+diff --git a/mpris.c b/mpris.c
+index 31c3a8d..6271854 100644
+--- a/mpris.c
++++ b/mpris.c
+@@ -307,11 +307,58 @@ static gchar* extract_embedded_art(AVFormatContext *context) {
+         return NULL;
+     }
+
+-    gchar *data = g_base64_encode(packet->data, packet->size);
+-    gchar *img = g_strconcat("data:image/jpeg;base64,", data, NULL);
++    gchar *sha = g_compute_checksum_for_data(
++        G_CHECKSUM_SHA256,
++        packet->data,
++        (gsize)packet->size
++    );
++
++    gchar *cache_dir = g_build_filename(
++        g_get_user_cache_dir(),
++        "mpv-mpris",
++        "art",
++        NULL
++    );
++
++    if (g_mkdir_with_parents(cache_dir, 0700) != 0) {
++        g_free(sha);
++        g_free(cache_dir);
++        return NULL;
++    }
++
++    gchar *filename = g_strdup_printf("%s.jpg", sha);
++    gchar *path = g_build_filename(cache_dir, filename, NULL);
++
++    if (!g_file_test(path, G_FILE_TEST_IS_REGULAR)) {
++        GError *error = NULL;
+
+-    g_free(data);
+-    return img;
++        if (!g_file_set_contents(
++                path,
++                (const gchar *)packet->data,
++                (gssize)packet->size,
++                &error)) {
++            g_warning(
++                "Unable to cache embedded MPRIS artwork: %s",
++                error ? error->message : "unknown error"
++            );
++
++            g_clear_error(&error);
++            g_free(path);
++            g_free(filename);
++            g_free(cache_dir);
++            g_free(sha);
++            return NULL;
++        }
++    }
++
++    gchar *uri = g_filename_to_uri(path, NULL, NULL);
++
++    g_free(path);
++    g_free(filename);
++    g_free(cache_dir);
++    g_free(sha);
++
++    return uri;
+ }
+
+ static gchar* try_get_embedded_art(char *path)

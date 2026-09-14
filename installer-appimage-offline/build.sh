@@ -23,6 +23,11 @@ END4_PC_SOURCE="${END4_PC_SOURCE:-$BUILD/end4-pC-upstream}"
 END4_PC_EXPECTED_COMMIT="51a1347612a9b92971ee6845bb583067a1ce5eb7"
 END4_PC_PATCH_FILE="$ROOT/dual-rice/versions/end4-pC-local.patch"
 END4_PC_STAGE="$BUILD/end4-pC-source"
+MPV_MPRIS_REPO_URL="${MPV_MPRIS_REPO_URL:-https://github.com/hoyon/mpv-mpris.git}"
+MPV_MPRIS_SOURCE="${MPV_MPRIS_SOURCE:-$BUILD/mpv-mpris-upstream}"
+MPV_MPRIS_COMMIT_FILE="$ROOT/dual-rice/versions/mpv-mpris-upstream-commit.txt"
+MPV_MPRIS_PATCH_FILE="$ROOT/dual-rice/versions/mpv-mpris-embedded-art-file-url.patch"
+MPV_MPRIS_STAGE="$BUILD/mpv-mpris-source"
 AMBXST_SOURCE="${AMBXST_SOURCE:-$HOME/.local/src/ambxst}"
 SERPANTINUM_SOURCE="${SERPANTINUM_SOURCE:-$HOME/.local/src/serpantinum-v4}"
 SERPANTINUM_EXPECTED_COMMIT="d6f5a6ded066811ad301ff8c45ec434c343b8b4b"
@@ -349,6 +354,26 @@ fi
 
 git -C "$END4_PC_SOURCE" cat-file -e "${END4_PC_EXPECTED_COMMIT}^{commit}" ||
     die "Pinned end4-pC commit is unavailable"
+
+[[ -f "$MPV_MPRIS_COMMIT_FILE" ]] || die "mpv-mpris upstream commit file is missing"
+[[ -f "$MPV_MPRIS_PATCH_FILE" ]] || die "mpv-mpris artwork patch is missing"
+MPV_MPRIS_EXPECTED_COMMIT="$(tr -d "[:space:]" < "$MPV_MPRIS_COMMIT_FILE")"
+[[ "$MPV_MPRIS_EXPECTED_COMMIT" =~ ^[0-9a-f]{40}$ ]] || die "Invalid mpv-mpris pinned commit: $MPV_MPRIS_EXPECTED_COMMIT"
+
+if [[ ! -d "$MPV_MPRIS_SOURCE/.git" ]]; then
+    log "Cloning upstream mpv-mpris source for reproducible build"
+    rm -rf "$MPV_MPRIS_SOURCE"
+    git clone "$MPV_MPRIS_REPO_URL" "$MPV_MPRIS_SOURCE" || die "Failed to clone upstream mpv-mpris source"
+else
+    git -C "$MPV_MPRIS_SOURCE" remote set-url origin "$MPV_MPRIS_REPO_URL"
+fi
+
+if ! git -C "$MPV_MPRIS_SOURCE" cat-file -e "${MPV_MPRIS_EXPECTED_COMMIT}^{commit}" 2>/dev/null; then
+    log "Fetching pinned mpv-mpris commit"
+    git -C "$MPV_MPRIS_SOURCE" fetch origin "$MPV_MPRIS_EXPECTED_COMMIT" || die "Failed to fetch pinned mpv-mpris commit"
+fi
+
+git -C "$MPV_MPRIS_SOURCE" cat-file -e "${MPV_MPRIS_EXPECTED_COMMIT}^{commit}" || die "Pinned mpv-mpris commit is unavailable"
 [[ -d "$AMBXST_SOURCE" ]] || die "Ambxst source not found at $AMBXST_SOURCE"
 [[ -d "$SERPANTINUM_SOURCE/.git" ]] || die "Serpantinum Git source not found at $SERPANTINUM_SOURCE"
 [[ -f "$SERPANTINUM_TARGETS_FILE" ]] || die "Serpantinum target list not found at $SERPANTINUM_TARGETS_FILE"
@@ -490,14 +515,35 @@ log "Preparing reproducible end4-pC source"
 rm -rf "$END4_PC_STAGE"
 mkdir -p "$END4_PC_STAGE"
 
-git -C "$END4_PC_SOURCE" archive "$END4_PC_EXPECTED_COMMIT"     | tar -x -C "$END4_PC_STAGE"
+git -C "$END4_PC_SOURCE" archive "$END4_PC_EXPECTED_COMMIT" | tar -x -C "$END4_PC_STAGE"
+
+patch --dry-run --batch --forward --fuzz=0     -d "$END4_PC_STAGE" -p1     < "$END4_PC_PATCH_FILE"     || die "end4-pC local patch does not apply cleanly to pinned source"
+
+patch --batch --forward --fuzz=0     -d "$END4_PC_STAGE" -p1     < "$END4_PC_PATCH_FILE"     || die "Failed to apply end4-pC local patch to pinned source"
+
+log "Building reproducible patched mpv-mpris artwork module"
+rm -rf "$MPV_MPRIS_STAGE"
+mkdir -p "$MPV_MPRIS_STAGE"
+
+git -C "$MPV_MPRIS_SOURCE" archive "$MPV_MPRIS_EXPECTED_COMMIT" | tar -x -C "$MPV_MPRIS_STAGE"
+
+patch --dry-run --batch --forward --fuzz=0     -d "$MPV_MPRIS_STAGE" -p1     < "$MPV_MPRIS_PATCH_FILE"     || die "mpv-mpris artwork patch does not apply cleanly to pinned source"
+
+patch --batch --forward --fuzz=0     -d "$MPV_MPRIS_STAGE" -p1     < "$MPV_MPRIS_PATCH_FILE"     || die "Failed to apply mpv-mpris artwork patch"
 
 (
-    cd "$END4_PC_STAGE"
-    git apply --check "$END4_PC_PATCH_FILE"         || die "end4-pC local patch does not apply cleanly to pinned source"
-
-    git apply --whitespace=nowarn "$END4_PC_PATCH_FILE"         || die "Failed to apply end4-pC local patch to pinned source"
+    cd "$MPV_MPRIS_STAGE"
+    make -j"$(nproc)" || die "Failed to build patched mpv-mpris module"
 )
+
+[[ -f "$MPV_MPRIS_STAGE/mpris.so" ]] || die "Patched mpv-mpris build did not produce mpris.so"
+if ldd "$MPV_MPRIS_STAGE/mpris.so" | grep -q "not found"; then
+    ldd "$MPV_MPRIS_STAGE/mpris.so" >&2
+    die "Patched mpv-mpris module has unresolved libraries"
+fi
+
+install -m 0755 "$MPV_MPRIS_STAGE/mpris.so" "$PAYLOAD/bin/mpv-mpris-huzaifah.so"
+ok "Patched mpv-mpris module built and bundled"
 
 log "Preparing reproducible Serpantinum 2.1.2 source"
 rm -rf "$SERPANTINUM_STAGE"
@@ -526,6 +572,9 @@ cp "$CLOSURE_FILE" "$PAYLOAD/closure.txt"
     printf 'dotfiles_commit=%s\n' "$(git -C "$ROOT" rev-parse HEAD 2>/dev/null || echo unknown)"
     printf 'end4_pc_commit=%s\n' "$END4_PC_EXPECTED_COMMIT"
 printf 'end4_pc_patch_sha256=%s\n' "$(sha256sum "$END4_PC_PATCH_FILE" | awk '{print $1}')"
+printf "mpv_mpris_commit=%s\n" "$MPV_MPRIS_EXPECTED_COMMIT"
+printf "mpv_mpris_patch_sha256=%s\n" "$(sha256sum "$MPV_MPRIS_PATCH_FILE" | cut -d" " -f1)"
+printf "mpv_mpris_module_sha256=%s\n" "$(sha256sum "$PAYLOAD/bin/mpv-mpris-huzaifah.so" | cut -d" " -f1)"
 printf 'serpantinum_commit=%s\n' "$SERPANTINUM_EXPECTED_COMMIT"
 printf 'serpantinum_patch_sha256=%s\n' "$(sha256sum "$SERPANTINUM_PATCH_FILE" | awk '{print $1}')"
     if git -C "$ROOT" diff --quiet --ignore-submodules HEAD -- 2>/dev/null && git -C "$ROOT" diff --cached --quiet --ignore-submodules HEAD -- 2>/dev/null; then
