@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Io
 
 ShellRoot {
     PanelWindow {
@@ -33,6 +34,12 @@ ShellRoot {
             property int compositorIndex: 0
             property int riceIndex: 0
 
+            property string activeProfile: "unknown"
+            property string activeCompositor: "unknown"
+            property int hyprInstalled: 0
+            property int niriInstalled: 0
+            property var installedProfiles: ({})
+
             property var hyprRices: [
                 { id: "caelestia",   icon: "✦", name: "Aether" },
                 { id: "end4",        icon: "◈", name: "Obsidian" },
@@ -50,6 +57,60 @@ ShellRoot {
 
             property var visibleRices:
                 compositorIndex === 0 ? hyprRices : niriRices
+
+            function profileInstalled(id) {
+                return installedProfiles[id] === true
+            }
+
+            function applyStatus(text) {
+                const values = {}
+                const lines = text.trim().split("
+")
+
+                for (let i = 0; i < lines.length; ++i) {
+                    const pos = lines[i].indexOf("=")
+                    if (pos <= 0)
+                        continue
+
+                    values[lines[i].slice(0, pos)] =
+                        lines[i].slice(pos + 1)
+                }
+
+                activeCompositor =
+                    values.compositor || "unknown"
+
+                activeProfile =
+                    values.profile || "unknown"
+
+                hyprInstalled =
+                    parseInt(values.hyprland_installed || "0")
+
+                niriInstalled =
+                    parseInt(values.niri_installed || "0")
+
+                if (activeCompositor === "niri")
+                    compositorIndex = 1
+                else if (activeCompositor === "hyprland")
+                    compositorIndex = 0
+            }
+
+            function applyList(text) {
+                const next = {}
+                const lines = text.trim().split("
+")
+
+                for (let i = 0; i < lines.length; ++i) {
+                    if (lines[i].length === 0)
+                        continue
+
+                    const parts = lines[i].split("|")
+
+                    if (parts.length >= 6)
+                        next[parts[0]] = parts[4] === "true"
+                }
+
+                installedProfiles = next
+            }
 
             function openCompositor() {
                 page = 1
@@ -77,6 +138,36 @@ ShellRoot {
                     "Selected profile:",
                     visibleRices[riceIndex].id
                 )
+            }
+
+            Process {
+                id: statusProc
+                running: true
+                command: [
+                    Quickshell.env("HOME") +
+                        "/.local/bin/multi-rice-control",
+                    "status"
+                ]
+
+                stdout: StdioCollector {
+                    onStreamFinished:
+                        root.applyStatus(text)
+                }
+            }
+
+            Process {
+                id: listProc
+                running: true
+                command: [
+                    Quickshell.env("HOME") +
+                        "/.local/bin/multi-rice-control",
+                    "list"
+                ]
+
+                stdout: StdioCollector {
+                    onStreamFinished:
+                        root.applyList(text)
+                }
             }
 
             Keys.onPressed: event => {
@@ -267,7 +358,9 @@ ShellRoot {
                                     Text {
                                         anchors.horizontalCenter:
                                             parent.horizontalCenter
-                                        text: modelData.subtitle
+                                        text: index === 0
+                                            ? root.hyprInstalled + " / 7 INSTALLED"
+                                            : root.niriInstalled + " / 2 INSTALLED"
                                         color: "#a78bfa"
                                         font.family:
                                             "JetBrainsMono Nerd Font"
@@ -277,7 +370,13 @@ ShellRoot {
                                     Text {
                                         anchors.horizontalCenter:
                                             parent.horizontalCenter
-                                        text: modelData.detail
+                                        text:
+                                            root.activeCompositor ===
+                                            (index === 0
+                                                ? "hyprland"
+                                                : "niri")
+                                            ? "Currently Active"
+                                            : "Switch Session"
                                         color: "#71717a"
                                         font.family:
                                             "JetBrainsMono Nerd Font"
@@ -319,6 +418,11 @@ ShellRoot {
                                 property bool selected:
                                     root.riceIndex === index
 
+                                opacity:
+                                    root.profileInstalled(modelData.id)
+                                    ? 1.0
+                                    : 0.38
+
                                 color: selected
                                     ? "#26263a"
                                     : "transparent"
@@ -358,9 +462,24 @@ ShellRoot {
 
                                     Text {
                                         visible:
-                                            modelData.id === "caelestia"
-                                        text: "ACTIVE"
-                                        color: "#a78bfa"
+                                            modelData.id ===
+                                                root.activeProfile ||
+                                            !root.profileInstalled(
+                                                modelData.id
+                                            )
+
+                                        text:
+                                            modelData.id ===
+                                                root.activeProfile
+                                            ? "ACTIVE"
+                                            : "NOT INSTALLED"
+
+                                        color:
+                                            modelData.id ===
+                                                root.activeProfile
+                                            ? "#a78bfa"
+                                            : "#71717a"
+
                                         font.family:
                                             "JetBrainsMono Nerd Font"
                                         font.pixelSize: 11
