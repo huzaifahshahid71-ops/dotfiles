@@ -233,6 +233,149 @@ plan_switch() {
 " "$action"
 }
 
+write_active_profile() {
+    local profile="$1"
+    local tmp
+
+    mkdir -p "$STATE_DIR"
+
+    tmp="$STATE_DIR/.active.$$"
+    printf "%s\n" "$profile" > "$tmp"
+    mv -f "$tmp" "$ACTIVE_FILE"
+}
+
+cleanup_current_profile() {
+    local current="$1"
+
+    case "$current" in
+        serpantinum)
+            if command -v serpantinumd >/dev/null 2>&1; then
+                serpantinumd stop >/dev/null 2>&1 || true
+            fi
+            ;;
+
+        end4)
+            systemctl --user stop \
+                end4-media-backend.service \
+                >/dev/null 2>&1 || true
+            ;;
+    esac
+}
+
+activate_same_compositor() {
+    local profile="$1"
+    local compositor="$2"
+    local current target link tmp
+
+    current="$(current_profile)"
+
+    target="$(profile_config_path "$ROOT" "$profile")" || {
+        echo "multi-rice-control: incomplete profile: $profile" >&2
+        return 4
+    }
+
+    case "$compositor" in
+        hyprland)
+            link="$HYPR_LINK"
+            ;;
+        niri)
+            link="$NIRI_LINK"
+            ;;
+        *)
+            echo "multi-rice-control: unsupported compositor: $compositor" >&2
+            return 5
+            ;;
+    esac
+
+    if [ -e "$link" ] && [ ! -L "$link" ]; then
+        echo "multi-rice-control: $link is not a symlink; refusing to replace it" >&2
+        return 5
+    fi
+
+    cleanup_current_profile "$current"
+
+    tmp="$(dirname "$link")/.multi-rice-switch.$$"
+    rm -f "$tmp"
+
+    ln -s "$target" "$tmp"
+    mv -Tf "$tmp" "$link"
+
+    write_active_profile "$profile"
+
+    printf "action=activated\n"
+    printf "profile=%s\n" "$profile"
+    printf "name=%s\n" "$(profile_name "$profile")"
+    printf "compositor=%s\n" "$compositor"
+    printf "target=%s\n" "$target"
+}
+
+switch_profile() {
+    local profile="${1:-}"
+    local current current_comp target_comp
+
+    if [ -z "$profile" ]; then
+        echo "multi-rice-control: switch requires a profile id" >&2
+        return 2
+    fi
+
+    target_comp="$(profile_compositor "$profile" 2>/dev/null || true)"
+
+    if [ -z "$target_comp" ]; then
+        echo "multi-rice-control: unknown profile: $profile" >&2
+        return 2
+    fi
+
+    if ! is_installed "$profile"; then
+        echo "multi-rice-control: $(profile_name "$profile") is not installed" >&2
+        return 4
+    fi
+
+    current_comp="$(detect_compositor)"
+    current="$(current_profile)"
+
+    if [ "$profile" = "$current" ]; then
+        printf "action=noop\n"
+        printf "profile=%s\n" "$profile"
+        printf "name=%s\n" "$(profile_name "$profile")"
+        return 0
+    fi
+
+    if [ "$current_comp" = "unknown" ]; then
+        echo "multi-rice-control: unsupported graphical session" >&2
+        return 5
+    fi
+
+    if [ "$target_comp" != "$current_comp" ]; then
+        echo "multi-rice-control: cross-compositor switching is not enabled yet" >&2
+        return 6
+    fi
+
+    activate_same_compositor "$profile" "$target_comp" || return $?
+
+    notify-send \
+        "Huzaifah Multi-Rice" \
+        "Switching to $(profile_name "$profile")…" \
+        2>/dev/null || true
+
+    sleep 0.35
+
+    case "$target_comp" in
+        hyprland)
+            command -v hyprctl >/dev/null 2>&1 || {
+                echo "multi-rice-control: hyprctl not found" >&2
+                return 5
+            }
+
+            hyprctl dispatch exit
+            ;;
+
+        niri)
+            echo "multi-rice-control: Niri session exit support not enabled yet" >&2
+            return 6
+            ;;
+    esac
+}
+
 case "${1:-status}" in
     compositor)
         detect_compositor
@@ -254,8 +397,12 @@ case "${1:-status}" in
         plan_switch "${2:-}"
         ;;
 
+    switch)
+        switch_profile "${2:-}"
+        ;;
+
     *)
-        echo "Usage: multi-rice-control {status|list|profile|compositor|plan PROFILE}" >&2
+        echo "Usage: multi-rice-control {status|list|profile|compositor|plan PROFILE|switch PROFILE}" >&2
         exit 2
         ;;
 esac
