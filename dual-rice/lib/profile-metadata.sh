@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+
+# Huzaifah Multi-Rice v5 profile metadata
+
+profile_compositor() {
+    case "$1" in
+        caelestia|end4|ambxst|dms|serpantinum|noctalia|sayconlun)
+            echo "hyprland"
+            ;;
+        jaqc|clavis)
+            echo "niri"
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+profile_name() {
+    case "$1" in
+        caelestia)   echo "Aether" ;;
+        end4)        echo "Obsidian" ;;
+        ambxst)      echo "Crimson" ;;
+        dms)         echo "Materia" ;;
+        serpantinum) echo "Aurora" ;;
+        noctalia)    echo "Nocturne" ;;
+        sayconlun)   echo "Lumina" ;;
+        jaqc)        echo "JAQC" ;;
+        clavis)      echo "Clavis" ;;
+        *)           echo "$1" ;;
+    esac
+}
+
+profile_icon() {
+    case "$1" in
+        caelestia)   echo "✦" ;;
+        end4)        echo "◈" ;;
+        ambxst)      echo "◆" ;;
+        dms)         echo "●" ;;
+        serpantinum) echo "◇" ;;
+        noctalia)    echo "◉" ;;
+        sayconlun)   echo "⬡" ;;
+        jaqc)        echo "☀" ;;
+        clavis)      echo "❖" ;;
+        *)           echo "○" ;;
+    esac
+}
+
+profile_config_path() {
+    local root="$1"
+    local profile="$2"
+    local compositor
+
+    compositor="$(profile_compositor "$profile")" || return 1
+
+    case "$compositor" in
+        hyprland)
+            [ -f "$root/$profile/hypr/hyprland.lua" ] || return 1
+            printf "%s\n" "$root/$profile/hypr"
+            ;;
+        niri)
+            [ -f "$root/$profile/niri/config.kdl" ] || return 1
+            printf "%s\n" "$root/$profile/niri"
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
