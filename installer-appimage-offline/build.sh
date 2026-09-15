@@ -546,10 +546,94 @@ rm -rf "$APPDIR"
 mkdir -p "$APPDIR" "$PAYLOAD" "$PKG_DIR" "$PAYLOAD/sources" "$PAYLOAD/bin"
 chmod 0777 "$PKG_DIR"
 
+# HUZ_V5_PERSISTENT_OFFICIAL_CACHE
+# Stage exact installed official package versions through /var/cache/pacman/pkg.
+# This makes successful downloads survive wrapper retries and avoids one giant
+# pacman -Sw transaction for the entire dependency closure.
 mapfile -t OFFICIAL < "$BUILD/official.txt"
 if ((${#OFFICIAL[@]})); then
-    log "Downloading ${#OFFICIAL[@]} official package archives into the offline repository"
-    sudo pacman -Sw --disable-sandbox --noconfirm --cachedir "$PKG_DIR" "${OFFICIAL[@]}"
+    log "Staging ${#OFFICIAL[@]} official package archives via persistent pacman cache"
+
+    missing_official=()
+    reused_official=0
+
+    for pkg in "${OFFICIAL[@]}"; do
+        ver="$(package_version "$pkg")"
+        if archive="$(find_exact_archive "$pkg" "$ver")"; then
+            cp -f "$archive" "$PKG_DIR/"
+            ((reused_official += 1))
+        else
+            missing_official+=("$pkg")
+        fi
+    done
+
+    log "Reused $reused_official exact official archive(s) already cached"
+
+    if ((${#missing_official[@]})); then
+        log "Downloading ${#missing_official[@]} missing official archive(s) in small persistent batches"
+
+        batch_size=32
+        for ((start_i=0; start_i<${#missing_official[@]}; start_i+=batch_size)); do
+            batch=( "${missing_official[@]:start_i:batch_size}" )
+            need=()
+
+            # A previous partial attempt may already have filled some entries.
+            for pkg in "${batch[@]}"; do
+                ver="$(package_version "$pkg")"
+                if ! archive="$(find_exact_archive "$pkg" "$ver")"; then
+                    need+=("$pkg")
+                fi
+            done
+
+            ((${#need[@]})) || continue
+
+            batch_ok=0
+            for attempt in 1 2 3; do
+                log "Official package batch $((start_i / batch_size + 1)): ${#need[@]} package(s), attempt $attempt/3"
+                if sudo pacman -Sw --noconfirm "${need[@]}"; then
+                    batch_ok=1
+                    break
+                fi
+                warn "Official package batch attempt $attempt failed; keeping completed downloads in /var/cache/pacman/pkg"
+                sleep $((attempt * 3))
+            done
+
+            if (( ! batch_ok )); then
+                warn "Batch did not complete; falling back to per-package retries so one stale mirror object cannot discard the rest"
+
+                for pkg in "${need[@]}"; do
+                    ver="$(package_version "$pkg")"
+
+                    if archive="$(find_exact_archive "$pkg" "$ver")"; then
+                        continue
+                    fi
+
+                    pkg_ok=0
+                    for attempt in 1 2 3; do
+                        log "Downloading exact official archive: $pkg $ver (attempt $attempt/3)"
+                        sudo pacman -Sw --noconfirm "$pkg" || true
+
+                        if archive="$(find_exact_archive "$pkg" "$ver")"; then
+                            pkg_ok=1
+                            break
+                        fi
+
+                        sleep $((attempt * 3))
+                    done
+
+                    ((pkg_ok)) || die "Could not obtain exact official archive for $pkg $ver. The configured mirror/database is out of sync; refresh CachyOS mirrors and rerun."
+                done
+            fi
+        done
+
+        # Copy the exact installed versions from the persistent cache into the payload.
+        for pkg in "${missing_official[@]}"; do
+            ver="$(package_version "$pkg")"
+            archive="$(find_exact_archive "$pkg" "$ver")" ||
+                die "Exact official archive still missing after download stage: $pkg $ver"
+            cp -f "$archive" "$PKG_DIR/"
+        done
+    fi
 fi
 sudo chown -R "$USER":"$(id -gn)" "$PKG_DIR"
 find "$PKG_DIR" -maxdepth 1 -type f -name '*.sig' -delete
