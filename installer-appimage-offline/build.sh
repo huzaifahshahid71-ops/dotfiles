@@ -140,7 +140,7 @@ package_version() {
 }
 
 archive_meta() {
-    pacman -Qp --print-format '%n %v' "$1" 2>/dev/null || true
+    LC_ALL=C pacman -Qp "$1" 2>/dev/null | awk 'NF >= 2 { print $1, $2; exit }' || true
 }
 
 find_exact_archive() {
@@ -159,8 +159,7 @@ find_exact_archive() {
             name="${meta%% *}"
             version="${meta#* }"
             if [[ "$name" == "$pkg" && "$version" == "$ver" ]]; then
-                printf "%s
-" "$file"
+                printf "%s\n" "$file"
                 return 0
             fi
         done < <(find "$root" -type f -name "${pkg}-${ver}-*.pkg.tar.*" -print0 2>/dev/null)
@@ -176,8 +175,7 @@ find_exact_archive() {
             name="${meta%% *}"
             version="${meta#* }"
             if [[ "$name" == "$pkg" && "$version" == "$ver" ]]; then
-                printf "%s
-" "$file"
+                printf "%s\n" "$file"
                 return 0
             fi
         done < <(find "$root" -type f -name "*.pkg.tar.*" -print0 2>/dev/null)
@@ -311,7 +309,7 @@ validate_staged_packages() {
     local index="$BUILD/staged-package-names.txt" file name
     : > "$index"
     while IFS= read -r -d '' file; do
-        name="$(pacman -Qp --print-format '%n' "$file" 2>/dev/null || true)"
+        name="$(LC_ALL=C pacman -Qp "$file" 2>/dev/null | awk 'NF { print $1; exit }' || true)"
         [[ -n "$name" ]] && printf '%s\n' "$name" >> "$index"
     done < <(find "$PKG_DIR" -maxdepth 1 -type f -name '*.pkg.tar.*' ! -name '*.sig' -print0)
     sort -u -o "$index" "$index"
