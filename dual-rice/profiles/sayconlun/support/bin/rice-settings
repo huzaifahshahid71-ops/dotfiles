@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+# Hyprland settings through rofi. The engines do the real work - validating,
+# applying live and writing conf.d overrides - and also work on their own:
+#   rice-look-ctl.py list|set|reset      rice-monitor-ctl.py list|set|reset
+#
+#   rice-settings             choose
+#   rice-settings look        gaps, borders, rounding, opacity, blur, shadow
+#   rice-settings displays    per output: mode, scale, VRR, on/off
+set -uo pipefail
+BIN="$HOME/.local/share/desktop-profiles/sayconlun/support/bin"
+
+menu() { rofi -dmenu -i -no-custom -p "$1" "${@:2}"; }
+ask()  { rofi -dmenu -p "$1" -mesg "$2" -theme ~/.local/share/desktop-profiles/sayconlun/support/rofi/menu.rasi \
+              -theme-str 'listview { enabled: false; }' < /dev/null; }
+fail() { notify-send -a rice-settings "Settings" "$1"; }
+
+look() {
+    local json idx out new rows path label type min max value
+    while :; do
+        json="$("$BIN/rice-look-ctl.py" list)" || { fail "rice-look-ctl.py list failed"; return 1; }
+        mapfile -t rows < <(jq -r '.options[] | [.group + " · " + .label,
+                  (.value|tostring) + (if .source == "override" then "  ●" else "" end)] | @tsv' <<< "$json" \
+                  | column -t -s $'\t')
+        rows+=("󰑓  Reset everything to the baseline")
+        idx="$(printf '%s\n' "${rows[@]}" | menu "󰉼  look" -format i -mesg "● = changed from hyprland.lua")" || return 0
+        [[ -z "$idx" ]] && return 0
+
+        if (( idx == ${#rows[@]} - 1 )); then
+            out="$("$BIN/rice-look-ctl.py" reset 2>&1)" || fail "$out"
+            continue
+        fi
+
+        IFS=$'\t' read -r path label type min max value < <(jq -r --argjson i "$idx" \
+            '.options[$i] | [.path, .label, .type, (.min // ""), (.max // ""), (.value|tostring)] | @tsv' <<< "$json")
+        if [[ "$type" == bool ]]; then
+            new=true; [[ "$value" == true ]] && new=false
+        else
+            new="$(ask "$label" "now $value  ·  $min – $max  ·  leave empty to reset")" || continue
+        fi
+        if [[ -z "$new" ]]; then
+            out="$("$BIN/rice-look-ctl.py" reset "$path" 2>&1)" || fail "$out"
+        else
+            out="$("$BIN/rice-look-ctl.py" set "$path" "$new" 2>&1)" || fail "$out"
+        fi
+    done
+}
+
+displays() {
+    local json idx conn field v out d conns rows modes
+    json="$("$BIN/rice-monitor-ctl.py" list)" || { fail "rice-monitor-ctl.py list failed"; return 1; }
+    mapfile -t conns < <(jq -r '.outputs[].connector' <<< "$json")
+    mapfile -t rows < <(jq -r '.outputs[] | "\(.connector)   \(.model)   " +
+        (if .disabled then "off" else "\(.live.width)x\(.live.height) @ \(.live.refresh|floor)Hz  ×\(.live.scale)" end)' <<< "$json")
+    idx="$(printf '%s\n' "${rows[@]}" | menu "󰍹  displays" -format i)" || return 0
+    [[ -z "$idx" ]] && return 0
+    conn="${conns[$idx]}"
+
+    field="$(printf '%s\n' "Mode" "Scale" "VRR" "Turn on / off" "Reset to hyprland.lua" | menu "$conn")" || return 0
+    case "$field" in
+        Mode)
+            mapfile -t modes < <(jq -r --arg c "$conn" '.outputs[] | select(.connector == $c)
+                                   | .modes[] | "\(.width)x\(.height)@\(.refresh)"' <<< "$json" | awk '!seen[$0]++')
+            v="$(printf '%s\n' "${modes[@]}" | menu "mode")" || return 0
+            out="$("$BIN/rice-monitor-ctl.py" set "$conn" --mode "$v" 2>&1)" ;;
+        Scale)
+            v="$(printf '%s\n' 1 1.25 1.5 1.6 1.75 2 | menu "scale")" || return 0
+            out="$("$BIN/rice-monitor-ctl.py" set "$conn" --scale "$v" 2>&1)" ;;
+        VRR)
+            v="$(printf '%s\n' "0   off" "1   on" "2   fullscreen only" "3   fullscreen + game content" | menu "vrr")" || return 0
+            out="$("$BIN/rice-monitor-ctl.py" set "$conn" --vrr "${v%% *}" 2>&1)" ;;
+        "Turn on / off")
+            d="$(jq -r --arg c "$conn" '.outputs[] | select(.connector == $c) | .disabled' <<< "$json")"
+            [[ "$d" == true ]] && d=false || d=true
+            out="$("$BIN/rice-monitor-ctl.py" set "$conn" --disabled "$d" 2>&1)" ;;
+        Reset*)
+            out="$("$BIN/rice-monitor-ctl.py" reset "$conn" 2>&1)" ;;
+        *) return 0 ;;
+    esac || fail "$out"
+}
+
+case "${1:-}" in
+    look)     look ;;
+    displays) displays ;;
+    *)
+        c="$(printf '%s\n' "󰉼  Look" "󰍹  Displays" | menu "settings" -theme ~/.local/share/desktop-profiles/sayconlun/support/rofi/menu.rasi)" || exit 0
+        case "$c" in *Look) look ;; *Displays) displays ;; esac ;;
+esac

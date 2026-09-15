@@ -1,0 +1,5 @@
+/* Small menus: session, confirmations, prompts. */
+@import "theme.rasi"
+
+window { width: 380px; }
+listview { lines: 5; }

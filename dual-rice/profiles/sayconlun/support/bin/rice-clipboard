@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Clipboard history (cliphist) through rofi.   rice-clipboard --wipe  clears it.
+if [[ "${1:-}" == --wipe ]]; then
+    cliphist wipe && notify-send -a rice-clipboard -t 1500 "Clipboard history cleared"
+    exit 0
+fi
+sel="$(cliphist list | rofi -dmenu -i -p "󰅌  clipboard" -display-columns 2)" || exit 0
+[[ -n "$sel" ]] && printf '%s' "$sel" | cliphist decode | wl-copy

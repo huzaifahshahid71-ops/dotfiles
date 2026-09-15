@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Stop the replay buffer. Anything still in the buffer is discarded.
+set -uo pipefail
+
+if pkill -f '^gpu-screen-recorder '; then
+    notify-send -a "Replay" -i camera-video "Replay buffer stopped"
+else
+    notify-send -a "Replay" -i dialog-information "Replay buffer was not running"
+fi

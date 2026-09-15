@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Session menu. Anything that ends the session asks first.
+theme=(-theme ~/.local/share/desktop-profiles/sayconlun/support/rofi/menu.rasi)
+
+confirm() {
+    [[ "$(printf 'No\nYes\n' | rofi -dmenu -i -no-custom -p "$1?" "${theme[@]}")" == Yes ]]
+}
+
+choice="$(printf '%s\n' "󰌾  Lock" "󰤄  Suspend" "󰍃  Log out" "󰜉  Reboot" "⏻  Shut down" \
+          | rofi -dmenu -i -no-custom -p "session" "${theme[@]}")" || exit 0
+
+case "$choice" in
+    *Lock)       loginctl lock-session ;;
+    *Suspend)    systemctl suspend ;;
+    *"Log out")  confirm "Log out" && hyprctl dispatch 'hl.dsp.exit()' ;;
+    *Reboot)     confirm "Reboot" && systemctl reboot ;;
+    *"Shut down") confirm "Shut down" && systemctl poweroff ;;
+esac

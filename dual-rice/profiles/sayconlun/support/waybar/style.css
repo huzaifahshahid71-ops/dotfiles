@@ -1,0 +1,89 @@
+/* Waybar - floating islands. Palette: colors.css (matugen).
+   Text and icons use the palette's accent (@primary), so the whole bar
+   follows the wallpaper; quieter states are the same colour, dimmed. */
+@import "colors.css";
+
+* {
+    font-family: "JetBrainsMono Nerd Font", "Inter Variable", sans-serif;
+    font-size: 15px;
+    min-height: 0;
+    border: none;
+    border-radius: 0;
+}
+
+window#waybar {
+    background: transparent;
+    color: @primary;
+}
+
+tooltip {
+    background: alpha(@surface_container, 0.96);
+    border: 1px solid alpha(@outline_variant, 0.8);
+    border-radius: 12px;
+}
+tooltip label { color: @on_surface; padding: 2px 4px; }
+
+/* ------------------------------------------------------------- islands -- */
+#launch, #workspaces, #hw, #clock, #music, #capture, #tools, #sys, #tray {
+    background: alpha(@surface_container, 0.85);
+    border: 1px solid alpha(@outline_variant, 0.55);
+    border-radius: 999px;
+    margin: 6px 3px 0 3px;
+    padding: 0 10px;
+}
+
+.modules-left > widget:first-child > * { margin-left: 8px; }
+.modules-right > widget:last-child > * { margin-right: 8px; }
+
+/* modules inside an island share its pill */
+#custom-launcher, #custom-clipboard,
+#cpu, #custom-gpu, #memory, #battery,
+#custom-screenshot, #custom-record,
+#custom-notifications,
+#backlight, #network, #pulseaudio {
+    padding: 0 6px;
+    color: @primary;
+}
+
+/* icon-only modules get a notch more than the text */
+#custom-clipboard, #custom-music, #custom-screenshot, #custom-record,
+#custom-notifications,
+#network, #pulseaudio.mic { font-size: 17px; }
+
+#custom-launcher { color: @primary; font-size: 19px; }
+
+button { box-shadow: none; text-shadow: none; background-image: none; }
+button:hover { background: alpha(@primary, 0.14); border-radius: 999px; }
+
+/* ---------------------------------------------------------- workspaces -- */
+#workspaces { padding: 0 4px; }
+#workspaces button {
+    color: alpha(@primary, 0.8);
+    padding: 0 9px;
+    margin: 5px 1px;
+    border-radius: 999px;
+    transition: all 200ms ease;
+}
+#workspaces button.empty { color: alpha(@primary, 0.4); }
+#workspaces button.active {
+    background: @primary;
+    color: @on_primary;
+    padding: 0 16px;
+}
+#workspaces button.urgent { background: @error; color: @on_error; }
+
+/* --------------------------------------------------------------- state -- */
+#clock { color: @primary; font-weight: bold; padding: 0 16px; }
+#custom-music { color: @primary; padding: 0 6px; }
+#custom-nowplaying { color: @primary; padding: 0 8px 0 2px; }
+#custom-nowplaying.paused { color: alpha(@primary, 0.6); }
+#custom-record.recording { color: @error; font-weight: bold; }
+#custom-gpu.hot { color: @error; }
+/* battery and backlight: add them to group/hw or group/sys in config.jsonc on a laptop */
+#battery.warning:not(.charging), #battery.critical:not(.charging) { color: @error; }
+#battery.critical:not(.charging) { font-weight: bold; }
+#pulseaudio.muted, #pulseaudio.source-muted { color: alpha(@primary, 0.5); }
+#network.disconnected { color: @error; }
+#custom-notifications.notification { color: @primary; }
+#custom-notifications.dnd, #custom-notifications.none { color: alpha(@primary, 0.6); }
+#tray > .needs-attention { background: alpha(@error, 0.3); border-radius: 999px; }

@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Push a freshly generated palette into everything already running.
+# matugen only writes files; each app needs its own nudge to re-read them.
+CACHE="$HOME/.local/share/desktop-profiles/sayconlun/support/state/cache"     # literal ~/.cache, matching matugen's config.toml
+
+# Hyprland: colors.lua is only read on reload, and a reload would also reset
+# live state (focus mode), so push the colours into the running config instead.
+if [[ -s "$CACHE/hypr-colors.lua" ]]; then
+    hyprctl eval "$(< "$CACHE/hypr-colors.lua")" >/dev/null 2>&1
+fi
+
+# waybar: nothing to do. reload_style_on_change picks up the new colors.css by
+# itself; a SIGUSR2 on top restarted every module and made the bar flicker.
+pkill -USR1 -x kitty                    # re-read kitty.conf, colours included
+pkill -USR2 -x cava                     # colours only
+
+"$HOME/.local/share/desktop-profiles/sayconlun/support/bin/rice-kde-colors" >/dev/null 2>&1
+
+# Multi-Rice: do not mutate persistent global GTK settings.
+exit 0

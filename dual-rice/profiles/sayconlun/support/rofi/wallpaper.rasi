@@ -1,0 +1,23 @@
+/* Thumbnail grid for rice-wallpaper pick and rice-wallhaven. */
+@import "theme.rasi"
+
+window { width: 1240px; }
+
+listview {
+    columns: 4;
+    lines: 3;
+    spacing: 10px;
+}
+
+element {
+    orientation: vertical;
+    padding: 8px;
+    spacing: 6px;
+}
+
+element-icon { size: 260px; }
+
+element-text {
+    horizontal-align: 0.5;
+    font: "Inter Variable 9";
+}

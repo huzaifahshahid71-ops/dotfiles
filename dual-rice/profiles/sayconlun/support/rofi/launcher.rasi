@@ -1,0 +1,19 @@
+/* The launcher: apps and files as two clickable tabs (Ctrl+Tab also swaps).
+   Kept out of theme.rasi, or every dmenu script would grow a lone tab. */
+@import "theme.rasi"
+
+mainbox { children: [ inputbar, mode-switcher, message, listview ]; }
+
+mode-switcher { spacing: 8px; }
+
+button {
+    padding: 8px 14px;
+    border-radius: 999px;
+    background-color: @surface-high;
+    text-color: @on-surface-variant;
+    cursor: pointer;
+}
+button selected {
+    background-color: @primary;
+    text-color: @on-primary;
+}

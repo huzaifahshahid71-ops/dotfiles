@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Write the replay buffer to ~/Videos/Replays and confirm what actually landed.
+set -uo pipefail
+
+DIR="$HOME/Videos/Replays"
+APP="Replay"
+ICON=camera-video
+
+notify() { notify-send -a "$APP" -i "$2" ${3:+-u "$3"} "$4" "${5:-}"; }
+
+if ! pgrep -f '^gpu-screen-recorder ' >/dev/null; then
+    notify x dialog-warning critical "No replay buffer running" \
+        "Start it with: gsr-replay-start"
+    exit 1
+fi
+
+before=$(ls -1 "$DIR" 2>/dev/null | wc -l)
+
+if ! pkill -USR1 -f '^gpu-screen-recorder '; then
+    notify x dialog-warning critical "Could not signal the recorder" \
+        "The replay buffer did not accept the save request."
+    exit 1
+fi
+
+# gpu-screen-recorder flushes asynchronously - wait for the file to appear.
+newfile=""
+for _ in $(seq 1 30); do
+    sleep 0.5
+    now=$(ls -1 "$DIR" 2>/dev/null | wc -l)
+    if [ "$now" -gt "$before" ]; then
+        newfile=$(ls -1t "$DIR" 2>/dev/null | head -1)
+        break
+    fi
+done
+
+if [ -z "$newfile" ]; then
+    notify x dialog-warning normal "Replay save timed out" \
+        "No new clip appeared in ~/Videos/Replays after 15s."
+    exit 1
+fi
+
+path="$DIR/$newfile"
+size=$(du -h "$path" 2>/dev/null | cut -f1)
+dur=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$path" 2>/dev/null)
+if [ -n "$dur" ]; then
+    dur=$(printf '%dm %02ds' $((${dur%.*} / 60)) $((${dur%.*} % 60)))
+else
+    dur="?"
+fi
+
+# Path straight to the clipboard so it can be dragged/pasted immediately.
+printf '%s' "$path" | wl-copy >/dev/null 2>&1
+
+notify x "$ICON" low "Replay saved  ·  $dur" \
+    "$newfile  ($size)
+Path copied to clipboard"

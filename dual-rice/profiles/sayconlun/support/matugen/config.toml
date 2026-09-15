@@ -1,0 +1,78 @@
+# matugen: wallpaper -> Material You palette -> every themed app.
+#
+# Don't run this by hand. `rice-wallpaper set|theme` calls it with
+# `-t scheme-tonal-spot --prefer saturation` - the combination that reproduces
+# the palettes Noctalia derived, so wallpapers curated for their colours keep
+# them - and then runs rice-theme-reload ONCE. That is why no template below
+# carries a post_hook: fifteen hooks would reload waybar fifteen times.
+[config]
+
+[templates.hyprland]
+input_path = "~/.local/share/desktop-profiles/sayconlun/support/matugen/templates/hyprland-colors.lua"
+output_path = "~/.local/share/desktop-profiles/sayconlun/hypr/colors.lua"
+
+# hyprlock is not part of Hyprland's move to Lua: its config is still hyprlang,
+# so it keeps a $variable copy of the same palette.
+[templates.hyprlock]
+input_path = "~/.local/share/desktop-profiles/sayconlun/support/matugen/templates/hyprlock-colors.conf"
+output_path = "~/.local/share/desktop-profiles/sayconlun/hypr/hyprlock-colors.conf"
+
+# Hyprland only reads colors.lua on (re)load, and a reload resets live state
+# like focus mode, so the same colours are also pushed with `hyprctl eval`.
+[templates.hyprland-live]
+input_path = "~/.local/share/desktop-profiles/sayconlun/support/matugen/templates/hyprland-live.lua"
+output_path = "~/.local/share/desktop-profiles/sayconlun/support/state/cache/hypr-colors.lua"
+
+[templates.waybar]
+input_path = "~/.local/share/desktop-profiles/sayconlun/support/matugen/templates/palette.css"
+output_path = "~/.local/share/desktop-profiles/sayconlun/support/waybar/colors.css"
+
+
+
+[templates.rofi]
+input_path = "~/.local/share/desktop-profiles/sayconlun/support/matugen/templates/rofi.rasi"
+output_path = "~/.local/share/desktop-profiles/sayconlun/support/rofi/colors.rasi"
+
+[templates.kitty]
+input_path = "~/.local/share/desktop-profiles/sayconlun/support/matugen/templates/kitty.conf"
+output_path = "~/.local/share/desktop-profiles/sayconlun/support/runtime/kitty/colors.conf"
+
+[templates.foot]
+input_path = "~/.local/share/desktop-profiles/sayconlun/support/matugen/templates/foot.ini"
+output_path = "~/.local/share/desktop-profiles/sayconlun/support/runtime/foot/colors.ini"
+
+[templates.gtk3]
+input_path = "~/.local/share/desktop-profiles/sayconlun/support/matugen/templates/gtk.css"
+output_path = "~/.local/share/desktop-profiles/sayconlun/support/runtime/gtk-3.0/colors.css"
+
+[templates.gtk4]
+input_path = "~/.local/share/desktop-profiles/sayconlun/support/matugen/templates/gtk.css"
+output_path = "~/.local/share/desktop-profiles/sayconlun/support/runtime/gtk-4.0/colors.css"
+
+# Qt apps (Dolphin) go through qt6ct - QT_QPA_PLATFORMTHEME=kde is a trap here,
+# its plugin ships with plasma-integration, which is not installed.
+[templates.qt6ct]
+input_path = "~/.local/share/desktop-profiles/sayconlun/support/matugen/templates/qt6ct.conf"
+output_path = "~/.local/share/desktop-profiles/sayconlun/support/runtime/qt6ct/colors/matugen.conf"
+
+[templates.kde]
+input_path = "~/.local/share/desktop-profiles/sayconlun/support/matugen/templates/kde.colors"
+output_path = "~/.local/share/desktop-profiles/sayconlun/support/runtime/color-schemes/Matugen.colors"
+
+[templates.btop]
+input_path = "~/.local/share/desktop-profiles/sayconlun/support/matugen/templates/btop.theme"
+output_path = "~/.local/share/desktop-profiles/sayconlun/support/runtime/btop/themes/matugen.theme"
+
+[templates.cava]
+input_path = "~/.local/share/desktop-profiles/sayconlun/support/matugen/templates/cava.conf"
+output_path = "~/.local/share/desktop-profiles/sayconlun/support/runtime/cava/config"
+
+
+[templates.fastfetch]
+input_path = "~/.local/share/desktop-profiles/sayconlun/support/matugen/templates/fastfetch.jsonc"
+output_path = "~/.local/share/desktop-profiles/sayconlun/support/runtime/fastfetch/config.jsonc"
+
+# The Quickshell overlays (carousel, keybind menu) watch this file themselves.
+[templates.quickshell]
+input_path = "~/.local/share/desktop-profiles/sayconlun/support/matugen/templates/quickshell.json"
+output_path = "~/.local/share/desktop-profiles/sayconlun/support/state/cache/quickshell-colors.json"

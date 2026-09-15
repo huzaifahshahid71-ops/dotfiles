@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Start the gpu-screen-recorder replay buffer.
+# Captures a monitor @60fps, keeps the last 3 minutes in RAM.
+# Desktop audio and mic are recorded as two separate tracks.
+# GSR_MONITOR and GSR_MIC pick them (`hyprctl monitors`, `pactl list short
+# sources`); unset or not found, the focused monitor and default mic are used.
+set -uo pipefail
+
+OUT="$HOME/Videos/Replays"
+mkdir -p "$OUT"
+
+MON="${GSR_MONITOR:-}"
+MIC="${GSR_MIC:-default_input}"
+hyprctl monitors -j | jq -e --arg m "$MON" 'any(.[]; .name == $m)' >/dev/null 2>&1 \
+    || MON="$(hyprctl monitors -j | jq -r 'first(.[] | select(.focused)) | .name')"
+pactl list short sources 2>/dev/null | grep -qF "$MIC" || MIC=default_input
+
+if pgrep -f '^gpu-screen-recorder ' >/dev/null; then
+    notify-send -a "Replay" -i camera-video \
+        "Replay buffer already running" "Press F8 to save the last 3 minutes."
+    exit 0
+fi
+
+# gpu-screen-recorder from the Arch repos (extra).
+exec gpu-screen-recorder \
+    -w "$MON" \
+    -f 60 \
+    -r 180 \
+    -c mp4 \
+    -q very_high \
+    -a default_output \
+    -a "$MIC" \
+    -o "$OUT"

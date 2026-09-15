@@ -1,0 +1,24 @@
+configuration {
+    modi: "drun,filebrowser";
+    show-icons: true;
+    icon-theme: "Papirus-Dark";
+    terminal: "kitty";
+    font: "Inter Variable 12";
+    drun-display-format: "{name}";
+    display-drun: "󰀻  apps";
+    display-run: "󰆍  run";
+    display-window: "󰖲  windows";
+    display-filebrowser: "󰉋  files";
+    hover-select: true;
+    me-select-entry: "MouseSecondary";
+    me-accept-entry: "MousePrimary";
+
+    filebrowser {
+        directory: "~";
+        directories-first: true;
+        sorting-method: "name";
+        show-hidden: false;
+    }
+}
+
+@theme "~/.local/share/desktop-profiles/sayconlun/support/rofi/theme.rasi"

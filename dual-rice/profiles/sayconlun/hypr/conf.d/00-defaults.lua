@@ -1,0 +1,9 @@
+-- Drop-in overrides, loaded at the very end of hyprland.lua, in name order.
+--
+--   10-monitors.lua   written by rice-monitor-ctl.py  (rice-settings displays)
+--   20-look.lua       written by rice-look-ctl.py     (rice-settings look)
+--   30-binds.lua      written by rice-binds-ctl.py    (the keybind menu, Super+/)
+--
+-- This file exists so the `conf.d/*.lua` wildcard always matches something on
+-- a fresh checkout - a wildcard require with no match is a config error. It is
+-- otherwise intentionally empty.

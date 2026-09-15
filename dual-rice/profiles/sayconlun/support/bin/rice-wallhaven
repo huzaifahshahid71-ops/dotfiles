@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+# Search wallhaven.cc from rofi, preview thumbnails, then download the pick
+# into the wallpaper folder and apply it - which re-themes the desktop.
+# An empty search shows the toplist.
+#
+# Filters come from the environment, or ~/.local/share/desktop-profiles/sayconlun/support/state/config/wallhaven.env (not in git):
+#   WALLHAVEN_CATEGORIES  general/anime/people as bits     [110]
+#   WALLHAVEN_PURITY      sfw/sketchy/nsfw as bits          [100]
+#   WALLHAVEN_ATLEAST     minimum resolution                [2560x1440]
+#   WALLHAVEN_RATIOS      e.g. 16x9,16x10 or landscape      [landscape]
+#   WALLHAVEN_SORTING     relevance|date_added|views|favorites|toplist|random  [relevance]
+#   WALLHAVEN_API_KEY     only needed for NSFW
+set -uo pipefail
+[[ -r "$HOME/.local/share/desktop-profiles/sayconlun/support/state/config/wallhaven.env" ]] && . "$HOME/.local/share/desktop-profiles/sayconlun/support/state/config/wallhaven.env"
+
+DIR="${RICE_WALLPAPER_DIR:-$HOME/Pictures/Wallpapers}"
+CACHE="$HOME/.local/share/desktop-profiles/sayconlun/support/state/cache/wallhaven"
+mkdir -p "$CACHE" "$DIR"
+
+say() { notify-send -a wallhaven -t 3000 "wallhaven" "$1"; }
+
+query="$(rofi -dmenu -p "󰍉  wallhaven" -theme ~/.local/share/desktop-profiles/sayconlun/support/rofi/menu.rasi \
+              -theme-str 'listview { enabled: false; } entry { placeholder: "search - empty for the toplist"; }' \
+              < /dev/null)" || exit 0
+
+sorting="${WALLHAVEN_SORTING:-relevance}"
+[[ -z "$query" ]] && sorting=toplist
+page=1
+
+while :; do
+    url="https://wallhaven.cc/api/v1/search?q=$(jq -rn --arg q "$query" '$q|@uri')"
+    url+="&categories=${WALLHAVEN_CATEGORIES:-110}&purity=${WALLHAVEN_PURITY:-100}"
+    url+="&atleast=${WALLHAVEN_ATLEAST:-2560x1440}&ratios=${WALLHAVEN_RATIOS:-landscape}"
+    url+="&sorting=$sorting&page=$page"
+    [[ -n "${WALLHAVEN_API_KEY:-}" ]] && url+="&apikey=$WALLHAVEN_API_KEY"
+
+    json="$(curl -fsSL --max-time 20 "$url")" || { say "Search failed (offline, or rate limited)"; exit 1; }
+    mapfile -t ids    < <(jq -r '.data[].id' <<< "$json")
+    (( ${#ids[@]} )) || { say "Nothing found for “$query”"; exit 0; }
+    mapfile -t thumbs < <(jq -r '.data[].thumbs.small' <<< "$json")
+    mapfile -t full   < <(jq -r '.data[].path' <<< "$json")
+    mapfile -t res    < <(jq -r '.data[].resolution' <<< "$json")
+    last="$(jq -r '.meta.last_page // 1' <<< "$json")"
+
+    for i in "${!ids[@]}"; do
+        t="$CACHE/${ids[$i]}.jpg"
+        [[ -s "$t" ]] || curl -fsSL --max-time 20 -o "$t" "${thumbs[$i]}" &
+        (( $(jobs -rp | wc -l) >= 8 )) && wait -n
+    done
+    wait
+
+    # rofi's per-row icon syntax needs a NUL, and a bash variable cannot hold
+    # one - so the rows go straight from printf into the pipe.
+    choice="$( { for i in "${!ids[@]}"; do
+                     printf '%s\0icon\x1f%s\n' "${res[$i]}" "$CACHE/${ids[$i]}.jpg"
+                 done
+                 if (( page < last )); then printf '󰒭  more\n'; fi
+               } | rofi -dmenu -i -show-icons -no-custom -format i -p "󰍉  ${query:-toplist} · $page/$last" \
+                        -theme ~/.local/share/desktop-profiles/sayconlun/support/rofi/wallpaper.rasi)" || exit 0
+    [[ -z "$choice" ]] && exit 0
+    if (( choice >= ${#ids[@]} )); then page=$(( page + 1 )); continue; fi
+    break
+done
+
+src="${full[$choice]}"
+dest="$DIR/wallhaven-${ids[$choice]}.${src##*.}"
+if [[ ! -s "$dest" ]]; then
+    say "Downloading ${res[$choice]}…"
+    if ! curl -fsSL --max-time 180 -o "$dest.part" "$src"; then
+        rm -f "$dest.part"; say "Download failed"; exit 1
+    fi
+    mv "$dest.part" "$dest"
+fi
+exec "$HOME/.local/share/desktop-profiles/sayconlun/support/bin/rice-wallpaper" set "$dest"

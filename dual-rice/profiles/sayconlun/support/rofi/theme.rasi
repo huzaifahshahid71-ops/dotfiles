@@ -1,0 +1,82 @@
+/* Base rofi look, matching waybar's islands. Palette: colors.rasi (matugen). */
+@import "colors.rasi"
+
+* {
+    background-color: transparent;
+    text-color: @on-surface;
+    spacing: 0;
+}
+
+window {
+    location: center;
+    anchor: center;
+    width: 620px;
+    padding: 14px;
+    border: 1px;
+    border-color: @outline-variant;
+    border-radius: 22px;
+    background-color: @glass;
+}
+
+mainbox {
+    spacing: 12px;
+    children: [ inputbar, message, listview ];
+}
+
+inputbar {
+    padding: 10px 16px;
+    spacing: 10px;
+    border-radius: 999px;
+    background-color: @surface-high;
+    children: [ prompt, entry ];
+}
+
+prompt { text-color: @primary; }
+
+entry {
+    placeholder: "search";
+    placeholder-color: @on-surface-variant;
+    cursor: text;
+}
+
+message {
+    padding: 8px 14px;
+    border-radius: 14px;
+    background-color: @surface-high;
+}
+textbox { text-color: @on-surface-variant; }
+
+listview {
+    lines: 8;
+    columns: 1;
+    spacing: 4px;
+    fixed-height: true;
+    scrollbar: false;
+    cycle: true;
+}
+
+element {
+    padding: 8px 12px;
+    spacing: 12px;
+    border-radius: 14px;
+    cursor: pointer;
+}
+element normal.normal, element alternate.normal { background-color: transparent; text-color: @on-surface; }
+element selected.normal { background-color: @primary; text-color: @on-primary; }
+element normal.active, element alternate.active { text-color: @primary; }
+element selected.active { background-color: @primary-container; text-color: @on-primary-container; }
+element normal.urgent, element alternate.urgent { text-color: @error; }
+element selected.urgent { background-color: @error; text-color: @surface; }
+
+element-icon {
+    size: 1.4em;
+    background-color: transparent;
+    text-color: inherit;
+    cursor: inherit;
+}
+element-text {
+    background-color: transparent;
+    text-color: inherit;
+    vertical-align: 0.5;
+    cursor: inherit;
+}

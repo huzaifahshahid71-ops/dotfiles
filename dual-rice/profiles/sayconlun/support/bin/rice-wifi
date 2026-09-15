@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Wi-Fi through rofi: pick a network to join, or switch the radio.
+set -uo pipefail
+
+menu() { rofi -dmenu -i -no-custom -p "$1" "${@:2}"; }
+say()  { notify-send -a rice-wifi -t 3000 "Wi-Fi" "$1"; }
+
+if [[ "$(nmcli -g WIFI radio)" != enabled ]]; then
+    [[ -n "$(printf '󰖩  Turn Wi-Fi on\n' | menu "󰖪  wifi")" ]] && nmcli radio wifi on
+    exit 0
+fi
+
+labels=("󰖪  Turn Wi-Fi off"); ssids=(""); secure=("")
+declare -A seen
+# -t escapes ':' inside an SSID as '\:'. read puts everything after the third
+# separator into $ssid, so a colon in a network name survives.
+while IFS=: read -r inuse signal sec ssid; do
+    ssid="${ssid//\\:/:}"
+    [[ -z "$ssid" || -n "${seen[$ssid]:-}" ]] && continue
+    seen[$ssid]=1
+    icon=󰤟; (( signal >= 40 )) && icon=󰤢; (( signal >= 65 )) && icon=󰤥; (( signal >= 85 )) && icon=󰤨
+    lock=""; [[ -n "$sec" && "$sec" != "--" ]] && lock="  󰌾"
+    here=""; [[ "$inuse" == "*" ]] && here="   connected"
+    labels+=("$icon  $ssid$lock$here"); ssids+=("$ssid"); secure+=("$lock")
+done < <(nmcli -t -f IN-USE,SIGNAL,SECURITY,SSID device wifi list --rescan auto | sort -t: -k2 -nr)
+
+idx="$(printf '%s\n' "${labels[@]}" | menu "󰖩  wifi" -format i)" || exit 0
+[[ -z "$idx" ]] && exit 0
+if (( idx == 0 )); then nmcli radio wifi off; exit 0; fi
+
+ssid="${ssids[$idx]}"
+if nmcli -g NAME connection show | grep -Fxq -- "$ssid"; then
+    out="$(nmcli connection up id "$ssid" 2>&1)"
+elif [[ -n "${secure[$idx]}" ]]; then
+    pass="$(rofi -dmenu -password -p "󰌾  $ssid" -theme ~/.local/share/desktop-profiles/sayconlun/support/rofi/menu.rasi \
+                 -theme-str 'listview { enabled: false; }' < /dev/null)" || exit 0
+    out="$(nmcli device wifi connect "$ssid" password "$pass" 2>&1)"
+else
+    out="$(nmcli device wifi connect "$ssid" 2>&1)"
+fi && say "Connected to $ssid" || say "Could not connect: ${out##*Error: }"

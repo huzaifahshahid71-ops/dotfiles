@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+"""Merge the matugen KDE colour scheme into kdeglobals.
+
+Qt/KDE apps (Dolphin, Kate) read their colours straight from kdeglobals'
+[Colors:*] groups. A .colors file is only a source that Plasma's colour
+settings copy in - and without Plasma nothing does the copying. This does,
+replacing just the colour groups and leaving every other kdeglobals setting
+(terminal, fonts, shortcuts) exactly as it was.
+"""
+import os
+
+SCHEME = os.path.expanduser("~/.local/share/desktop-profiles/sayconlun/support/runtime/color-schemes/Matugen.colors")
+TARGET = os.path.expanduser("~/.local/share/desktop-profiles/sayconlun/support/runtime/kdeglobals")
+
+
+def sections(text):
+    """[(header, body_lines)]; the header of the preamble is ''."""
+    out, header, body = [], "", []
+    for line in text.splitlines():
+        if line.startswith("["):
+            out.append((header, body))
+            header, body = line.strip(), []
+        else:
+            body.append(line)
+    out.append((header, body))
+    return out
+
+
+def owned(header):
+    return header.startswith(("[Colors:", "[ColorEffects:")) or header == "[WM]"
+
+
+def main():
+    try:
+        scheme = sections(open(SCHEME).read())
+    except OSError:
+        return
+    try:
+        target = sections(open(TARGET).read())
+    except OSError:
+        target = [("", [])]
+
+    fresh = {h: b for h, b in scheme if owned(h)}
+    merged, placed = [], set()
+    for header, body in target:
+        if owned(header):
+            if header in fresh and header not in placed:
+                merged.append((header, fresh[header]))
+                placed.add(header)
+            continue
+        if header == "[General]":
+            body = ["ColorScheme=Matugen"] + [l for l in body if not l.startswith("ColorScheme=")]
+        merged.append((header, body))
+    merged += [(h, b) for h, b in fresh.items() if h not in placed]
+    if not any(h == "[General]" for h, _ in merged):
+        merged.insert(1, ("[General]", ["ColorScheme=Matugen"]))
+
+    lines = []
+    for header, body in merged:
+        while body and not body[-1].strip():
+            body = body[:-1]
+        if not header and not body:
+            continue
+        if header:
+            lines.append(header)
+        lines += body + [""]
+
+    tmp = TARGET + ".tmp"
+    with open(tmp, "w") as fh:
+        fh.write("\n".join(lines))
+    os.replace(tmp, TARGET)
+
+
+if __name__ == "__main__":
+    main()
