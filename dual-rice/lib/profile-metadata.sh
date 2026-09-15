@@ -67,3 +67,20 @@ profile_config_path() {
             ;;
     esac
 }
+
+
+profile_ids() {
+    printf "%s
+"         caelestia         end4         ambxst         dms         serpantinum         noctalia         sayconlun         jaqc         clavis
+}
+
+profile_ids_for_compositor() {
+    local wanted="$1"
+    local profile
+
+    while IFS= read -r profile; do
+        [ "$(profile_compositor "$profile" 2>/dev/null || true)" = "$wanted" ] &&
+            printf "%s
+" "$profile"
+    done < <(profile_ids)
+}

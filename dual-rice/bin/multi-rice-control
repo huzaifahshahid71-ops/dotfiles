@@ -1,0 +1,204 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+ROOT="$HOME/.local/share/desktop-profiles"
+STATE_DIR="$HOME/.config/desktop-profile"
+ACTIVE_FILE="$STATE_DIR/active"
+
+HYPR_LINK="$HOME/.config/hypr"
+NIRI_LINK="$HOME/.config/niri"
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+load_metadata() {
+    local candidate
+
+    for candidate in         "$HOME/.local/share/desktop-switcher/profile-metadata.sh"         "$SCRIPT_DIR/../lib/profile-metadata.sh"
+    do
+        if [ -f "$candidate" ]; then
+            source "$candidate"
+            return 0
+        fi
+    done
+
+    echo "multi-rice-control: profile metadata not found" >&2
+    exit 1
+}
+
+load_metadata
+
+is_installed() {
+    profile_config_path "$ROOT" "$1" >/dev/null 2>&1
+}
+
+detect_compositor() {
+    local xdg="${XDG_CURRENT_DESKTOP:-}"
+    xdg="${xdg,,}"
+
+    if [ -n "${NIRI_SOCKET:-}" ] || [[ "$xdg" == *niri* ]]; then
+        echo "niri"
+        return
+    fi
+
+    if [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] || [[ "$xdg" == *hyprland* ]]; then
+        echo "hyprland"
+        return
+    fi
+
+    echo "unknown"
+}
+
+profile_from_link() {
+    local compositor="$1"
+    local link=""
+    local profile target resolved
+
+    case "$compositor" in
+        hyprland) link="$HYPR_LINK" ;;
+        niri)     link="$NIRI_LINK" ;;
+        *)        return 1 ;;
+    esac
+
+    [ -L "$link" ] || return 1
+
+    resolved="$(readlink -f "$link" 2>/dev/null || true)"
+    [ -n "$resolved" ] || return 1
+
+    while IFS= read -r profile; do
+        target="$(profile_config_path "$ROOT" "$profile" 2>/dev/null || true)"
+
+        if [ -n "$target" ] && [ "$resolved" = "$target" ]; then
+            printf "%s
+" "$profile"
+            return 0
+        fi
+    done < <(profile_ids_for_compositor "$compositor")
+
+    return 1
+}
+
+current_profile() {
+    local compositor saved saved_comp
+
+    compositor="$(detect_compositor)"
+
+    if [ -f "$ACTIVE_FILE" ]; then
+        saved="$(tr -d "[:space:]" < "$ACTIVE_FILE")"
+        saved_comp="$(profile_compositor "$saved" 2>/dev/null || true)"
+
+        if [ -n "$saved_comp" ] &&
+           is_installed "$saved" &&
+           { [ "$compositor" = "unknown" ] || [ "$saved_comp" = "$compositor" ]; }
+        then
+            printf "%s
+" "$saved"
+            return
+        fi
+    fi
+
+    profile_from_link "$compositor" 2>/dev/null || echo "unknown"
+}
+
+count_installed() {
+    local compositor="$1"
+    local profile count=0
+
+    while IFS= read -r profile; do
+        if is_installed "$profile"; then
+            count=$((count + 1))
+        fi
+    done < <(profile_ids_for_compositor "$compositor")
+
+    printf "%s
+" "$count"
+}
+
+show_status() {
+    local compositor profile name icon profile_comp installed
+
+    compositor="$(detect_compositor)"
+    profile="$(current_profile)"
+
+    if [ "$profile" != "unknown" ]; then
+        name="$(profile_name "$profile")"
+        icon="$(profile_icon "$profile")"
+        profile_comp="$(profile_compositor "$profile")"
+
+        if is_installed "$profile"; then
+            installed="true"
+        else
+            installed="false"
+        fi
+    else
+        name="Unknown"
+        icon="?"
+        profile_comp="unknown"
+        installed="false"
+    fi
+
+    printf "compositor=%s
+" "$compositor"
+    printf "profile=%s
+" "$profile"
+    printf "name=%s
+" "$name"
+    printf "icon=%s
+" "$icon"
+    printf "profile_compositor=%s
+" "$profile_comp"
+    printf "installed=%s
+" "$installed"
+    printf "hyprland_installed=%s
+" "$(count_installed hyprland)"
+    printf "niri_installed=%s
+" "$(count_installed niri)"
+}
+
+show_list() {
+    local active profile compositor installed active_flag
+
+    active="$(current_profile)"
+
+    while IFS= read -r profile; do
+        compositor="$(profile_compositor "$profile")"
+
+        if is_installed "$profile"; then
+            installed="true"
+        else
+            installed="false"
+        fi
+
+        if [ "$profile" = "$active" ]; then
+            active_flag="true"
+        else
+            active_flag="false"
+        fi
+
+        printf "%s|%s|%s|%s|%s|%s
+"             "$profile"             "$(profile_name "$profile")"             "$(profile_icon "$profile")"             "$compositor"             "$installed"             "$active_flag"
+    done < <(profile_ids)
+}
+
+case "${1:-status}" in
+    compositor)
+        detect_compositor
+        ;;
+
+    profile)
+        current_profile
+        ;;
+
+    status)
+        show_status
+        ;;
+
+    list)
+        show_list
+        ;;
+
+    *)
+        echo "Usage: multi-rice-control {status|list|profile|compositor}" >&2
+        exit 2
+        ;;
+esac
