@@ -745,7 +745,11 @@ cp "$CLOSURE_FILE" "$PAYLOAD/closure.txt"
     printf 'built_at=%s\n' "$(date --iso-8601=seconds)"
     printf 'builder_host=%s\n' "$(hostname)"
     printf 'architecture=%s\n' "$(uname -m)"
-    printf 'dotfiles_commit=%s\n' "$(git -C "$ROOT" rev-parse HEAD 2>/dev/null || echo unknown)"
+    if [[ -n "${HUZ_DOTFILES_COMMIT:-}" ]]; then
+        printf 'dotfiles_commit=%s\n' "$HUZ_DOTFILES_COMMIT"
+    else
+        printf 'dotfiles_commit=%s\n' "$(git -C "$ROOT" rev-parse HEAD 2>/dev/null || echo unknown)"
+    fi
     printf 'end4_pc_commit=%s\n' "$END4_PC_EXPECTED_COMMIT"
 printf 'end4_pc_patch_sha256=%s\n' "$(sha256sum "$END4_PC_PATCH_FILE" | awk '{print $1}')"
 printf "mpv_mpris_commit=%s\n" "$MPV_MPRIS_EXPECTED_COMMIT"
@@ -755,7 +759,9 @@ printf 'serpantinum_commit=%s\n' "$SERPANTINUM_EXPECTED_COMMIT"
 printf 'serpantinum_patch_sha256=%s\n' "$(sha256sum "$SERPANTINUM_PATCH_FILE" | awk '{print $1}')"
     printf 'evangelion_commit=%s\n' "$EVANGELION_EXPECTED_COMMIT"
     printf 'evangelion_patch_sha256=%s\n' "$(sha256sum "$EVANGELION_PATCH_FILE" | awk '{print $1}')"
-    if git -C "$ROOT" diff --quiet --ignore-submodules HEAD -- 2>/dev/null && git -C "$ROOT" diff --cached --quiet --ignore-submodules HEAD -- 2>/dev/null; then
+    if [[ -n "${HUZ_DOTFILES_WORKTREE:-}" ]]; then
+        printf 'dotfiles_worktree=%s\n' "$HUZ_DOTFILES_WORKTREE"
+    elif [[ -z "$(git -C "$ROOT" status --porcelain --untracked-files=normal 2>/dev/null)" ]]; then
         printf 'dotfiles_worktree=clean\n'
     else
         printf 'dotfiles_worktree=dirty-working-tree-bundled\n'

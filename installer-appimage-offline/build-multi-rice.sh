@@ -20,9 +20,16 @@ die() { printf '\033[1;31mERROR:\033[0m %s\n' "$*" >&2; exit 1; }
 [[ -f "$ROOT/installer-appimage-offline/build.sh" ]] || die "Historical offline builder is missing"
 [[ -f "$ROOT/installer-appimage-offline/multi-rice-offline.sh" ]] || die "Multi-Rice offline engine is missing"
 
-for cmd in rsync python3 bash; do
+for cmd in rsync python3 bash git; do
     command -v "$cmd" >/dev/null 2>&1 || die "$cmd is required"
 done
+
+SOURCE_COMMIT="$(git -C "$ROOT" rev-parse HEAD 2>/dev/null || echo unknown)"
+if [[ -z "$(git -C "$ROOT" status --porcelain --untracked-files=normal 2>/dev/null)" ]]; then
+    SOURCE_WORKTREE="clean"
+else
+    SOURCE_WORKTREE="dirty-working-tree-bundled"
+fi
 
 log "Preparing isolated Multi-Rice offline build tree"
 mkdir -p "$WORK" "$DIST"
@@ -220,7 +227,9 @@ bash -n "$WORK/installer-appimage-offline/build.sh"
 log "Running the proven dependency-closure offline builder"
 (
     cd "$WORK"
-    bash installer-appimage-offline/build.sh "$@"
+    HUZ_DOTFILES_COMMIT="$SOURCE_COMMIT" \
+    HUZ_DOTFILES_WORKTREE="$SOURCE_WORKTREE" \
+        bash installer-appimage-offline/build.sh "$@"
 )
 
 [[ -f "$BUILT_OUT" ]] || die "Underlying builder completed without producing the expected AppImage"
@@ -234,8 +243,12 @@ sha256sum "$NEW_OUT" > "$NEW_SHA"
 printf '\nBuilt:\n'
 ls -lh "$NEW_OUT" "$NEW_SHA"
 printf '\nThis AppImage contains:\n'
-printf '  ✦ Caelestia\n  ◈ end4-pC\n  ◆ Ambxst\n  ● DankMaterialShell\n'
-printf '  ⇄ Multi-Rice switcher\n  ↻ hardware-aware refresh switcher\n'
-printf '  🌙 Frieren SDDM theme\n  ◇ ASUS / Zephyrus G16 setup tools\n'
-printf '  ◇ guarded Btrfs hibernation storage setup\n'
+printf '  Hyprland (7): Aether, Obsidian, Crimson, Materia, Aurora, Nocturne, Lumina\n'
+printf '  Niri (3):     Solstice, Cipher, Astra\n'
+printf '  ⇄ Unified Multi-Rice compositor/profile switcher\n'
+printf '  🌙 Frieren SDDM theme + unified dynamic session\n'
+printf '  ◇ Optional silent Evangelion GRUB theme manager/chooser\n'
+printf '  ↻ Hardware-aware refresh switcher\n'
+printf '  ◇ ASUS / Zephyrus G16 setup tools\n'
+printf '  ◇ Guarded Btrfs hibernation storage setup\n'
 printf '\nInstallation/runtime network requirement: none.\n'
