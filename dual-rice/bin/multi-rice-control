@@ -366,7 +366,7 @@ switch_profile() {
                 return 5
             }
 
-            hyprctl dispatch exit
+            hyprctl dispatch 'hl.dsp.exit()'
             ;;
 
         niri)
