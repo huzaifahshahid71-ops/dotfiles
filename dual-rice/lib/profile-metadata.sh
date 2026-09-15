@@ -7,7 +7,7 @@ profile_compositor() {
         caelestia|end4|ambxst|dms|serpantinum|noctalia|sayconlun)
             echo "hyprland"
             ;;
-        jaqc|clavis)
+        jaqc|clavis|nixri)
             echo "niri"
             ;;
         *)
@@ -27,6 +27,7 @@ profile_name() {
         sayconlun)   echo "Lumina" ;;
         jaqc)        echo "Solstice" ;;
         clavis)      echo "Cipher" ;;
+        nixri)       echo "Astra" ;;
         *)           echo "$1" ;;
     esac
 }
@@ -42,6 +43,7 @@ profile_icon() {
         sayconlun)   echo "⬡" ;;
         jaqc)        echo "☀" ;;
         clavis)      echo "❖" ;;
+        nixri)       echo "✧" ;;
         *)           echo "○" ;;
     esac
 }
@@ -71,7 +73,7 @@ profile_config_path() {
 
 profile_ids() {
     printf "%s
-"         caelestia         end4         ambxst         dms         serpantinum         noctalia         sayconlun         jaqc         clavis
+"         caelestia         end4         ambxst         dms         serpantinum         noctalia         sayconlun         jaqc         clavis         nixri
 }
 
 profile_ids_for_compositor() {

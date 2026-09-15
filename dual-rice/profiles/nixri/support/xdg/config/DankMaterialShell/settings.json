@@ -1,0 +1,125 @@
+{
+  "currentThemeName": "custom",
+  "customThemeFile": "/home/gamer/.local/share/desktop-profiles/nixri/support/xdg/config/DankMaterialShell/themes/catppuccinMocha/theme.json",
+  "popupTransparency": 0.4,
+  "widgetBackgroundColor": "s",
+  "widgetColorMode": "colorful",
+  "clockFormat": "24h",
+  "blurEnabled": true,
+  "blurForegroundLayers": false,
+  "blurWallpaperOnOverview": true,
+  "systemTrayIconTintMode": "primary",
+  "systemTrayIconTintSaturation": 40,
+  "systemTrayIconTintStrength": 150,
+  "launcherLogoMode": "os",
+  "fontFamily": "Inter",
+  "monoFontFamily": "JetBrainsMono Nerd Font",
+  "screenPreferences": {
+    "wallpaper": [
+      "all"
+    ]
+  },
+  "barConfigs": [
+    {
+      "id": "default",
+      "name": "Main Bar",
+      "enabled": true,
+      "position": "top",
+      "island": true,
+      "islandReserveThickness": 31,
+      "islandCompactThickness": 29,
+      "islandAlongOffset": 0,
+      "islandInteractionMode": "hybrid",
+      "islandTransparency": 0.65,
+      "islandCornerRadius": 16,
+      "islandSatellitesEnabled": true,
+      "islandSatellitePosition": "adjacent",
+      "islandPalette": "dim",
+      "islandSatelliteGap": 4,
+      "islandHomeClockDisplay": "both",
+      "islandHomeVolumeDisplay": "both",
+      "islandHomeBrightnessDisplay": "both",
+      "islandHomeLayout": [
+        {
+          "id": "media",
+          "enabled": true
+        },
+        {
+          "id": "clock",
+          "enabled": true
+        },
+        {
+          "id": "weather",
+          "enabled": true
+        },
+        {
+          "id": "status",
+          "enabled": true
+        },
+        {
+          "id": "volume",
+          "enabled": true
+        },
+        {
+          "id": "brightness",
+          "enabled": true
+        },
+        {
+          "id": "notifications",
+          "enabled": true
+        }
+      ],
+      "spacing": 0,
+      "widgetOutlineEnabled": false,
+      "widgetOutlineColor": "primary",
+      "widgetOutlineOpacity": 1,
+      "widgetOutlineThickness": 1,
+      "squareCorners": true,
+      "fontScale": 1.2,
+      "iconScale": 1.2,
+      "transparency": 0,
+      "widgetTransparency": 0.85,
+      "network_click_action": "applet",
+      "audio_click_action": "applet",
+      "leftWidgets": [
+        "launcherButton",
+        "workspaceSwitcher",
+        "focusedWindow"
+      ],
+      "centerWidgets": [],
+      "rightWidgets": [
+        "cpuTemp",
+        "systemTray",
+        "memUsage"
+      ],
+      "islandBatteryStyle": "ring"
+    }
+  ],
+  "desktopClockCustomColor": {
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1,
+    "hsvHue": -1,
+    "hsvSaturation": 0,
+    "hsvValue": 1,
+    "hslHue": -1,
+    "hslSaturation": 0,
+    "hslLightness": 1,
+    "valid": true
+  },
+  "systemMonitorCustomColor": {
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1,
+    "hsvHue": -1,
+    "hsvSaturation": 0,
+    "hsvValue": 1,
+    "hslHue": -1,
+    "hslSaturation": 0,
+    "hslLightness": 1,
+    "valid": true
+  },
+  "configVersion": 18
+}

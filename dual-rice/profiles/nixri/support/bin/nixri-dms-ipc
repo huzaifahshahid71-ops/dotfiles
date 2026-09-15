@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -e
+ROOT="$HOME/.local/share/desktop-profiles/nixri"
+export XDG_CONFIG_HOME="$ROOT/support/xdg/config"
+export XDG_STATE_HOME="$ROOT/support/xdg/state"
+export XDG_CACHE_HOME="$ROOT/support/xdg/cache"
+export XDG_DATA_HOME="$ROOT/support/xdg/data"
+export QS_ICON_THEME="${QS_ICON_THEME:-Papirus-Dark}"
+
+exec dms ipc "$@"

@@ -1,0 +1,2 @@
+upstream=AvengeMedia/DankMaterialShell
+commit=9bf817498412b8632c4725b14cb78a769e37828b

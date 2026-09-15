@@ -1,0 +1,2 @@
+upstream=annmaro/nixri
+commit=3ea65e3fbe14128c34a6d6effc14d31b61bfbd7b
