@@ -25,8 +25,8 @@ profile_name() {
         serpantinum) echo "Aurora" ;;
         noctalia)    echo "Nocturne" ;;
         sayconlun)   echo "Lumina" ;;
-        jaqc)        echo "JAQC" ;;
-        clavis)      echo "Clavis" ;;
+        jaqc)        echo "Solstice" ;;
+        clavis)      echo "Cipher" ;;
         *)           echo "$1" ;;
     esac
 }
