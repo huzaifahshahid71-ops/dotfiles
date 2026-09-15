@@ -146,20 +146,43 @@ archive_meta() {
 find_exact_archive() {
     local pkg="$1" ver="$2" root file meta name version
     local roots=(/var/cache/pacman/pkg "$HOME/.cache/paru")
+
+    # Fast path: prefer an exact package/version archive by filename.
+    # This is important for locally-built/foreign packages that are installed
+    # correctly but are temporarily unavailable through paru/AUR metadata.
     for root in "${roots[@]}"; do
         [[ -d "$root" ]] || continue
-        while IFS= read -r -d '' file; do
+        while IFS= read -r -d "" file; do
             [[ "$file" == *.sig ]] && continue
             meta="$(archive_meta "$file")"
             [[ -n "$meta" ]] || continue
             name="${meta%% *}"
             version="${meta#* }"
             if [[ "$name" == "$pkg" && "$version" == "$ver" ]]; then
-                printf '%s\n' "$file"
+                printf "%s
+" "$file"
                 return 0
             fi
-        done < <(find "$root" -type f -name '*.pkg.tar.*' -print0 2>/dev/null)
+        done < <(find "$root" -type f -name "${pkg}-${ver}-*.pkg.tar.*" -print0 2>/dev/null)
     done
+
+    # Fallback for unusual archive filenames.
+    for root in "${roots[@]}"; do
+        [[ -d "$root" ]] || continue
+        while IFS= read -r -d "" file; do
+            [[ "$file" == *.sig ]] && continue
+            meta="$(archive_meta "$file")"
+            [[ -n "$meta" ]] || continue
+            name="${meta%% *}"
+            version="${meta#* }"
+            if [[ "$name" == "$pkg" && "$version" == "$ver" ]]; then
+                printf "%s
+" "$file"
+                return 0
+            fi
+        done < <(find "$root" -type f -name "*.pkg.tar.*" -print0 2>/dev/null)
+    done
+
     return 1
 }
 
