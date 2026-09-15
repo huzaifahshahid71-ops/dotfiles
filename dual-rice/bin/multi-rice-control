@@ -262,43 +262,61 @@ cleanup_current_profile() {
     esac
 }
 
-activate_same_compositor() {
-    local profile="$1"
-    local compositor="$2"
-    local current target link tmp
-
-    current="$(current_profile)"
-
-    target="$(profile_config_path "$ROOT" "$profile")" || {
-        echo "multi-rice-control: incomplete profile: $profile" >&2
-        return 4
-    }
+profile_link_for_compositor() {
+    local compositor="$1"
 
     case "$compositor" in
         hyprland)
-            link="$HYPR_LINK"
+            printf "%s\n" "$HYPR_LINK"
             ;;
         niri)
-            link="$NIRI_LINK"
+            printf "%s\n" "$NIRI_LINK"
             ;;
         *)
             echo "multi-rice-control: unsupported compositor: $compositor" >&2
             return 5
             ;;
     esac
+}
+
+prepare_profile_link() {
+    local profile="$1"
+    local compositor="$2"
+    local target link tmp
+
+    target="$(profile_config_path "$ROOT" "$profile")" || {
+        echo "multi-rice-control: incomplete profile: $profile" >&2
+        return 4
+    }
+
+    link="$(profile_link_for_compositor "$compositor")" || return $?
 
     if [ -e "$link" ] && [ ! -L "$link" ]; then
         echo "multi-rice-control: $link is not a symlink; refusing to replace it" >&2
         return 5
     fi
 
-    cleanup_current_profile "$current"
+    mkdir -p "$(dirname "$link")"
 
     tmp="$(dirname "$link")/.multi-rice-switch.$$"
     rm -f "$tmp"
 
     ln -s "$target" "$tmp"
     mv -Tf "$tmp" "$link"
+
+    printf "%s\n" "$target"
+}
+
+activate_same_compositor() {
+    local profile="$1"
+    local compositor="$2"
+    local current target
+
+    current="$(current_profile)"
+
+    cleanup_current_profile "$current"
+
+    target="$(prepare_profile_link "$profile" "$compositor")" || return $?
 
     write_active_profile "$profile"
 
@@ -307,6 +325,67 @@ activate_same_compositor() {
     printf "name=%s\n" "$(profile_name "$profile")"
     printf "compositor=%s\n" "$compositor"
     printf "target=%s\n" "$target"
+}
+
+activate_cross_compositor() {
+    local profile="$1"
+    local current_comp="$2"
+    local target_comp="$3"
+    local current target
+
+    current="$(current_profile)"
+
+    if [ "$current_comp" = "$target_comp" ]; then
+        echo "multi-rice-control: internal error: cross-compositor target matches current compositor" >&2
+        return 5
+    fi
+
+    cleanup_current_profile "$current"
+
+    target="$(prepare_profile_link "$profile" "$target_comp")" || return $?
+
+    write_active_profile "$profile"
+
+    printf "action=cross-compositor-prepared\n"
+    printf "profile=%s\n" "$profile"
+    printf "name=%s\n" "$(profile_name "$profile")"
+    printf "from_compositor=%s\n" "$current_comp"
+    printf "to_compositor=%s\n" "$target_comp"
+    printf "target=%s\n" "$target"
+}
+
+exit_current_session() {
+    local compositor="$1"
+
+    case "$compositor" in
+        hyprland)
+            command -v hyprctl >/dev/null 2>&1 || {
+                echo "multi-rice-control: hyprctl not found" >&2
+                return 5
+            }
+
+            if command -v uwsm >/dev/null 2>&1 &&
+               systemctl --user --quiet is-active "wayland-wm@hyprland.desktop.service"; then
+                uwsm stop
+            else
+                hyprctl dispatch "hl.dsp.exit()"
+            fi
+            ;;
+
+        niri)
+            command -v niri >/dev/null 2>&1 || {
+                echo "multi-rice-control: niri not found" >&2
+                return 5
+            }
+
+            niri msg action quit
+            ;;
+
+        *)
+            echo "multi-rice-control: unsupported compositor: $compositor" >&2
+            return 5
+            ;;
+    esac
 }
 
 switch_profile() {
@@ -345,12 +424,14 @@ switch_profile() {
         return 5
     fi
 
-    if [ "$target_comp" != "$current_comp" ]; then
-        echo "multi-rice-control: cross-compositor switching is not enabled yet" >&2
-        return 6
+    if [ "$target_comp" = "$current_comp" ]; then
+        activate_same_compositor "$profile" "$target_comp" || return $?
+    else
+        activate_cross_compositor \
+            "$profile" \
+            "$current_comp" \
+            "$target_comp" || return $?
     fi
-
-    activate_same_compositor "$profile" "$target_comp" || return $?
 
     notify-send \
         "Huzaifah Multi-Rice" \
@@ -359,30 +440,7 @@ switch_profile() {
 
     sleep 0.35
 
-    case "$target_comp" in
-        hyprland)
-            command -v hyprctl >/dev/null 2>&1 || {
-                echo "multi-rice-control: hyprctl not found" >&2
-                return 5
-            }
-
-            if command -v uwsm >/dev/null 2>&1 &&
-               systemctl --user --quiet is-active "wayland-wm@hyprland.desktop.service"; then
-                uwsm stop
-            else
-                hyprctl dispatch "hl.dsp.exit()"
-            fi
-            ;;
-
-        niri)
-            command -v niri >/dev/null 2>&1 || {
-                echo "multi-rice-control: niri not found" >&2
-                return 5
-            }
-
-            niri msg action quit
-            ;;
-    esac
+    exit_current_session "$current_comp"
 }
 
 case "${1:-status}" in

@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Huzaifah Multi-Rice
+Comment=Automatically launch the compositor required by the selected rice
+Exec=/usr/local/bin/multi-rice-session
+TryExec=/usr/local/bin/multi-rice-session
+Type=Application
+DesktopNames=HuzaifahMultiRice

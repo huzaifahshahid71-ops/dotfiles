@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+ACTIVE_FILE="$HOME/.config/desktop-profile/active"
+
+if [ -x "$HOME/.local/bin/multi-rice-control" ]; then
+    CONTROL="$HOME/.local/bin/multi-rice-control"
+elif command -v multi-rice-control >/dev/null 2>&1; then
+    CONTROL="$(command -v multi-rice-control)"
+else
+    echo "multi-rice-session: multi-rice-control not found" >&2
+    exit 1
+fi
+
+if [ ! -f "$ACTIVE_FILE" ]; then
+    echo "multi-rice-session: active profile state does not exist" >&2
+    exit 1
+fi
+
+profile="$(tr -d "[:space:]" < "$ACTIVE_FILE")"
+
+if [ -z "$profile" ]; then
+    echo "multi-rice-session: active profile is empty" >&2
+    exit 1
+fi
+
+plan="$("$CONTROL" plan "$profile")" || {
+    echo "multi-rice-session: unable to resolve profile: $profile" >&2
+    exit 1
+}
+
+target_comp="$(
+    printf "%s\n" "$plan" |
+        awk -F= '$1 == "target_compositor" { print $2; exit }'
+)"
+
+installed="$(
+    printf "%s\n" "$plan" |
+        awk -F= '$1 == "installed" { print $2; exit }'
+)"
+
+if [ "$installed" != "true" ]; then
+    echo "multi-rice-session: selected profile is not installed: $profile" >&2
+    exit 1
+fi
+
+case "$target_comp" in
+    hyprland)
+        command -v uwsm >/dev/null 2>&1 || {
+            echo "multi-rice-session: uwsm not found" >&2
+            exit 1
+        }
+
+        cmd=(
+            uwsm
+            start
+            -e
+            -D
+            Hyprland
+            hyprland.desktop
+        )
+        ;;
+
+    niri)
+        command -v niri-session >/dev/null 2>&1 || {
+            echo "multi-rice-session: niri-session not found" >&2
+            exit 1
+        }
+
+        cmd=(niri-session)
+        ;;
+
+    *)
+        echo "multi-rice-session: unsupported compositor: $target_comp" >&2
+        exit 1
+        ;;
+esac
+
+printf "multi-rice-session: profile=%s compositor=%s\n" \
+    "$profile" "$target_comp" >&2
+
+if [ "${1:-}" = "--dry-run" ]; then
+    printf "profile=%s\n" "$profile"
+    printf "compositor=%s\n" "$target_comp"
+    printf "command="
+    printf "%q " "${cmd[@]}"
+    printf "\n"
+    exit 0
+fi
+
+exec "${cmd[@]}"
