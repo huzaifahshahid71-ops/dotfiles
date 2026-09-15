@@ -52,7 +52,8 @@ ShellRoot {
 
             property var niriRices: [
                 { id: "jaqc",   icon: "☀", name: "Solstice" },
-                { id: "clavis", icon: "❖", name: "Cipher" }
+                { id: "clavis", icon: "❖", name: "Cipher" },
+                { id: "nixri",  icon: "✧", name: "Astra" }
             ]
 
             property var visibleRices:
@@ -340,7 +341,7 @@ ShellRoot {
                                 },
                                 {
                                     name: "NIRI",
-                                    subtitle: "2 RICES",
+                                    subtitle: "3 RICES",
                                     detail: "Switch Session"
                                 }
                             ]
@@ -406,8 +407,8 @@ ShellRoot {
                                         anchors.horizontalCenter:
                                             parent.horizontalCenter
                                         text: index === 0
-                                            ? root.hyprInstalled + " / 7 INSTALLED"
-                                            : root.niriInstalled + " / 2 INSTALLED"
+                                            ? root.hyprInstalled + " / " + root.hyprRices.length + " INSTALLED"
+                                            : root.niriInstalled + " / " + root.niriRices.length + " INSTALLED"
                                         color: "#a78bfa"
                                         font.family:
                                             "JetBrainsMono Nerd Font"
