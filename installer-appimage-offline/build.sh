@@ -549,7 +549,7 @@ chmod 0777 "$PKG_DIR"
 mapfile -t OFFICIAL < "$BUILD/official.txt"
 if ((${#OFFICIAL[@]})); then
     log "Downloading ${#OFFICIAL[@]} official package archives into the offline repository"
-    sudo pacman -Sw --noconfirm --cachedir "$PKG_DIR" "${OFFICIAL[@]}"
+    sudo pacman -Sw --disable-sandbox --noconfirm --cachedir "$PKG_DIR" "${OFFICIAL[@]}"
 fi
 sudo chown -R "$USER":"$(id -gn)" "$PKG_DIR"
 find "$PKG_DIR" -maxdepth 1 -type f -name '*.sig' -delete

@@ -553,6 +553,7 @@ Architecture = auto
 CheckSpace
 SigLevel = Never
 LocalFileSigLevel = Never
+DisableSandbox
 
 [huzaifah-offline]
 SigLevel = Never
