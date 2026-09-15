@@ -5,9 +5,9 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP="$(mktemp -d)"
 WORK="$TMP/dotfiles"
 DIST="$ROOT/dist"
-BUILT_OUT="$WORK/dist/Huzaifah-Multi-Rice-OFFLINE-v4.1.0-x86_64.AppImage"
-NEW_OUT="$DIST/Huzaifah-Multi-Rice-OFFLINE-v4.1.0-x86_64.AppImage"
-NEW_SHA="$DIST/Huzaifah-Multi-Rice-OFFLINE-v4.1.0-x86_64.sha256"
+BUILT_OUT="$WORK/dist/Huzaifah-Multi-Rice-OFFLINE-v5.0.0-x86_64.AppImage"
+NEW_OUT="$DIST/Huzaifah-Multi-Rice-OFFLINE-v5.0.0-x86_64.AppImage"
+NEW_SHA="$DIST/Huzaifah-Multi-Rice-OFFLINE-v5.0.0-x86_64.sha256"
 
 cleanup() { rm -rf "$TMP"; }
 trap cleanup EXIT

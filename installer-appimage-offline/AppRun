@@ -18,7 +18,7 @@ if [[ -n "${APPIMAGE:-}" \
 fi
 
 APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TITLE="Huzaifah Multi-Rice OFFLINE v4.1.0"
+TITLE="Huzaifah Multi-Rice OFFLINE v5.0.0"
 ENGINE="$APPDIR/install-offline.sh"
 
 is_arch_family() {
@@ -79,7 +79,7 @@ run_terminal() {
 #!/usr/bin/env bash
 set -o pipefail
 clear 2>/dev/null || true
-printf '\n  Huzaifah Multi-Rice OFFLINE v4.1.0\n'
+printf '\n  Huzaifah Multi-Rice OFFLINE v5.0.0\n'
 printf '  ===========================\n'
 printf '  Action: %s\n\n' $(printf '%q' "$action")
 bash $(printf '%q' "$ENGINE") $(printf '%q' "$action")
@@ -123,10 +123,11 @@ choose_action_gui() {
                 --text="<b>Fully offline Multi-Rice installer & system setup toolbox</b>\nDetected: $machine\n\nNothing uses GitHub, AUR or online mirrors at install time." \
                 --column="" --column="Action" --column="What it does" --print-column=2 \
                 TRUE  preflight  "Verify payload, machine and known package conflicts — changes nothing" \
-                FALSE install     "Install Caelestia + end4-pC + Ambxst + DMS + Noctalia v5, Frieren SDDM and switchers" \
+                FALSE install     "Install all 10 rices (7 Hyprland + 3 Niri), Frieren SDDM and unified switcher" \
                 FALSE uninstall   "Uninstall / restore the exact pre-install desktop configuration" \
                 FALSE refresh     "Install/reconfigure hardware-aware refresh switcher; G16 gets tested custom profile, others OEM only" \
                 FALSE sddm        "Install Frieren SDDM login theme only; does not enable/replace the display manager" \
+                FALSE grub        "Optional silent Evangelion GRUB theme chooser (GRUB systems only)" \
                 FALSE asus        "Generic ASUS support: asusctl, ROG Control Center and safe power-profile setup" \
                 FALSE g16         "Guarded Zephyrus G16 extras and optional GPU-switching tools" \
                 FALSE hibernate   "Guarded Btrfs hibernation swap-storage setup" \
@@ -139,10 +140,11 @@ choose_action_gui() {
                 --text="Fully offline Multi-Rice installer & system setup toolbox\nDetected: $machine" \
                 --column="" --column="Action" --column="What it does" --print-column=2 \
                 TRUE preflight "Verify payload and machine; changes nothing" \
-                FALSE install "Install all six rices + switchers + Frieren SDDM" \
+                FALSE install "Install all 10 rices + unified switcher + Frieren SDDM" \
                 FALSE uninstall "Uninstall / restore exact pre-install desktop configuration" \
                 FALSE refresh "Hardware-aware refresh switcher" \
                 FALSE sddm "Frieren SDDM theme only" \
+                FALSE grub "Optional silent Evangelion GRUB themes" \
                 FALSE asus "Generic ASUS support" \
                 FALSE g16 "Zephyrus G16 guarded extras" \
                 FALSE hibernate "Btrfs hibernation storage" \
@@ -150,12 +152,13 @@ choose_action_gui() {
                 FALSE exit "Close installer" 2>/dev/null
             ;;
         kdialog)
-            kdialog --menu "Huzaifah Multi-Rice OFFLINE v4.1.0\n$machine\n\nChoose an action:" \
+            kdialog --menu "Huzaifah Multi-Rice OFFLINE v5.0.0\n$machine\n\nChoose an action:" \
                 preflight "Preflight — no changes" \
-                install "Install all six rices + SDDM + switchers" \
+                install "Install all 10 rices + SDDM + unified switcher" \
                 uninstall "Uninstall / restore previous desktop" \
                 refresh "Refresh-rate switcher" \
                 sddm "Frieren SDDM theme" \
+                grub "Silent Evangelion GRUB themes" \
                 asus "Generic ASUS support" \
                 g16 "Zephyrus G16 extras" \
                 hibernate "Hibernation storage" \
@@ -168,7 +171,7 @@ choose_action_gui() {
 
 choose_action_terminal() {
     printf "
-Huzaifah Multi-Rice OFFLINE v4.1.0
+Huzaifah Multi-Rice OFFLINE v5.0.0
 "
     printf "==================================
 "
@@ -177,7 +180,7 @@ Huzaifah Multi-Rice OFFLINE v4.1.0
 " "$(machine_name)"
     printf "  1) Preflight (no changes)
 "
-    printf "  2) Install Multi-Rice + Frieren SDDM + switchers
+    printf "  2) Install 10-rice Multi-Rice + Frieren SDDM + unified switcher
 "
     printf "  3) Uninstall / restore previous desktop
 "
@@ -193,6 +196,7 @@ Huzaifah Multi-Rice OFFLINE v4.1.0
 "
     printf "  9) System/payload status
 "
+    printf " 10) Silent Evangelion GRUB themes (optional)\n"
     printf "  0) Exit
 
 "
@@ -207,6 +211,7 @@ Huzaifah Multi-Rice OFFLINE v4.1.0
         7) echo g16 ;;
         8) echo hibernate ;;
         9) echo status ;;
+        10) echo grub ;;
         0) echo exit ;;
         *) echo invalid ;;
     esac
@@ -221,6 +226,7 @@ confirm_dangerous_action() {
 
 System packages added by Multi-Rice will be left installed by default for safety." ;;
         hibernate) msg="Open Btrfs hibernation storage setup?\n\nIt can create a swap subvolume/file and edit /etc/fstab, but asks again before making those changes." ;;
+        grub) msg="Open the optional Evangelion GRUB chooser?\n\nThis can modify GRUB configuration after you select a theme. Non-GRUB systems are left untouched." ;;
         *) return 0 ;;
     esac
     case "$gui" in

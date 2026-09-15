@@ -12,8 +12,8 @@ PAYLOAD="$APPDIR/payload"
 PKG_DIR="$PAYLOAD/packages"
 DIST="$ROOT/dist"
 TOOL="$BUILD/appimagetool-modern-x86_64.AppImage"
-OUT="$DIST/Huzaifah-Multi-Rice-OFFLINE-v4.1.0-x86_64.AppImage"
-OUT_SHA="$DIST/Huzaifah-Multi-Rice-OFFLINE-v4.1.0-x86_64.sha256"
+OUT="$DIST/Huzaifah-Multi-Rice-OFFLINE-v5.0.0-x86_64.AppImage"
+OUT_SHA="$DIST/Huzaifah-Multi-Rice-OFFLINE-v5.0.0-x86_64.sha256"
 TARGETS_FILE="$BUILD/targets.txt"
 CLOSURE_FILE="$BUILD/closure.txt"
 
@@ -35,6 +35,12 @@ SERPANTINUM_COMMIT_FILE="$ROOT/dual-rice/versions/serpantinum.commit"
 SERPANTINUM_TARGETS_FILE="$SRC/serpantinum-targets.txt"
 SERPANTINUM_PATCH_FILE="$ROOT/dual-rice/versions/serpantinum-local.patch"
 SERPANTINUM_STAGE="$BUILD/serpantinum-source"
+EVANGELION_REPO_URL="${EVANGELION_REPO_URL:-https://github.com/Aleph1-9012/Evangelion.git}"
+EVANGELION_SOURCE="${EVANGELION_SOURCE:-$BUILD/evangelion-upstream}"
+EVANGELION_COMMIT_FILE="$ROOT/dual-rice/versions/evangelion.commit"
+EVANGELION_PATCH_FILE="$ROOT/dual-rice/patches/evangelion-silent.patch"
+EVANGELION_STAGE="$BUILD/evangelion-source"
+
 AXCTL_SOURCE="${AXCTL_SOURCE:-$(command -v axctl 2>/dev/null || true)}"
 SKIP_SYSTEM_UPDATE=0
 
@@ -45,7 +51,7 @@ die()  { printf '\033[1;31mERROR:\033[0m %s\n' "$*" >&2; exit 1; }
 
 usage() {
     cat <<'EOF'
-Build the complete no-internet Huzaifah Multi-Rice v4.1.0 AppImage.
+Build the complete no-internet Huzaifah Multi-Rice v5.0.0 AppImage.
 
 Usage:
   bash installer-appimage-offline/build.sh [--skip-system-update]
@@ -397,6 +403,54 @@ if ! git -C "$SERPANTINUM_SOURCE" cat-file -e "${SERPANTINUM_EXPECTED_COMMIT}^{c
 fi
 
 git -C "$SERPANTINUM_SOURCE" cat-file -e "${SERPANTINUM_EXPECTED_COMMIT}^{commit}" || die "Pinned Serpantinum commit is unavailable"
+[[ -f "$EVANGELION_COMMIT_FILE" ]] || die "Evangelion commit pin is missing"
+[[ -f "$EVANGELION_PATCH_FILE" ]] || die "Evangelion silent patch is missing"
+
+EVANGELION_EXPECTED_COMMIT="$(tr -d "[:space:]" < "$EVANGELION_COMMIT_FILE")"
+[[ "$EVANGELION_EXPECTED_COMMIT" =~ ^[0-9a-f]{40}$ ]] ||
+    die "Invalid Evangelion commit pin: $EVANGELION_EXPECTED_COMMIT"
+
+if [[ ! -d "$EVANGELION_SOURCE/.git" ]]; then
+    log "Cloning pinned Evangelion source"
+    rm -rf "$EVANGELION_SOURCE"
+    git clone "$EVANGELION_REPO_URL" "$EVANGELION_SOURCE" ||
+        die "Failed to clone Evangelion"
+else
+    git -C "$EVANGELION_SOURCE" remote set-url origin "$EVANGELION_REPO_URL"
+fi
+
+if ! git -C "$EVANGELION_SOURCE" cat-file -e "${EVANGELION_EXPECTED_COMMIT}^{commit}" 2>/dev/null; then
+    log "Fetching pinned Evangelion commit"
+    git -C "$EVANGELION_SOURCE" fetch origin "$EVANGELION_EXPECTED_COMMIT" ||
+        die "Failed to fetch pinned Evangelion commit"
+fi
+
+git -C "$EVANGELION_SOURCE" cat-file -e "${EVANGELION_EXPECTED_COMMIT}^{commit}" ||
+    die "Pinned Evangelion commit is unavailable"
+
+rm -rf "$EVANGELION_STAGE"
+mkdir -p "$EVANGELION_STAGE"
+
+git -C "$EVANGELION_SOURCE" archive "$EVANGELION_EXPECTED_COMMIT" |
+    tar -x -C "$EVANGELION_STAGE"
+
+patch --dry-run --batch --forward --fuzz=0     -d "$EVANGELION_STAGE" -p1     < "$EVANGELION_PATCH_FILE" ||
+    die "Evangelion silent patch does not apply cleanly"
+
+patch --batch --forward --fuzz=0     -d "$EVANGELION_STAGE" -p1     < "$EVANGELION_PATCH_FILE" ||
+    die "Failed to apply Evangelion silent patch"
+
+grep -Fq "result = source" "$EVANGELION_STAGE/bin/boot-console.awk" ||
+    die "Silent-boot Evangelion patch verification failed"
+
+[[ -x "$EVANGELION_STAGE/install.sh" ]] ||
+    die "Evangelion installer is missing"
+
+[[ -x "$EVANGELION_STAGE/bin/eva" ]] ||
+    die "Evangelion manager is missing"
+
+ok "Pinned silent Evangelion source prepared"
+
 [[ -n "$AXCTL_SOURCE" && -x "$AXCTL_SOURCE" ]] || die "axctl binary not found; set AXCTL_SOURCE if necessary"
 
 for cmd in python3 git curl rsync jq sha256sum find tar zstd repo-add patch; do
@@ -409,7 +463,7 @@ cat "$SERPANTINUM_TARGETS_FILE" >> "$TARGETS_FILE"
 sort -u -o "$TARGETS_FILE" "$TARGETS_FILE"
 TARGET_COUNT="$(wc -l < "$TARGETS_FILE")"
 
-printf '\nHuzaifah Multi-Rice v4.1.0 OFFLINE Builder\n'
+printf '\nHuzaifah Multi-Rice v5.0.0 OFFLINE Builder\n'
 printf '=====================================\n'
 printf 'Direct package targets (including SDDM): %s\n' "$TARGET_COUNT"
 printf 'Output: %s\n\n' "$OUT"
@@ -576,6 +630,7 @@ copy_tree "$END4_DOTS_SOURCE" "$PAYLOAD/sources/end4-dots"
 copy_tree "$END4_PC_STAGE" "$PAYLOAD/sources/end4-pC"
 copy_tree "$AMBXST_SOURCE" "$PAYLOAD/sources/ambxst"
 copy_tree "$SERPANTINUM_STAGE" "$PAYLOAD/sources/serpantinum"
+copy_tree "$EVANGELION_STAGE" "$PAYLOAD/sources/evangelion"
 install -m 0755 "$AXCTL_SOURCE" "$PAYLOAD/bin/axctl"
 cp "$TARGETS_FILE" "$PAYLOAD/targets.txt"
 cp "$CLOSURE_FILE" "$PAYLOAD/closure.txt"
@@ -593,6 +648,8 @@ printf "mpv_mpris_patch_sha256=%s\n" "$(sha256sum "$MPV_MPRIS_PATCH_FILE" | cut 
 printf "mpv_mpris_module_sha256=%s\n" "$(sha256sum "$PAYLOAD/bin/mpv-mpris-huzaifah.so" | cut -d" " -f1)"
 printf 'serpantinum_commit=%s\n' "$SERPANTINUM_EXPECTED_COMMIT"
 printf 'serpantinum_patch_sha256=%s\n' "$(sha256sum "$SERPANTINUM_PATCH_FILE" | awk '{print $1}')"
+    printf 'evangelion_commit=%s\n' "$EVANGELION_EXPECTED_COMMIT"
+    printf 'evangelion_patch_sha256=%s\n' "$(sha256sum "$EVANGELION_PATCH_FILE" | awk '{print $1}')"
     if git -C "$ROOT" diff --quiet --ignore-submodules HEAD -- 2>/dev/null && git -C "$ROOT" diff --cached --quiet --ignore-submodules HEAD -- 2>/dev/null; then
         printf 'dotfiles_worktree=clean\n'
     else

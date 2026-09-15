@@ -68,12 +68,19 @@ rewrite_home_paths_json() {
 
 
 # HUZ_V3_TRANSACTIONAL_ROLLBACK
-# v4.1.0 records the machine state BEFORE any Multi-Rice mutation.
+# v5.0.0 records the machine state BEFORE any Multi-Rice mutation.
 # The snapshot preserves files/directories/symlinks exactly with tar.
 
 managed_user_paths() {
     printf "%s\n" \
         ".config/hypr" \
+        ".config/niri" \
+        ".config/quickshell/multi-rice-switcher" \
+        ".config/environment.d/20-multi-rice-icons.conf" \
+        ".local/share/desktop-switcher" \
+        ".local/bin/multi-rice-control" \
+        ".local/bin/grub-themes" \
+        ".local/bin/Grub-themes" \
         ".config/foot/foot.ini" \
         ".config/fish/config.fish" \
         ".config/fish/functions/fish_greeting.fish" \
@@ -122,6 +129,20 @@ managed_system_paths() {
     printf "%s\n" \
         "usr/local/bin/axctl" \
         "usr/local/bin/ambxst" \
+        "usr/local/bin/multi-rice-session" \
+        "usr/share/wayland-sessions/huzaifah-multi-rice.desktop" \
+        "var/lib/sddm/state.conf" \
+        "var/lib/sddm/state.conf.before-multi-rice" \
+        "var/lib/sddm/state.conf.before-multi-rice.absent" \
+        "usr/local/bin/eva" \
+        "usr/local/share/evangelion" \
+        "var/lib/evangelion-grub" \
+        "etc/default/grub" \
+        "etc/grub.d/99_evangelion" \
+        "boot/grub/grub.cfg" \
+        "boot/grub/themes/evangelion" \
+        "boot/grub2/grub.cfg" \
+        "boot/grub2/themes/evangelion" \
         "usr/share/sddm/themes/sddm-frieren-theme" \
         "etc/sddm.conf.d/90-huzaifah-theme.conf" \
         "etc/systemd/system/display-manager.service"
@@ -155,12 +176,12 @@ create_install_snapshot() {
     HUZ_INSTALL_STATE="$state"
     HUZ_SYSTEM_STATE="$system_state"
 
-    log "Creating transactional v4.1.0 rollback snapshot BEFORE installation"
+    log "Creating transactional v5.0.0 rollback snapshot BEFORE installation"
     mkdir -p "$state/packages"
     sudo mkdir -p "$system_state"
 
     {
-        printf "version=4.1.0\n"
+        printf "version=5.0.0\n"
         printf "install_id=%s\n" "$STAMP"
         printf "created=%s\n" "$(date --iso-8601=seconds)"
         printf "user=%s\n" "$USER"
@@ -289,12 +310,12 @@ uninstall_multi_rice() {
     fi
 
     if [[ -f "$state/restored-at" ]]; then
-        printf "\nThis v4.1.0 rollback snapshot has already been restored.\n"
+        printf "\nThis v5.0.0 rollback snapshot has already been restored.\n"
         printf "Nothing was changed.\n"
         return 0
     fi
 
-    printf "\nHuzaifah Multi-Rice v4.1.0 rollback\n"
+    printf "\nHuzaifah Multi-Rice v5.0.0 rollback\n"
     printf "====================================\n"
     printf "Snapshot: %s\n\n" "$state"
 
@@ -439,7 +460,7 @@ uninstall_multi_rice() {
 
 
 preflight_payload() {
-    local expected_serp_commit payload_serp_commit
+    local expected_serp_commit payload_serp_commit expected_eva_commit payload_eva_commit
     [[ -d "$REPO/dual-rice" ]] || die "Offline payload is missing the dotfiles snapshot"
     [[ -f "$REPO/foot/.config/foot/foot.ini" ]] || die "Bundled Foot configuration is missing"
     [[ -f "$REPO/fish/.config/fish/config.fish" ]] || die "Bundled Fish configuration is missing"
@@ -452,9 +473,13 @@ preflight_payload() {
     [[ -d "$PKG_DIR" ]] || die "Offline payload is missing package archives"
     [[ -f "$PKG_DIR/huzaifah-offline.db" || -f "$PKG_DIR/huzaifah-offline.db.tar.gz" ]] || die "Offline pacman repository database is missing"
     [[ -s "$TARGETS_FILE" ]] || die "Offline target package list is missing"
-    for profile in caelestia end4 ambxst dms serpantinum noctalia; do
+    for profile in caelestia end4 ambxst dms serpantinum noctalia sayconlun; do
         [[ -f "$REPO/dual-rice/profiles/$profile/hypr/hyprland.lua" ]] || die "Missing $profile profile in offline payload"
     done
+    for profile in jaqc clavis nixri; do
+        [[ -f "$REPO/dual-rice/profiles/$profile/niri/config.kdl" ]] || die "Missing $profile Niri profile in offline payload"
+    done
+
     [[ -f "$REPO/dual-rice/noctalia/config.toml" ]] || die "Missing Noctalia config in offline payload"
     [[ -f "$REPO/dual-rice/noctalia/settings.toml" ]] || die "Missing Noctalia settings in offline payload"
     [[ -d "$SOURCE_DIR/end4-dots" ]] || die "Bundled end4-dots source is missing"
@@ -476,6 +501,27 @@ preflight_payload() {
         [[ -n "$payload_serp_commit" ]] || die "Payload manifest is missing the Serpantinum commit"
         [[ "$payload_serp_commit" == "$expected_serp_commit" ]] || die "Payload Serpantinum commit does not match the bundled pin"
     fi
+    [[ -d "$SOURCE_DIR/evangelion" ]] || die "Bundled Evangelion source is missing"
+    [[ -x "$SOURCE_DIR/evangelion/install.sh" ]] || die "Bundled Evangelion installer is missing"
+    [[ -x "$SOURCE_DIR/evangelion/bin/eva" ]] || die "Bundled Evangelion manager is missing"
+    [[ -f "$REPO/dual-rice/versions/evangelion.commit" ]] || die "Evangelion commit pin is missing"
+    [[ -x "$REPO/dual-rice/bin/grub-themes" ]] || die "GRUB theme wrapper is missing"
+
+    expected_eva_commit="$(tr -d "[:space:]" < "$REPO/dual-rice/versions/evangelion.commit")"
+    [[ "$expected_eva_commit" =~ ^[0-9a-f]{40}$ ]] ||
+        die "Evangelion commit pin is invalid"
+
+    grep -Fq "result = source" "$SOURCE_DIR/evangelion/bin/boot-console.awk" ||
+        die "Bundled Evangelion source does not contain the silent-boot patch"
+
+    if [[ -f "$PAYLOAD/manifest.txt" ]]; then
+        payload_eva_commit="$(grep -m1 "^evangelion_commit=" "$PAYLOAD/manifest.txt" 2>/dev/null | cut -d= -f2- || true)"
+        [[ -n "$payload_eva_commit" ]] ||
+            die "Payload manifest is missing the Evangelion commit"
+        [[ "$payload_eva_commit" == "$expected_eva_commit" ]] ||
+            die "Payload Evangelion commit does not match the bundled pin"
+    fi
+
     [[ -x "$REPO/dual-rice/bin/end4-media-backend" ]] || die "Bundled End4 artwork backend is missing"
     [[ -f "$REPO/dual-rice/systemd/user/end4-media-backend.service" ]] || die "Bundled End4 artwork service is missing"
     [[ -x "$REPO/dual-rice/bin/background-music" ]] || die "Bundled background-music command is missing"
@@ -635,9 +681,15 @@ restore_profiles_and_configs() {
     install -Dm644 "$REPO/fish/.local/share/huz-terminal/fastfetch.jsonc" "$HOME/.local/share/huz-terminal/fastfetch.jsonc"
 
     log "Restoring Caelestia, end4-pC, Ambxst, DMS, Serpantinum and Noctalia profiles"
-    for profile in caelestia end4 ambxst dms serpantinum noctalia; do
+    for profile in caelestia end4 ambxst dms serpantinum noctalia sayconlun; do
         mkdir -p "$PROFILE_ROOT/$profile/hypr"
         rsync -a --delete "$src/profiles/$profile/hypr/" "$PROFILE_ROOT/$profile/hypr/"
+    done
+
+    log "Restoring three Niri profiles"
+    for profile in jaqc clavis nixri; do
+        mkdir -p "$PROFILE_ROOT/$profile/niri"
+        rsync -a --delete "$src/profiles/$profile/niri/" "$PROFILE_ROOT/$profile/niri/"
     done
 
     if [[ -d "$src/caelestia" ]]; then
@@ -672,15 +724,47 @@ restore_profiles_and_configs() {
         [[ -f "$src/noctalia/.setup-complete" ]] && cp -a "$src/noctalia/.setup-complete" "$HOME/.local/state/noctalia/.setup-complete"
     fi
 
-    if [[ -d "$src/desktop-switcher" ]]; then
-        mkdir -p "$HOME/.config/desktop-switcher"
-        rsync -a --delete "$src/desktop-switcher/" "$HOME/.config/desktop-switcher/"
+    log "Installing Huzaifah Multi-Rice v5 runtime"
+
+    mkdir -p \
+        "$HOME/.local/bin" \
+        "$HOME/.local/share/desktop-switcher" \
+        "$HOME/.config/quickshell/multi-rice-switcher" \
+        "$HOME/.config/environment.d"
+
+    rsync -a --delete \
+        "$src/quickshell/multi-rice-switcher/" \
+        "$HOME/.config/quickshell/multi-rice-switcher/"
+
+    install -m 0755 \
+        "$src/bin/multi-rice-control" \
+        "$HOME/.local/bin/multi-rice-control"
+
+    install -m 0644 \
+        "$src/lib/profile-metadata.sh" \
+        "$HOME/.local/share/desktop-switcher/profile-metadata.sh"
+
+    install -m 0644 \
+        "$src/environment.d/20-multi-rice-icons.conf" \
+        "$HOME/.config/environment.d/20-multi-rice-icons.conf"
+
+    if [[ -f "$src/bin/recover-caelestia" ]]; then
+        install -m 0755 \
+            "$src/bin/recover-caelestia" \
+            "$HOME/.local/bin/recover-caelestia"
     fi
 
-    mkdir -p "$HOME/.local/bin"
-    for bin in desktop-switch recover-caelestia; do
-        [[ -f "$src/bin/$bin" ]] && install -m 0755 "$src/bin/$bin" "$HOME/.local/bin/$bin"
-    done
+    sudo install -m 0755 \
+        "$src/bin/multi-rice-session" \
+        /usr/local/bin/multi-rice-session
+
+    sudo install -d -m 0755 /usr/share/wayland-sessions
+
+    sudo install -m 0644 \
+        "$src/wayland-sessions/huzaifah-multi-rice.desktop" \
+        /usr/share/wayland-sessions/huzaifah-multi-rice.desktop
+
+    rm -f "$HOME/.local/bin/desktop-switch"
 
     if [[ -f "$src/bin/end4-media-backend" ]]; then
         rm -rf "$HOME/.local/bin/end4-media-backend"
@@ -797,6 +881,80 @@ configure_end4_search_only() {
     mv "$tmp" "$config"
 }
 
+configure_sddm_multi_rice() {
+    local dm=""
+    local state_dir="/var/lib/sddm"
+    local state="$state_dir/state.conf"
+    local backup="$state_dir/state.conf.before-multi-rice"
+    local absent="$state_dir/state.conf.before-multi-rice.absent"
+    local session="/usr/share/wayland-sessions/huzaifah-multi-rice.desktop"
+    local tmp=""
+    local out=""
+
+    dm="$(readlink -f /etc/systemd/system/display-manager.service 2>/dev/null || true)"
+
+    if [[ "${dm##*/}" != "sddm.service" ]] &&
+       ! systemctl is-active --quiet sddm.service
+    then
+        warn "SDDM is not active; leaving display-manager session state unchanged."
+        return 0
+    fi
+
+    [[ -f "$session" ]] ||
+        die "Multi-Rice SDDM session file is missing: $session"
+
+    if ! sudo test -d "$state_dir"; then
+        sudo install -d -o sddm -g sddm -m 0750 "$state_dir"
+    fi
+
+    # Preserve the original pre-Multi-Rice state exactly once.
+    # Re-running the installer must never replace this rollback snapshot.
+    if sudo test -f "$state"; then
+        if ! sudo test -e "$backup" &&
+           ! sudo test -e "$absent"
+        then
+            sudo cp -a "$state" "$backup"
+            ok "Saved pre-Multi-Rice SDDM state"
+        fi
+    else
+        if ! sudo test -e "$backup" &&
+           ! sudo test -e "$absent"
+        then
+            sudo install -o root -g root -m 0644 /dev/null "$absent"
+            ok "Recorded that no pre-Multi-Rice SDDM state existed"
+        fi
+    fi
+
+    tmp="$(mktemp)"
+    out="$(mktemp)"
+
+    if sudo test -f "$state"; then
+        sudo cat "$state" > "$tmp"
+    else
+        : > "$tmp"
+    fi
+
+    if grep -Eq "^[[:space:]]*Session[[:space:]]*=" "$tmp"; then
+        sed -E \
+            "0,/^[[:space:]]*Session[[:space:]]*=/s#^[[:space:]]*Session[[:space:]]*=.*#Session=$session#" \
+            "$tmp" > "$out"
+    elif grep -Eq "^\[Last\][[:space:]]*$" "$tmp"; then
+        sed -E \
+            "/^\[Last\][[:space:]]*$/a Session=$session" \
+            "$tmp" > "$out"
+    else
+        cat "$tmp" > "$out"
+        printf "\n[Last]\nSession=%s\n" "$session" >> "$out"
+    fi
+
+    sudo install -o root -g root -m 0644 "$out" "$state"
+
+    rm -f "$tmp" "$out"
+
+    ok "SDDM will remember Huzaifah Multi-Rice for the next login"
+}
+
+
 activate_sddm_for_next_boot() {
     local sddm_unit="/usr/lib/systemd/system/sddm.service"
     local dm_link="/etc/systemd/system/display-manager.service"
@@ -811,6 +969,52 @@ activate_sddm_for_next_boot() {
     sudo systemctl set-default graphical.target >/dev/null
 
     ok "SDDM selected for next boot; current graphical session was left running"
+}
+
+has_grub() {
+    [[ -f /etc/default/grub ]] || return 1
+    [[ -f /boot/grub/grub.cfg || -f /boot/grub2/grub.cfg ]]
+}
+
+install_evangelion_manager() {
+    local eva_src="$SOURCE_DIR/evangelion"
+
+    if ! has_grub; then
+        log "GRUB not detected; leaving bootloader configuration untouched."
+        return 0
+    fi
+
+    [[ -x "$eva_src/install.sh" ]] ||
+        die "Bundled Evangelion installer is missing"
+
+    log "Installing pinned silent Evangelion manager/catalog"
+
+    (
+        cd "$eva_src"
+        sudo ./install.sh --no-apply
+    )
+
+    mkdir -p "$HOME/.local/bin"
+
+    install -m 0755         "$REPO/dual-rice/bin/grub-themes"         "$HOME/.local/bin/grub-themes"
+
+    ln -sfn         "$HOME/.local/bin/grub-themes"         "$HOME/.local/bin/Grub-themes"
+
+    ok "Evangelion manager installed; current GRUB appearance remains unchanged"
+}
+
+configure_evangelion_grub() {
+    verify_payload
+
+    if ! has_grub; then
+        warn "GRUB was not detected. No bootloader files were changed."
+        return 2
+    fi
+
+    install_evangelion_manager
+
+    printf "\nLaunching the silent Evangelion GRUB chooser...\n\n"
+    sudo eva
 }
 
 install_frieren_theme() {
@@ -828,14 +1032,39 @@ install_frieren_theme() {
 
 activate_saved_profile() {
     local active=caelestia
-    [[ -f "$REPO/dual-rice/state/active" ]] && active="$(tr -d '[:space:]' < "$REPO/dual-rice/state/active")"
-    case "$active" in caelestia|end4|ambxst|dms|serpantinum|noctalia) ;; *) active=caelestia ;; esac
-    rm -rf "$HOME/.config/hypr"
-    ln -s "$PROFILE_ROOT/$active/hypr" "$HOME/.config/hypr"
-    mkdir -p "$HOME/.config/desktop-profile"
-    printf '%s\n' "$active" > "$HOME/.config/desktop-profile/active"
-    systemctl --user daemon-reload >/dev/null 2>&1 || true
+    local hypr_active=caelestia
+    local niri_active=jaqc
 
+    [[ -f "$REPO/dual-rice/state/active" ]] &&
+        active="$(tr -d "[:space:]" < "$REPO/dual-rice/state/active")"
+
+    case "$active" in
+        jaqc|clavis|nixri)
+            niri_active="$active"
+            ;;
+        caelestia|end4|ambxst|dms|serpantinum|noctalia|sayconlun)
+            hypr_active="$active"
+            ;;
+        *)
+            active=caelestia
+            hypr_active=caelestia
+            ;;
+    esac
+
+    rm -rf "$HOME/.config/hypr" "$HOME/.config/niri"
+
+    ln -s \
+        "$PROFILE_ROOT/$hypr_active/hypr" \
+        "$HOME/.config/hypr"
+
+    ln -s \
+        "$PROFILE_ROOT/$niri_active/niri" \
+        "$HOME/.config/niri"
+
+    mkdir -p "$HOME/.config/desktop-profile"
+    printf "%s\n" "$active" > "$HOME/.config/desktop-profile/active"
+
+    systemctl --user daemon-reload >/dev/null 2>&1 || true
     systemctl --user stop end4-media-backend.service >/dev/null 2>&1 || true
 
     if command -v serpantinumd >/dev/null 2>&1; then
@@ -847,9 +1076,8 @@ activate_saved_profile() {
             systemctl --user start end4-media-backend.service >/dev/null 2>&1 || true
             ;;
         serpantinum)
-            if command -v serpantinumd >/dev/null 2>&1; then
+            command -v serpantinumd >/dev/null 2>&1 &&
                 serpantinumd start >/dev/null 2>&1 || true
-            fi
             ;;
     esac
 }
@@ -964,9 +1192,11 @@ install_multi_rice() {
     activate_saved_profile
     install_refresh_switcher
     install_frieren_theme
+    install_evangelion_manager
     activate_sddm_for_next_boot
+    configure_sddm_multi_rice
     finalize_install_snapshot
-    ok "Fully offline Multi-Rice v4.1.0 installation completed"
+    ok "Fully offline Multi-Rice v5.0.0 installation completed"
     printf "Transactional rollback snapshot: %s
 " "$HUZ_INSTALL_STATE"
     printf "No internet connection was required.
@@ -998,7 +1228,7 @@ uninstall_multi_rice_packages() {
     fi
 
     if [[ -z "$state" || ! -f "$state/packages-added.txt" ]]; then
-        printf "\nNo v4.1.0 package-addition manifest was found.\n"
+        printf "\nNo v5.0.0 package-addition manifest was found.\n"
         printf "Nothing was removed.\n"
         return 0
     fi
@@ -1014,7 +1244,7 @@ uninstall_multi_rice_packages() {
         return 0
     fi
 
-    printf "\nPackages recorded as added by this v4.1.0 installation:\n\n"
+    printf "\nPackages recorded as added by this v5.0.0 installation:\n\n"
     printf "  %s\n" "${installed[@]}"
 
     printf "\nOnly packages absent before installation are candidates.\n"
@@ -1045,12 +1275,13 @@ Usage: install-offline.sh ACTION
 
 Actions:
   preflight     Verify payload and target-machine readiness without changing it
-  install       Install all six rices + switchers + Frieren SDDM theme
+  install       Install all 10 rices + switchers + Frieren SDDM theme
   uninstall     Restore the exact pre-install desktop snapshot
   uninstall-packages
-                Remove packages recorded as added by the v4.1.0 installation
+                Remove packages recorded as added by the v5.0.0 installation
   refresh       Install/reconfigure SUPER+SHIFT+R refresh switcher
   sddm          Install Frieren SDDM theme only
+  grub          Open optional silent Evangelion GRUB chooser
   asus          Install generic ASUS support (asusctl/ROG Control Center)
   g16           Install guarded Zephyrus G16 extras
   hibernate     Configure guarded Btrfs hibernation storage
@@ -1069,6 +1300,7 @@ main() {
         uninstall-packages) uninstall_multi_rice_packages ;;
         refresh) verify_payload; install_refresh_switcher ;;
         sddm) verify_payload; install_named_local sddm rsync; install_frieren_theme ;;
+        grub) configure_evangelion_grub ;;
         asus) verify_payload; install_named_local asusctl rog-control-center power-profiles-daemon; run_system_setup asus ;;
         g16) verify_payload; install_named_local asusctl rog-control-center power-profiles-daemon supergfxctl; run_system_setup g16 ;;
         hibernate) verify_payload; install_named_local btrfs-progs; run_system_setup hibernate ;;
