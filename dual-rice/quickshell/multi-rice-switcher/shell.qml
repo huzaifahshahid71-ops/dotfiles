@@ -126,18 +126,65 @@ ShellRoot {
                 }
             }
 
+            property string actionMessage: ""
+
             function activateSelection() {
                 if (page === 0) {
                     openCompositor()
                     return
                 }
 
-                // Phase 1 GUI prototype only.
-                // Backend activation will be wired in Phase 1C.
-                console.log(
-                    "Selected profile:",
-                    visibleRices[riceIndex].id
-                )
+                const profile = visibleRices[riceIndex]
+
+                if (!profileInstalled(profile.id)) {
+                    actionMessage =
+                        profile.name + " is not installed yet"
+                    return
+                }
+
+                if (profile.id === activeProfile) {
+                    actionMessage =
+                        profile.name + " is already active"
+                    return
+                }
+
+                actionMessage =
+                    "Switching to " + profile.name + "…"
+
+                switchProc.command = [
+                    Quickshell.env("HOME") +
+                        "/.local/bin/multi-rice-control",
+                    "switch",
+                    profile.id
+                ]
+
+                switchProc.running = true
+            }
+
+            Process {
+                id: switchProc
+
+                stdout: StdioCollector {
+                    onStreamFinished: {
+                        if (text.trim().length > 0)
+                            console.log(text.trim())
+                    }
+                }
+
+                stderr: StdioCollector {
+                    onStreamFinished: {
+                        if (text.trim().length > 0)
+                            root.actionMessage = text.trim()
+                    }
+                }
+
+                onExited: (exitCode, exitStatus) => {
+                    if (exitCode !== 0 &&
+                        root.actionMessage.length === 0) {
+                        root.actionMessage =
+                            "Switch failed • exit " + exitCode
+                    }
+                }
             }
 
             Process {
@@ -511,9 +558,11 @@ ShellRoot {
                     Layout.fillWidth: true
 
                     Text {
-                        text: root.page === 0
-                            ? "← →  Select compositor"
-                            : "↑ ↓  Select rice"
+                        text: root.actionMessage.length > 0
+                            ? root.actionMessage
+                            : root.page === 0
+                                ? "← →  Select compositor"
+                                : "↑ ↓  Select rice"
                         color: "#71717a"
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 12
