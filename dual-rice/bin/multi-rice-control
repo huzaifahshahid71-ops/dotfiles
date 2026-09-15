@@ -366,7 +366,12 @@ switch_profile() {
                 return 5
             }
 
-            hyprctl dispatch 'hl.dsp.exit()'
+            if command -v uwsm >/dev/null 2>&1 &&
+               systemctl --user --quiet is-active "wayland-wm@hyprland.desktop.service"; then
+                uwsm stop
+            else
+                hyprctl dispatch "hl.dsp.exit()"
+            fi
             ;;
 
         niri)
