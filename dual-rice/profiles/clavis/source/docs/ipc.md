@@ -1,0 +1,108 @@
+# IPC
+
+Shell 生命周期可使用 `key-cli`；新增快捷键直接调用 Quickshell IPC：
+
+```bash
+key shell
+qs -c clavis ipc show
+qs -c clavis ipc call TARGET METHOD [ARGUMENTS...]
+```
+
+对应的 Quickshell 调用为：
+
+```text
+key shell                 → qs -c clavis -n
+key shell --daemon        → qs -c clavis -n -d
+key shell --kill          → qs -c clavis kill
+key shell --log           → qs -c clavis log
+key ipc show              → qs -c clavis ipc show
+key ipc call A B ...      → qs -c clavis ipc call A B ...
+```
+
+Niri 快捷键和脚本不写裸 `quickshell ipc`，也不写用户源码路径。Shell 内部直接使用
+Quickshell API 的地方不需要机械地经过 CLI。
+
+托管快捷键写为独立 argv，不经过 shell 字符串或每次按键的配置 helper：
+
+```kdl
+spawn "qs" "-c" "clavis" "ipc" "call" "keystone" "hub"
+```
+
+`key ipc call` 的标准既有绑定可以识别为同一 Clavis 动作，但保留原文本。
+录屏、录音、剪贴板继续使用各自的 `key` 接口。
+动作目录根据实际 IpcHandler 注册维护；需参数的方法保留显式参数模板。
+首次在快捷键页面点击“设置”创建缺失的 binds.kdl 时，写入以下默认键位。
+全部使用 `spawn "qs" "-c" "clavis" "ipc" "call" ...`，并设置 `repeat=false`。
+`Mod` 跟随 Niri 的主修饰键（通常为 Super）。
+
+| 快捷键 | 功能 | IPC target / method / arguments |
+| --- | --- | --- |
+| Mod+Space | 启动器 | spotlight toggle |
+| Mod+Slash | 快捷键配置图 | shortcut-map toggle |
+| Mod+Shift+Space | 网页搜索 | spotlight web |
+| Mod+Alt+V | 剪贴板历史 | spotlight openMode clipboard |
+| Mod+Alt+W | 壁纸选择 | spotlight openMode wallpapers |
+| Mod+N | 通知与信息侧栏 | sidebar toggle dashboard |
+| Mod+A | 快捷设置侧栏 | sidebar toggle quicksettings |
+| Mod+Ctrl+Comma | 设置中心 | control-center toggle general |
+| Mod+Shift+W | Keystone 主面板 | keystone hub |
+| Mod+Shift+T | 工具面板 | keystone tools |
+| Alt+Shift+L | 锁屏 | lock open |
+
+这些键避开 Niri 常用窗口、工作区、截图和媒体控制。首次接入前按有效 include 链
+检查物理键位占用（含 Mod/Super 别名），发现冲突则拒绝写入并列出键名；用户可释放
+这些键，或自行创建自定义 binds.kdl 后接入。任意第三方配置都可能占用默认键，不能
+保证对所有配置天然无冲突。已有文件即使为空也不补写，升级不恢复用户删改的绑定。
+安装只部署程序；不会自动改写用户 Niri 配置。
+
+目录维护依据：[niri 键绑定](https://niri-wm.github.io/niri/Configuration:-Key-Bindings.html)、
+[默认配置](https://github.com/niri-wm/niri/blob/main/resources/default-config.kdl)、
+[可绑定动作定义](https://github.com/niri-wm/niri/blob/main/niri-config/src/binds.rs) 与
+[Quickshell IpcHandler](https://quickshell.org/docs/v0.3.0/types/Quickshell.Io/IpcHandler/)。
+托管片段按 [niri include 顺序](https://niri-wm.github.io/niri/Configuration:-Include.html)
+处理覆盖。目录随程序部署，运行时只在本机验证动作支持，不联网下载。
+
+快捷键配置图独立于设置中心加载，使用 `qs -c clavis ipc call shortcut-map toggle`
+打开或关闭；也提供无参数的 `open` 和 `close`。账户页按钮与 IPC 共用同一个弹层。
+
+侧栏 IPC 的参数按内容区分：`dashboard` 表示信息、抽屉和天气侧栏，`quicksettings`
+表示快捷设置侧栏。通用设置 → 侧边栏中可独立选择各自的屏幕位置，默认仍为信息侧栏在左、快捷设置在右。
+不同侧可同时打开；同侧时，点击另一组按钮会自动收起当前侧栏，待其退出后展开新的侧栏，
+无需手动关闭。连续切换以最后一次请求为准，再次点击待展开侧栏可取消展开，Esc 可关闭全部。
+将已打开的两组调整到同侧时，保留最近打开的一组。
+`open`、`close`、`toggle` 均接受上述参数，返回 `DASHBOARD_OPEN/CLOSED` 或
+`QUICKSETTINGS_OPEN/CLOSED`。旧参数 `left`、`right` 继续分别指向信息和快捷设置内容，
+返回值保持 `LEFT_OPEN/CLOSED`、`RIGHT_OPEN/CLOSED`；它们不随实际位置重新解释。
+已有用户绑定无需改写，快捷键页面会将旧参数识别为对应的内容动作。
+
+灵动岛歌词界面通过 `qs -c clavis ipc call keystone lyrics` 切换展开与收起，返回
+`LYRICS_OPENED` / `LYRICS_CLOSED`。两种样式均作用于当前输出（无匹配时使用首个屏幕），
+展开时收起其他灵动岛面板。快捷键设置提供歌词动作占位，不绑定默认快捷键。
+
+### Spotlight Files
+
+`qs -c clavis ipc call spotlight openMode files` and
+`qs -c clavis ipc call spotlight files` open Files and focus its input. Repeated
+calls keep it open. Existing Apps/Wallpapers/Clipboard and web methods remain.
+
+Ctrl+1/2/3/4 selects Apps/Wallpapers/Clipboard/Files. Tab and Shift+Tab navigate
+the expanded four-mode rail. In Files, Enter opens the selected file or enters
+the folder; Ctrl+Enter requests selection in a file manager. Holding Ctrl shows
+the selected result's containing path; the right-click menu also exposes Open
+and Show in file manager. Clipboard retains Shift+Enter.
+
+Search uses the public `key file` capability through `${CLAVIS_KEY:-key}`. Install
+fd plus key-cli supporting `file.status`/`file.search`; there is no invented
+minimum release version. HOME is the default root, with fd's normal ignore/hidden
+rules and no directory-symlink traversal. Queries are literal and case-insensitive;
+slash-containing queries match paths. A 180 ms debounce feeds at most 50 results
+from 400 candidates with a 3-second search budget. Limited searches are identified
+in the UI. Empty input does not enumerate HOME.
+
+Open uses the system default association and blocks launching executable content.
+Reveal first requests FileManager1 selection, then falls back to opening the
+parent directory without promising selection. Failures keep Spotlight open.
+
+Settings → keyboard shortcuts includes **Spotlight: Find files** as an unbound
+action. Bind/save it using the existing editor if desired; no default global
+shortcut is added and existing user bindings are preserved.
