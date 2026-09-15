@@ -375,8 +375,12 @@ switch_profile() {
             ;;
 
         niri)
-            echo "multi-rice-control: Niri session exit support not enabled yet" >&2
-            return 6
+            command -v niri >/dev/null 2>&1 || {
+                echo "multi-rice-control: niri not found" >&2
+                return 5
+            }
+
+            niri msg action quit
             ;;
     esac
 }
