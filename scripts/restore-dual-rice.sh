@@ -42,6 +42,80 @@ backup_path() {
     cp -aL "$path" "$BACKUP/$name" 2>/dev/null || cp -a "$path" "$BACKUP/$name"
 }
 
+
+configure_sddm_multi_rice() {
+    local dm=""
+    local state_dir="/var/lib/sddm"
+    local state="$state_dir/state.conf"
+    local backup="$state_dir/state.conf.before-multi-rice"
+    local absent="$state_dir/state.conf.before-multi-rice.absent"
+    local session="/usr/share/wayland-sessions/huzaifah-multi-rice.desktop"
+    local tmp=""
+    local out=""
+
+    dm="$(readlink -f /etc/systemd/system/display-manager.service 2>/dev/null || true)"
+
+    if [[ "${dm##*/}" != "sddm.service" ]] &&
+       ! systemctl is-active --quiet sddm.service
+    then
+        warn "SDDM is not active; leaving display-manager session state unchanged."
+        return 0
+    fi
+
+    [[ -f "$session" ]] ||
+        die "Multi-Rice SDDM session file is missing: $session"
+
+    if ! sudo test -d "$state_dir"; then
+        sudo install -d -o sddm -g sddm -m 0750 "$state_dir"
+    fi
+
+    # Preserve the original pre-Multi-Rice state exactly once.
+    # Re-running the installer must never replace this rollback snapshot.
+    if sudo test -f "$state"; then
+        if ! sudo test -e "$backup" &&
+           ! sudo test -e "$absent"
+        then
+            sudo cp -a "$state" "$backup"
+            ok "Saved pre-Multi-Rice SDDM state"
+        fi
+    else
+        if ! sudo test -e "$backup" &&
+           ! sudo test -e "$absent"
+        then
+            sudo install -o root -g root -m 0644 /dev/null "$absent"
+            ok "Recorded that no pre-Multi-Rice SDDM state existed"
+        fi
+    fi
+
+    tmp="$(mktemp)"
+    out="$(mktemp)"
+
+    if sudo test -f "$state"; then
+        sudo cat "$state" > "$tmp"
+    else
+        : > "$tmp"
+    fi
+
+    if grep -Eq "^[[:space:]]*Session[[:space:]]*=" "$tmp"; then
+        sed -E \
+            "0,/^[[:space:]]*Session[[:space:]]*=/s#^[[:space:]]*Session[[:space:]]*=.*#Session=$session#" \
+            "$tmp" > "$out"
+    elif grep -Eq "^\[Last\][[:space:]]*$" "$tmp"; then
+        sed -E \
+            "/^\[Last\][[:space:]]*$/a Session=$session" \
+            "$tmp" > "$out"
+    else
+        cat "$tmp" > "$out"
+        printf "\n[Last]\nSession=%s\n" "$session" >> "$out"
+    fi
+
+    sudo install -o root -g root -m 0644 "$out" "$state"
+
+    rm -f "$tmp" "$out"
+
+    ok "SDDM will remember Huzaifah Multi-Rice for the next login"
+}
+
 clone_pinned() {
     local url="$1" dest="$2" commit_file="$3"
     local commit=""
@@ -140,9 +214,18 @@ EOF
 }
 
 is_arch_family || die "This restore currently supports Arch/CachyOS only"
-for profile in caelestia end4 ambxst dms noctalia; do
-    [[ -d "$SRC/profiles/$profile/hypr" ]] || die "Missing backed-up $profile profile. Run backup-dual-rice.sh first."
-    [[ -f "$SRC/profiles/$profile/hypr/hyprland.lua" ]] || die "Backed-up $profile hyprland.lua missing"
+
+HYPR_PROFILES=(caelestia end4 ambxst dms serpantinum noctalia sayconlun)
+NIRI_PROFILES=(jaqc clavis nixri)
+
+for profile in "${HYPR_PROFILES[@]}"; do
+    [[ -d "$SRC/profiles/$profile/hypr" ]] || die "Missing Hyprland profile: $profile"
+    [[ -f "$SRC/profiles/$profile/hypr/hyprland.lua" ]] || die "Missing $profile hyprland.lua"
+done
+
+for profile in "${NIRI_PROFILES[@]}"; do
+    [[ -d "$SRC/profiles/$profile/niri" ]] || die "Missing Niri profile: $profile"
+    [[ -f "$SRC/profiles/$profile/niri/config.kdl" ]] || die "Missing $profile config.kdl"
 done
 
 log "Updating the system before Multi-Rice restore"
@@ -153,14 +236,14 @@ ensure_paru
 log "Installing Multi-Rice dependencies"
 paru -S --needed \
     git curl unzip rsync jq fish stow foot kitty alacritty mpv mpv-mpris fuzzel \
-    hyprland hypridle hyprlock hyprsunset wl-clipboard wl-clip-persist cliphist \
+    hyprland niri uwsm hypridle hyprlock hyprsunset wl-clipboard wl-clip-persist cliphist \
     brightnessctl playerctl cava matugen-bin imagemagick upower hyprpicker grim \
     slurp swappy wf-recorder tesseract tesseract-data-eng ydotool gnome-keyring \
     easyeffects libqalculate qt6-positioning ttf-readex-pro ttf-jetbrains-mono-nerd \
     dim-caelestia-shell-git caelestia-cli quickshell-git dms-shell dms-shell-hyprland noctalia \
     tmux network-manager-applet blueman pavucontrol ffmpeg x264 qt6-base \
     qt6-declarative qt6-wayland qt6-svg qt6-tools qt6-imageformats qt6-multimedia \
-    qt6-shadertools libwebp libavif syntax-highlighting breeze-icons hicolor-icon-theme \
+    qt6-shadertools libwebp libavif syntax-highlighting breeze-icons papirus-icon-theme hicolor-icon-theme \
     ddcutil sqlite wlsunset wtype zbar glib2 python-pipx zenity inetutils \
     power-profiles-daemon python312 libnotify ttf-roboto ttf-roboto-mono ttf-dejavu \
     ttf-liberation noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-nerd-fonts-symbols \
@@ -173,7 +256,14 @@ systemctl --user disable --now dms.service >/dev/null 2>&1 || true
 
 log "Creating safety backup before profile restore"
 mkdir -p "$BACKUP"
+backup_path "$HOME/.config/quickshell/multi-rice-switcher" "multi-rice-switcher"
+backup_path "$HOME/.config/environment.d/20-multi-rice-icons.conf" "multi-rice-icons.conf"
+backup_path "$HOME/.local/share/desktop-switcher/profile-metadata.sh" "profile-metadata.sh"
+backup_path "$HOME/.local/bin/multi-rice-control" "multi-rice-control"
+backup_path "/usr/local/bin/multi-rice-session" "multi-rice-session"
+backup_path "/usr/share/wayland-sessions/huzaifah-multi-rice.desktop" "huzaifah-multi-rice.desktop"
 backup_path "$HOME/.config/hypr" "hypr"
+backup_path "$HOME/.config/niri" "niri"
 backup_path "$HOME/.config/caelestia" "caelestia"
 backup_path "$HOME/.config/illogical-impulse" "illogical-impulse"
 backup_path "$HOME/.config/ambxst" "ambxst-config"
@@ -189,10 +279,16 @@ backup_path "$HOME/.local/bin/desktop-switch" "desktop-switch"
 backup_path "$HOME/.local/bin/recover-caelestia" "recover-caelestia"
 backup_path "$HOME/.local/bin/ambxst" "ambxst-launcher"
 
-log "Restoring all five Hyprland profiles"
-for profile in caelestia end4 ambxst dms noctalia; do
+log "Restoring seven Hyprland profiles"
+for profile in "${HYPR_PROFILES[@]}"; do
     mkdir -p "$PROFILE_ROOT/$profile/hypr"
     rsync -a --delete "$SRC/profiles/$profile/hypr/" "$PROFILE_ROOT/$profile/hypr/"
+done
+
+log "Restoring three Niri profiles"
+for profile in "${NIRI_PROFILES[@]}"; do
+    mkdir -p "$PROFILE_ROOT/$profile/niri"
+    rsync -a --delete "$SRC/profiles/$profile/niri/" "$PROFILE_ROOT/$profile/niri/"
 done
 
 if [[ -d "$SRC/caelestia" ]]; then
@@ -241,17 +337,62 @@ if [[ -d "$SRC/noctalia" ]]; then
     [[ -f "$SRC/noctalia/.setup-complete" ]] && cp -a "$SRC/noctalia/.setup-complete" "$HOME/.local/state/noctalia/.setup-complete"
 fi
 
-if [[ -d "$SRC/desktop-switcher" ]]; then
-    mkdir -p "$HOME/.config/desktop-switcher"
-    rsync -a --delete "$SRC/desktop-switcher/" "$HOME/.config/desktop-switcher/"
+log "Installing Huzaifah Multi-Rice v5 runtime"
+
+for required in \
+    bin/multi-rice-control \
+    bin/multi-rice-session \
+    lib/profile-metadata.sh \
+    quickshell/multi-rice-switcher/shell.qml \
+    environment.d/20-multi-rice-icons.conf \
+    wayland-sessions/huzaifah-multi-rice.desktop
+do
+    [[ -e "$SRC/$required" ]] || die "Missing v5 runtime file: $required"
+done
+
+mkdir -p \
+    "$HOME/.local/bin" \
+    "$HOME/.local/share/desktop-switcher" \
+    "$HOME/.config/quickshell/multi-rice-switcher" \
+    "$HOME/.config/environment.d"
+
+rsync -a --delete \
+    "$SRC/quickshell/multi-rice-switcher/" \
+    "$HOME/.config/quickshell/multi-rice-switcher/"
+
+install -m 0755 \
+    "$SRC/bin/multi-rice-control" \
+    "$HOME/.local/bin/multi-rice-control"
+
+install -m 0644 \
+    "$SRC/lib/profile-metadata.sh" \
+    "$HOME/.local/share/desktop-switcher/profile-metadata.sh"
+
+install -m 0644 \
+    "$SRC/environment.d/20-multi-rice-icons.conf" \
+    "$HOME/.config/environment.d/20-multi-rice-icons.conf"
+
+if [[ -f "$SRC/bin/recover-caelestia" ]]; then
+    install -m 0755 \
+        "$SRC/bin/recover-caelestia" \
+        "$HOME/.local/bin/recover-caelestia"
 fi
 
-mkdir -p "$HOME/.local/bin"
-for bin in desktop-switch recover-caelestia; do
-    if [[ -f "$SRC/bin/$bin" ]]; then
-        install -m 0755 "$SRC/bin/$bin" "$HOME/.local/bin/$bin"
-    fi
-done
+sudo install -m 0755 \
+    "$SRC/bin/multi-rice-session" \
+    /usr/local/bin/multi-rice-session
+
+sudo install -d -m 0755 \
+    /usr/share/wayland-sessions
+
+sudo install -m 0644 \
+    "$SRC/wayland-sessions/huzaifah-multi-rice.desktop" \
+    /usr/share/wayland-sessions/huzaifah-multi-rice.desktop
+
+# v5 uses the unified Quickshell switcher.
+rm -f "$HOME/.local/bin/desktop-switch"
+
+ok "Multi-Rice v5 controller, switcher and dynamic session installed"
 
 log "Restoring end4-pC and illogical-impulse Quickshell sources"
 mkdir -p "$HOME/.config/quickshell" "$HOME/.local/src"
@@ -311,21 +452,41 @@ if compgen -G "$SRC/music/*.m3u8" >/dev/null; then
     done
 fi
 
-log "Activating the saved profile pointer"
+log "Activating the saved v5 profile pointer"
 active="caelestia"
 if [[ -f "$SRC/state/active" ]]; then
-    active="$(tr -d '[:space:]' < "$SRC/state/active")"
+    active="$(tr -d "[:space:]" < "$SRC/state/active")"
 fi
+
 case "$active" in
-    caelestia|end4|ambxst|dms|noctalia) ;;
-    *) warn "Unknown saved active profile '$active'; defaulting to Caelestia"; active="caelestia" ;;
+    caelestia|end4|ambxst|dms|serpantinum|noctalia|sayconlun|jaqc|clavis|nixri) ;;
+    *)
+        warn "Unknown saved active profile $active; defaulting to Caelestia"
+        active="caelestia"
+        ;;
 esac
 
-target="$PROFILE_ROOT/$active/hypr"
-rm -rf "$HOME/.config/hypr"
-ln -s "$target" "$HOME/.config/hypr"
+hypr_active="caelestia"
+niri_active="jaqc"
+
+case "$active" in
+    jaqc|clavis|nixri)
+        niri_active="$active"
+        ;;
+    *)
+        hypr_active="$active"
+        ;;
+esac
+
+rm -rf "$HOME/.config/hypr" "$HOME/.config/niri"
+
+ln -s "$PROFILE_ROOT/$hypr_active/hypr" "$HOME/.config/hypr"
+ln -s "$PROFILE_ROOT/$niri_active/niri" "$HOME/.config/niri"
+
 mkdir -p "$HOME/.config/desktop-profile"
-printf '%s\n' "$active" > "$HOME/.config/desktop-profile/active"
+printf "%s\n" "$active" > "$HOME/.config/desktop-profile/active"
+
+configure_sddm_multi_rice
 
 systemctl --user daemon-reload 2>/dev/null || true
 if [[ -f "$HOME/.config/systemd/user/background-music.service" ]]; then

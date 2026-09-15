@@ -82,12 +82,20 @@ install_multi_rice() {
     chmod +x "$restore"
 
     printf '\n'
-    log "Installing Huzaifah Multi-Rice desktop"
-    printf '  ✦ Caelestia\n'
-    printf '  ◈ end4-pC\n'
-    printf '  ◆ Ambxst\n'
-    printf '  ● DankMaterialShell\n'
-    printf '  ⇄ SUPER + SHIFT + D dynamic profile switcher\n'
+    log "Installing Huzaifah Multi-Rice v5 desktop"
+    printf '  HYPRLAND\n'
+    printf '    ✦ Aether      / Caelestia\n'
+    printf '    ◈ Obsidian    / end4-pC\n'
+    printf '    ◆ Crimson     / Ambxst\n'
+    printf '    ● Materia     / DankMaterialShell\n'
+    printf '    ◇ Aurora      / Serpantinum\n'
+    printf '    ◉ Nocturne    / Noctalia\n'
+    printf '    ⬡ Lumina      / Sayconlun\n'
+    printf '  NIRI\n'
+    printf '    ☀ Solstice    / JAQC\n'
+    printf '    ❖ Cipher      / Clavis\n'
+    printf '    ✧ Astra       / Nixri\n'
+    printf '  ⇄ SUPER + SHIFT + D unified Multi-Rice switcher\n'
     printf '  ↻ SUPER + SHIFT + R refresh-rate switcher\n\n'
 
     "$restore"
@@ -111,10 +119,10 @@ full_customization() {
     printf '\n'
     ok "Full desktop customization installed"
     printf '\nIncluded:\n'
-    printf '  ✦ Caelestia configuration\n'
-    printf '  ◈ end4-pC configuration and saved album-art fixes\n'
-    printf '  ◆ Ambxst configuration with axctl integration\n'
-    printf '  ● DankMaterialShell configuration with standalone DMS startup\n'
+    printf '  HYPRLAND: Aether, Obsidian, Crimson, Materia, Aurora, Nocturne, Lumina\n'
+    printf '  NIRI: Solstice, Cipher, Astra\n'
+    printf '  ◈ Obsidian includes the saved end4-pC album-art fixes\n'
+    printf '  ◆ Crimson includes axctl integration\n'
     printf '  🔎 end4 search-only launcher (workspace grid hidden)\n'
     printf '  🌙 Frieren SDDM login theme\n'
     printf '  ⇄ SUPER + SHIFT + D dynamic Multi-Rice switcher\n'
@@ -122,21 +130,27 @@ full_customization() {
     printf '     • Zephyrus G16: tested 60/90/120/144/165/180/240 Hz + 120/240 power policy\n'
     printf '     • Other systems: OEM/EDID refresh modes only\n'
     printf '\nYour desktop wallpaper is not changed by the installer.\n'
-    printf 'Log out and back into Hyprland when the installer finishes.\n'
+    printf 'Log out when the installer finishes; SDDM should preselect Huzaifah Multi-Rice.\n'
 }
 
 usage() {
     cat <<'EOF'
-Huzaifah Hyprland customization installer
+Huzaifah Multi-Rice v5 customization installer
 
 Usage: ./install.sh [options]
 
 Default (no options):
   Install the complete customization automatically:
-    - Caelestia rice
-    - end4-pC rice
-    - Ambxst rice + axctl integration
-    - DankMaterialShell rice (DMS)
+    - Aether / Caelestia (Hyprland)
+    - Obsidian / end4-pC (Hyprland)
+    - Crimson / Ambxst + axctl integration (Hyprland)
+    - Materia / DankMaterialShell (Hyprland)
+    - Aurora / Serpantinum (Hyprland)
+    - Nocturne / Noctalia (Hyprland)
+    - Lumina / Sayconlun (Hyprland)
+    - Solstice / JAQC (Niri)
+    - Cipher / Clavis (Niri)
+    - Astra / Nixri (Niri)
     - saved end4 widget/bar layout
     - search-only end4 launcher (workspace overview hidden)
     - Frieren SDDM login theme
@@ -152,9 +166,9 @@ Default (no options):
 Customization options:
   --customization      Full customization (same as no options)
   --multi-rice         Full customization alias
-  --multi-rice-only    Install all four rices without changing SDDM
+  --multi-rice-only    Install all 10 rices; skip only the Frieren SDDM theme
   --sddm-theme-only    Install only the Frieren SDDM login theme
-  --no-sddm-theme      Install the Multi-Rice setup but skip SDDM
+  --no-sddm-theme      Install Multi-Rice + core SDDM session, but skip Frieren theme
 
 Refresh switcher options:
   --refresh-switcher          Install/reconfigure with DMI auto-detection
@@ -163,8 +177,6 @@ Refresh switcher options:
   --no-refresh-switcher       Skip the refresh switcher when installing Multi-Rice
 
 Compatibility aliases:
-  --triple-rice        Same as --multi-rice
-  --triple-rice-only   Same as --multi-rice-only
   --dual-rice          Same as --multi-rice
   --dual-rice-only     Same as --multi-rice-only
 
@@ -206,11 +218,11 @@ main() {
 
     while (($#)); do
         case "$1" in
-            --customization|--multi-rice|--triple-rice|--dual-rice|--base|--all)
+            --customization|--multi-rice|--dual-rice|--base|--all)
                 do_rice=1
                 do_theme=1
                 ;;
-            --multi-rice-only|--triple-rice-only|--dual-rice-only|--no-sddm-theme)
+            --multi-rice-only|--dual-rice-only|--no-sddm-theme)
                 do_rice=1
                 do_theme=0
                 ;;

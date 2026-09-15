@@ -164,7 +164,7 @@ local huzHome = os.getenv("HOME")
 
 hl.bind(
     "SUPER + SHIFT + D",
-    hl.dsp.exec_cmd(huzHome .. "/.local/bin/desktop-switch")
+    hl.dsp.exec_cmd("qs -c multi-rice-switcher")
 )
 
 

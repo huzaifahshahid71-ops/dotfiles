@@ -1,7 +1,7 @@
 -- Optional per-user keybind overrides (managed by DMS). Loaded after default binds.
 
 -- HUZAIFAH-MULTI-RICE-SWITCHER
-hl.bind("SUPER + SHIFT + D", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/desktop-switch"))
+hl.bind("SUPER + SHIFT + D", hl.dsp.exec_cmd("qs -c multi-rice-switcher"))
 
 -- HUZAIFAH-REFRESH-SWITCHER
 hl.bind("SUPER + SHIFT + R", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/refresh-switch"))

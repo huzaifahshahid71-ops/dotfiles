@@ -25,7 +25,7 @@ hl.monitor({
 -- Huzaifah Multi-Rice switcher.
 hl.bind(
     "SUPER + SHIFT + D",
-    hl.dsp.exec_cmd(home .. "/.local/bin/desktop-switch"),
+    hl.dsp.exec_cmd("qs -c multi-rice-switcher"),
     { description = "Switch desktop profile" }
 )
 
