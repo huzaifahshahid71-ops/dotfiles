@@ -180,6 +180,59 @@ show_list() {
     done < <(profile_ids)
 }
 
+plan_switch() {
+    local profile="${1:-}"
+    local current current_comp target_comp installed action
+
+    if [ -z "$profile" ]; then
+        echo "multi-rice-control: plan requires a profile id" >&2
+        return 2
+    fi
+
+    target_comp="$(profile_compositor "$profile" 2>/dev/null || true)"
+
+    if [ -z "$target_comp" ]; then
+        echo "multi-rice-control: unknown profile: $profile" >&2
+        return 2
+    fi
+
+    current_comp="$(detect_compositor)"
+    current="$(current_profile)"
+
+    if is_installed "$profile"; then
+        installed="true"
+    else
+        installed="false"
+    fi
+
+    if [ "$installed" != "true" ]; then
+        action="unavailable"
+    elif [ "$profile" = "$current" ]; then
+        action="noop"
+    elif [ "$current_comp" = "unknown" ]; then
+        action="unsupported-session"
+    elif [ "$target_comp" = "$current_comp" ]; then
+        action="same-compositor"
+    else
+        action="cross-compositor"
+    fi
+
+    printf "current_compositor=%s
+" "$current_comp"
+    printf "current_profile=%s
+" "$current"
+    printf "target_profile=%s
+" "$profile"
+    printf "target_name=%s
+" "$(profile_name "$profile")"
+    printf "target_compositor=%s
+" "$target_comp"
+    printf "installed=%s
+" "$installed"
+    printf "action=%s
+" "$action"
+}
+
 case "${1:-status}" in
     compositor)
         detect_compositor
@@ -197,8 +250,12 @@ case "${1:-status}" in
         show_list
         ;;
 
+    plan)
+        plan_switch "${2:-}"
+        ;;
+
     *)
-        echo "Usage: multi-rice-control {status|list|profile|compositor}" >&2
+        echo "Usage: multi-rice-control {status|list|profile|compositor|plan PROFILE}" >&2
         exit 2
         ;;
 esac
