@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+if ! command -v eva >/dev/null 2>&1; then
+    echo "grub-themes: Evangelion eva manager is not installed." >&2
+    exit 1
+fi
+
+case "${1:-}" in
+    -l|--list|list)
+        exec eva list
+        ;;
+    *)
+        exec sudo eva "$@"
+        ;;
+esac

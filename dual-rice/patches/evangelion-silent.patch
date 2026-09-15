@@ -1,0 +1,14 @@
+diff --git a/bin/boot-console.awk b/bin/boot-console.awk
+index 4b6803e..feb342a 100644
+--- a/bin/boot-console.awk
++++ b/bin/boot-console.awk
+@@ -18,7 +18,8 @@ BEGIN {
+     if ((getline source) < 0) {
+         fail("Cannot read generated menu.")
+     }
+-    result = transform(source)
++    # Huzaifah Multi-Rice: preserve normal silent Linux boot arguments.
++    result = source
+     if (numbered == 1) {
+         result = number_entries(result)
+     }
