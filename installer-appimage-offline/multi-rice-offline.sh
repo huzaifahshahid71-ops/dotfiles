@@ -956,18 +956,60 @@ configure_sddm_multi_rice() {
         : > "$tmp"
     fi
 
-    if grep -Eq "^[[:space:]]*Session[[:space:]]*=" "$tmp"; then
-        sed -E \
-            "0,/^[[:space:]]*Session[[:space:]]*=/s#^[[:space:]]*Session[[:space:]]*=.*#Session=$session#" \
-            "$tmp" > "$out"
-    elif grep -Eq "^\[Last\][[:space:]]*$" "$tmp"; then
-        sed -E \
-            "/^\[Last\][[:space:]]*$/a Session=$session" \
-            "$tmp" > "$out"
-    else
-        cat "$tmp" > "$out"
-        printf "\n[Last]\nSession=%s\n" "$session" >> "$out"
-    fi
+    # Change only Session= inside SDDM's [Last] section.  A Session=
+    # key in another section must never be treated as the previous session.
+    awk -v session="$session" '
+        BEGIN {
+            in_last = 0
+            saw_last = 0
+            wrote_session = 0
+        }
+
+        function write_session() {
+            if (in_last && !wrote_session) {
+                print "Session=" session
+                wrote_session = 1
+            }
+        }
+
+        /^[[:space:]]*\[[^]]+\][[:space:]]*$/ {
+            if (in_last)
+                write_session()
+
+            if ($0 ~ /^[[:space:]]*\[Last\][[:space:]]*$/) {
+                in_last = 1
+                saw_last = 1
+                wrote_session = 0
+                print
+                next
+            }
+
+            in_last = 0
+        }
+
+        {
+            if (in_last && $0 ~ /^[[:space:]]*Session[[:space:]]*=/) {
+                if (!wrote_session) {
+                    print "Session=" session
+                    wrote_session = 1
+                }
+                next
+            }
+
+            print
+        }
+
+        END {
+            if (in_last)
+                write_session()
+
+            if (!saw_last) {
+                print ""
+                print "[Last]"
+                print "Session=" session
+            }
+        }
+    ' "$tmp" > "$out"
 
     sudo install -o root -g root -m 0644 "$out" "$state"
 
@@ -1214,7 +1256,6 @@ install_multi_rice() {
     activate_saved_profile
     install_refresh_switcher
     install_frieren_theme
-    install_evangelion_manager
     activate_sddm_for_next_boot
     configure_sddm_multi_rice
     finalize_install_snapshot
