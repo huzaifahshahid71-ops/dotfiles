@@ -242,7 +242,7 @@ paru -S --needed \
     hyprland niri uwsm hypridle hyprlock hyprsunset wl-clipboard wl-clip-persist cliphist \
     brightnessctl playerctl cava matugen-bin imagemagick upower hyprpicker grim \
     slurp swappy wf-recorder tesseract tesseract-data-eng ydotool gnome-keyring \
-    easyeffects libqalculate qt6-positioning ttf-readex-pro ttf-jetbrains-mono-nerd \
+    easyeffects libqalculate qt6-positioning qt6-lottie waybar rofi key-cli keytop ttf-readex-pro ttf-jetbrains-mono-nerd \
     dim-caelestia-shell-git caelestia-cli quickshell-git dms-shell dms-shell-hyprland noctalia \
     tmux network-manager-applet blueman pavucontrol ffmpeg x264 qt6-base \
     qt6-declarative qt6-wayland qt6-svg qt6-tools qt6-imageformats qt6-multimedia \

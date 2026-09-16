@@ -491,6 +491,7 @@ preflight_payload() {
     [[ -f "$REPO/dual-rice/profiles/clavis/support/quickshell/clavis/shell.qml" ]] || die "Bundled Cipher shell is missing"
     [[ -f "$REPO/dual-rice/profiles/clavis/support/qml/Clavis/Cava/libClavisCava.so" ]] || die "Bundled Cipher Cava runtime library is missing"
     [[ -x "$REPO/dual-rice/profiles/clavis/support/bin/clavis-shell" ]] || die "Bundled Cipher launcher is missing or not executable"
+    [[ -f "$REPO/dual-rice/profiles/sayconlun/support/rofi/launcher.rasi" ]] || die "Bundled Lumina Rofi launcher theme is missing"
     [[ -d "$REPO/dual-rice/profiles/clavis/support/qml/Clavis" ]] || die "Bundled Cipher QML imports are missing"
     [[ -x "$REPO/dual-rice/profiles/nixri/support/bin/nixri-dms" ]] || die "Bundled Astra runtime launcher is missing or not executable"
 

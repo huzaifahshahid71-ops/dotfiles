@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 ROOT="$HOME/.local/share/desktop-profiles/clavis"
+export PATH="$ROOT/support/bin:$PATH"
 export QML_IMPORT_PATH="$ROOT/support/qml${QML_IMPORT_PATH:+:$QML_IMPORT_PATH}"
-export LD_LIBRARY_PATH="$ROOT/support/qml/Clavis/Cava${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export QS_ICON_THEME="${QS_ICON_THEME:-Papirus-Dark}"
-exec qs -c clavis -n -d
+CLAVIS_LIB_PATH="$(\n    find "$ROOT/support/qml/Clavis" -type f -name '*.so' -printf '%h\\n' 2>/dev/null |\n        sort -u |\n        paste -sd: -\n)"\nexport LD_LIBRARY_PATH="$CLAVIS_LIB_PATH${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\nexec qs -c clavis -n -d

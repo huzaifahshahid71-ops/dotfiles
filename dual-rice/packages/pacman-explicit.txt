@@ -252,3 +252,8 @@ ydotool
 zed
 zen-browser-bin
 zoxide
+qt6-lottie
+waybar
+rofi
+key-cli
+keytop
