@@ -2,5 +2,6 @@
 set -e
 ROOT="$HOME/.local/share/desktop-profiles/clavis"
 export QML_IMPORT_PATH="$ROOT/support/qml${QML_IMPORT_PATH:+:$QML_IMPORT_PATH}"
+export LD_LIBRARY_PATH="$ROOT/support/qml/Clavis/Cava${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export QS_ICON_THEME="${QS_ICON_THEME:-Papirus-Dark}"
 exec qs -c clavis -n -d

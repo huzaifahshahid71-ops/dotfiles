@@ -78,6 +78,10 @@ managed_user_paths() {
         ".config/quickshell/multi-rice-switcher" \
         ".config/quickshell/solstice" \
         ".config/quickshell/clavis" \
+        ".config/quickshell/lumina" \
+        ".local/bin/nixri-dms" \
+        ".local/bin/nixri-dms-ipc" \
+        ".local/bin/nixri-dms-restart" \
         ".config/environment.d/20-multi-rice-icons.conf" \
         ".local/share/desktop-switcher" \
         ".local/bin/multi-rice-control" \
@@ -483,7 +487,9 @@ preflight_payload() {
         [[ -d "$REPO/dual-rice/profiles/$profile/support" ]] || die "Missing $profile runtime support in offline payload"
     done
     [[ -f "$REPO/dual-rice/profiles/jaqc/support/quickshell/solstice/shell.qml" ]] || die "Bundled Solstice shell is missing"
+    [[ -f "$REPO/dual-rice/profiles/sayconlun/support/quickshell/lumina/shell.qml" ]] || die "Bundled Lumina shell is missing"
     [[ -f "$REPO/dual-rice/profiles/clavis/support/quickshell/clavis/shell.qml" ]] || die "Bundled Cipher shell is missing"
+    [[ -f "$REPO/dual-rice/profiles/clavis/support/qml/Clavis/Cava/libClavisCava.so" ]] || die "Bundled Cipher Cava runtime library is missing"
     [[ -x "$REPO/dual-rice/profiles/clavis/support/bin/clavis-shell" ]] || die "Bundled Cipher launcher is missing or not executable"
     [[ -d "$REPO/dual-rice/profiles/clavis/support/qml/Clavis" ]] || die "Bundled Cipher QML imports are missing"
     [[ -x "$REPO/dual-rice/profiles/nixri/support/bin/nixri-dms" ]] || die "Bundled Astra runtime launcher is missing or not executable"
@@ -695,6 +701,18 @@ restore_profiles_and_configs() {
         rsync -a --delete "$src/profiles/$profile/hypr/" "$PROFILE_ROOT/$profile/hypr/"
     done
 
+    log "Restoring Lumina runtime support"
+    mkdir -p "$PROFILE_ROOT/sayconlun/support"
+    rsync -a --delete "$src/profiles/sayconlun/support/" "$PROFILE_ROOT/sayconlun/support/"
+
+    while IFS= read -r json; do
+        rewrite_home_paths_json "$json"
+    done < <(find "$PROFILE_ROOT/sayconlun/support" -type f -name '*.json' -print)
+
+    mkdir -p "$HOME/.config/quickshell"
+    rm -f "$HOME/.config/quickshell/lumina"
+    ln -s "$PROFILE_ROOT/sayconlun/support/quickshell/lumina" "$HOME/.config/quickshell/lumina"
+
     log "Restoring three Niri profiles and runtime support"
     for profile in jaqc clavis nixri; do
         [[ -d "$src/profiles/$profile/support" ]] || die "Bundled $profile runtime support is missing"
@@ -713,6 +731,15 @@ restore_profiles_and_configs() {
     rm -rf "$HOME/.config/quickshell/solstice" "$HOME/.config/quickshell/clavis"
     ln -s "$PROFILE_ROOT/jaqc/support/quickshell/solstice" "$HOME/.config/quickshell/solstice"
     ln -s "$PROFILE_ROOT/clavis/support/quickshell/clavis" "$HOME/.config/quickshell/clavis"
+
+    log "Installing Astra runtime launch helpers"
+    mkdir -p "$HOME/.local/bin"
+    for helper in nixri-dms nixri-dms-ipc nixri-dms-restart; do
+        if [[ -e "$HOME/.local/bin/$helper" || -L "$HOME/.local/bin/$helper" ]]; then
+            rm -f "$HOME/.local/bin/$helper"
+        fi
+        ln -s "$PROFILE_ROOT/nixri/support/bin/$helper" "$HOME/.local/bin/$helper"
+    done
 
     if [[ -d "$src/caelestia" ]]; then
         mkdir -p "$HOME/.config/caelestia"
@@ -1067,6 +1094,108 @@ install_evangelion_manager() {
     ok "Evangelion manager installed; current GRUB appearance remains unchanged"
 }
 
+
+ensure_silent_grub_defaults() {
+    local defaults="/etc/default/grub"
+
+    [[ -f "$defaults" ]] || die "GRUB defaults file is missing: $defaults"
+    command -v python3 >/dev/null 2>&1 ||
+        die "python3 is required to update GRUB arguments safely"
+
+    log "Ensuring quiet Linux boot arguments for Evangelion"
+
+    sudo python3 - "$defaults" <<'PY'
+from pathlib import Path
+import os
+import re
+import sys
+import tempfile
+
+path = Path(sys.argv[1])
+text = path.read_text()
+lines = text.splitlines(keepends=True)
+
+key = "GRUB_CMDLINE_LINUX_DEFAULT"
+found = False
+changed = False
+out = []
+
+for line in lines:
+    stripped = line.lstrip()
+    if stripped.startswith(key + "="):
+        found = True
+
+        # Preserve the original RHS byte-for-byte except for inserting one
+        # literal " quiet" before its closing quote (or at the end if unquoted).
+        newline = "\n" if line.endswith("\n") else ""
+        body = line[:-1] if newline else line
+        lhs, rhs = body.split("=", 1)
+
+        # Test the value lexically so existing "quiet" is not duplicated.
+        # This intentionally avoids evaluating /etc/default/grub as shell code.
+        value_for_test = rhs.strip()
+        if len(value_for_test) >= 2 and value_for_test[0] == value_for_test[-1] and value_for_test[0] in ("'", '"'):
+            value_for_test = value_for_test[1:-1]
+
+        if not re.search(r'(^|\s)quiet(\s|$)', value_for_test):
+            trimmed = rhs.rstrip()
+            trailing_ws = rhs[len(trimmed):]
+
+            if trimmed.endswith('"') or trimmed.endswith("'"):
+                rhs = trimmed[:-1] + " quiet" + trimmed[-1] + trailing_ws
+            elif trimmed:
+                rhs = trimmed + " quiet" + trailing_ws
+            else:
+                rhs = '"quiet"' + trailing_ws
+
+            changed = True
+
+        out.append(lhs + "=" + rhs + newline)
+    else:
+        out.append(line)
+
+if not found:
+    if out and not out[-1].endswith("\n"):
+        out[-1] += "\n"
+    out.append(f'{key}="quiet"\n')
+    changed = True
+
+if changed:
+    st = path.stat()
+    fd, tmp_name = tempfile.mkstemp(prefix=".grub.huz.", dir=str(path.parent))
+    try:
+        with os.fdopen(fd, "w") as f:
+            f.writelines(out)
+        os.chmod(tmp_name, st.st_mode & 0o7777)
+        try:
+            os.chown(tmp_name, st.st_uid, st.st_gid)
+        except PermissionError:
+            pass
+        os.replace(tmp_name, path)
+    finally:
+        if os.path.exists(tmp_name):
+            os.unlink(tmp_name)
+PY
+
+    sudo python3 - "$defaults" <<'PY'
+from pathlib import Path
+import re
+import sys
+
+for line in Path(sys.argv[1]).read_text().splitlines():
+    if not line.startswith("GRUB_CMDLINE_LINUX_DEFAULT="):
+        continue
+    rhs = line.split("=", 1)[1].strip()
+    if len(rhs) >= 2 and rhs[0] == rhs[-1] and rhs[0] in ("'", '"'):
+        rhs = rhs[1:-1]
+    if re.search(r'(^|\s)quiet(\s|$)', rhs):
+        raise SystemExit(0)
+raise SystemExit(1)
+PY
+
+    ok "Quiet kernel boot argument is present; Evangelion menu/theme remains visible"
+}
+
 configure_evangelion_grub() {
     verify_payload
 
@@ -1076,6 +1205,7 @@ configure_evangelion_grub() {
     fi
 
     install_evangelion_manager
+    ensure_silent_grub_defaults
 
     printf "\nLaunching the silent Evangelion GRUB chooser...\n\n"
     sudo eva

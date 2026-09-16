@@ -223,6 +223,8 @@ for profile in "${HYPR_PROFILES[@]}"; do
     [[ -f "$SRC/profiles/$profile/hypr/hyprland.lua" ]] || die "Missing $profile hyprland.lua"
 done
 
+[[ -f "$SRC/profiles/sayconlun/support/quickshell/lumina/shell.qml" ]] || die "Missing Lumina Quickshell runtime support"
+
 for profile in "${NIRI_PROFILES[@]}"; do
     [[ -d "$SRC/profiles/$profile/niri" ]] || die "Missing Niri profile: $profile"
     [[ -f "$SRC/profiles/$profile/niri/config.kdl" ]] || die "Missing $profile config.kdl"
@@ -258,6 +260,7 @@ systemctl --user disable --now dms.service >/dev/null 2>&1 || true
 log "Creating safety backup before profile restore"
 mkdir -p "$BACKUP"
 backup_path "$HOME/.config/quickshell/multi-rice-switcher" "multi-rice-switcher"
+backup_path "$HOME/.config/quickshell/lumina" "quickshell-lumina"
 backup_path "$HOME/.config/environment.d/20-multi-rice-icons.conf" "multi-rice-icons.conf"
 backup_path "$HOME/.local/share/desktop-switcher/profile-metadata.sh" "profile-metadata.sh"
 backup_path "$HOME/.local/bin/multi-rice-control" "multi-rice-control"
@@ -279,12 +282,27 @@ backup_path "$PROFILE_ROOT" "desktop-profiles"
 backup_path "$HOME/.local/bin/desktop-switch" "desktop-switch"
 backup_path "$HOME/.local/bin/recover-caelestia" "recover-caelestia"
 backup_path "$HOME/.local/bin/ambxst" "ambxst-launcher"
+backup_path "$HOME/.local/bin/nixri-dms" "nixri-dms"
+backup_path "$HOME/.local/bin/nixri-dms-ipc" "nixri-dms-ipc"
+backup_path "$HOME/.local/bin/nixri-dms-restart" "nixri-dms-restart"
 
 log "Restoring seven Hyprland profiles"
 for profile in "${HYPR_PROFILES[@]}"; do
     mkdir -p "$PROFILE_ROOT/$profile/hypr"
     rsync -a --delete "$SRC/profiles/$profile/hypr/" "$PROFILE_ROOT/$profile/hypr/"
 done
+
+log "Restoring Lumina runtime support"
+mkdir -p "$PROFILE_ROOT/sayconlun/support"
+rsync -a --delete "$SRC/profiles/sayconlun/support/" "$PROFILE_ROOT/sayconlun/support/"
+
+while IFS= read -r json; do
+    rewrite_home_paths_json "$json"
+done < <(find "$PROFILE_ROOT/sayconlun/support" -type f -name '*.json' -print)
+
+mkdir -p "$HOME/.config/quickshell"
+rm -f "$HOME/.config/quickshell/lumina"
+ln -s "$PROFILE_ROOT/sayconlun/support/quickshell/lumina" "$HOME/.config/quickshell/lumina"
 
 log "Restoring three Niri profiles and runtime support"
 for profile in "${NIRI_PROFILES[@]}"; do
@@ -302,6 +320,15 @@ mkdir -p "$HOME/.config/quickshell"
 rm -rf "$HOME/.config/quickshell/solstice" "$HOME/.config/quickshell/clavis"
 ln -s "$PROFILE_ROOT/jaqc/support/quickshell/solstice" "$HOME/.config/quickshell/solstice"
 ln -s "$PROFILE_ROOT/clavis/support/quickshell/clavis" "$HOME/.config/quickshell/clavis"
+
+log "Installing Astra runtime launch helpers"
+mkdir -p "$HOME/.local/bin"
+for helper in nixri-dms nixri-dms-ipc nixri-dms-restart; do
+    if [[ -e "$HOME/.local/bin/$helper" || -L "$HOME/.local/bin/$helper" ]]; then
+        rm -f "$HOME/.local/bin/$helper"
+    fi
+    ln -s "$PROFILE_ROOT/nixri/support/bin/$helper" "$HOME/.local/bin/$helper"
+done
 
 if [[ -d "$SRC/caelestia" ]]; then
     log "Restoring Caelestia user configuration"
