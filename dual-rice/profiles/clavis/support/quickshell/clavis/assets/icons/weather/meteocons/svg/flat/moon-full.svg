@@ -1,0 +1,12 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="moon-full" clip-path="url(#clip0_2049_4459)">
+<g id="Moon Phase">
+<circle id="Moon" cx="64" cy="64" r="32" fill="#72B9D5"><animateTransform attributeName="transform" type="rotate" values="-6 64.0 64.0;6 64.0 64.0;-6 64.0 64.0" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></circle>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2049_4459">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

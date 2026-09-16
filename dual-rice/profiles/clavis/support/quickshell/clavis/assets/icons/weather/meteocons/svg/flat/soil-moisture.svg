@@ -1,0 +1,23 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="soil-moisture" clip-path="url(#clip0_2045_48570)">
+<g id="Soil">
+<rect id="Dark Soil" x="37" y="68" width="54" height="24" rx="9" fill="#5B3D28"/>
+<rect id="Light Soil" x="38" y="75" width="52" height="16" rx="8" fill="#6D4930"/>
+<g id="Pellets">
+<path d="M71 81C71 81.5523 70.5523 82 70 82C69.4477 82 69 81.5523 69 81C69 80.4477 69.4477 80 70 80C70.5523 80 71 80.4477 71 81Z" fill="#5B3D28"/>
+<path d="M65 85C65 85.5523 64.5523 86 64 86C63.4477 86 63 85.5523 63 85C63 84.4477 63.4477 84 64 84C64.5523 84 65 84.4477 65 85Z" fill="#5B3D28"/>
+<path d="M53 85C53 85.5523 52.5523 86 52 86C51.4477 86 51 85.5523 51 85C51 84.4477 51.4477 84 52 84C52.5523 84 53 84.4477 53 85Z" fill="#5B3D28"/>
+<path d="M59 81C59 81.5523 58.5523 82 58 82C57.4477 82 57 81.5523 57 81C57 80.4477 57.4477 80 58 80C58.5523 80 59 80.4477 59 81Z" fill="#5B3D28"/>
+<path d="M77 85C77 85.5523 76.5523 86 76 86C75.4477 86 75 85.5523 75 85C75 84.4477 75.4477 84 76 84C76.5523 84 77 84.4477 77 85Z" fill="#5B3D28"/>
+</g>
+</g>
+<g transform="translate(64.0,47.0)"><g id="Raindrop" transform="translate(-64.0,-47.0)">
+<path id="Vector" d="M64 35C59.13 42.2 56 46.7 56 51.07C56 55.44 59.58 59 64 59C68.42 59 72 55.45 72 51.07C72 46.69 68.87 42.19 64 35Z" fill="#2563EB"/>
+</g><animateTransform attributeName="transform" type="scale" values="1 1;1.1 1.1;1 1" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1" additive="sum"/></g>
+</g>
+<defs>
+<clipPath id="clip0_2045_48570">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

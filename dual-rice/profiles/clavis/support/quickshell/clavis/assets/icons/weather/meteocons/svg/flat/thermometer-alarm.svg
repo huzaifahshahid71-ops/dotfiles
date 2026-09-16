@@ -1,0 +1,20 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="thermometer-alarm" clip-path="url(#clip0_2045_49301)">
+<g id="Thermometer Mercury">
+<circle id="Reservoir" cx="64" cy="83" r="9" fill="#DC2626"/>
+<rect id="Value" x="61" y="50" width="6" height="29" rx="3" fill="#DC2626"><animateTransform attributeName="transform" type="translate" values="0 0;0 -2;0 0" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></rect>
+</g>
+<g id="Thermometer Glass">
+<path id="Glass" d="M50.5 83.1914C50.4952 81.0566 51.0175 78.951 52.0234 77.0518C53.0294 75.1525 54.4901 73.514 56.2842 72.2754C56.4193 72.1821 56.4999 72.0284 56.5 71.8643V38.7793C56.5 36.8534 57.2864 35.0029 58.6914 33.6367C60.0969 32.27 62.0064 31.5 64 31.5C65.9936 31.5 67.9031 32.27 69.3086 33.6367C70.7136 35.0029 71.5 36.8534 71.5 38.7793V42.0469H65C64.7239 42.0469 64.5 42.2708 64.5 42.5469C64.5 42.823 64.7239 43.0469 65 43.0469H71.5V49.8262H65C64.7239 49.8262 64.5 50.05 64.5 50.3262C64.5001 50.6022 64.7239 50.8262 65 50.8262H71.5V57.6045H65C64.724 57.6045 64.5003 57.8286 64.5 58.1045C64.5 58.3806 64.7239 58.6045 65 58.6045H71.5V71.8398C71.5 72.004 71.5808 72.1576 71.7158 72.251C73.5132 73.4919 74.9763 75.1344 75.9824 77.0381C76.9884 78.9416 77.5086 81.0518 77.5 83.1904V83.1924C77.4999 90.5431 71.4801 96.5 64 96.5C56.5199 96.5 50.5001 90.5431 50.5 83.1924V83.1914Z" fill="#DBEAFE" fill-opacity="0.25" stroke="#BFDBFE" stroke-linecap="round" stroke-linejoin="round"/>
+<g id="Alert">
+<path id="Exclamation" d="M91.4019 48.5C92.5566 46.5 95.4434 46.5 96.5981 48.5L108.722 69.5C109.877 71.5 108.434 74 106.124 74H81.8756C79.5662 74 78.1229 71.5 79.2776 69.5L91.4019 48.5Z" fill="#202939"/>
+<path id="ExclamationMark" d="M94.7582 64.59H93.2642L92.4182 59.568V56.184H95.5862V59.568L94.7582 64.59ZM95.6042 69H92.4002V65.994H95.6042V69Z" fill="white"/>
+<animate attributeName="opacity" values="1;1;0;0;1" dur="1s" begin="0s" repeatCount="indefinite" keyTimes="0;0.294;0.5;0.794;1"/></g>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2045_49301">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

@@ -1,0 +1,9 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="tornado">
+<path id="Line 5" d="M56 90H72" stroke="#D6DFE9" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"><animateTransform attributeName="transform" type="translate" values="0 0;2 0;0 0" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></path>
+<path id="Line 4" d="M47 77H81" stroke="#D6DFE9" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"><animateTransform attributeName="transform" type="translate" values="0 0;4 0;0 0" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></path>
+<path id="Line 3" d="M42 64H87" stroke="#D6DFE9" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"><animateTransform attributeName="transform" type="translate" values="0 0;6 0;0 0" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></path>
+<path id="Line 2" d="M37 51H91" stroke="#D6DFE9" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"><animateTransform attributeName="transform" type="translate" values="0 0;8 0;0 0" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></path>
+<path id="Line 1" d="M32 38H96" stroke="#D6DFE9" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"><animateTransform attributeName="transform" type="translate" values="0 0;10 0;0 0" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></path>
+</g>
+</svg>

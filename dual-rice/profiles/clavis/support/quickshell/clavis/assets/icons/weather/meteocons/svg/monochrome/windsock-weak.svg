@@ -1,0 +1,19 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="windsock-weak" clip-path="url(#clip0_2038_25601)">
+<g id="Windsock">
+<path id="Subtract" d="M46 64.1016V96H43V60.1924L46 64.1016ZM44.5 30C45.8807 30 47 31.1193 47 32.5C47 32.7813 46.9531 33.0518 46.8672 33.3037C46.5628 34.1956 46 35.0508 46 35.9932V43.0068L43 44.7393V35.9932C43 35.0508 42.4372 34.1956 42.1328 33.3037C42.0469 33.0518 42 32.7813 42 32.5C42 31.1193 43.1193 30 44.5 30Z" fill="black"/>
+<g id="Sock">
+<path id="_Sock Detail" d="M52.2673 42.8616L49.5228 41.1305C48.8195 40.6869 48.0004 40.4617 47.1692 40.4836C45.3507 40.5313 43.6799 41.496 42.7293 43.0469C42.2948 43.7559 42.0802 44.5778 42.1127 45.4087L42.2397 48.651" stroke="black" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Segment 1" d="M52.721 41.4452C54.3259 40.5186 56.3516 41.1437 57.0629 42.7851L59.2304 48.0793L43.2773 57.2899L39.776 52.7657C38.7102 51.329 39.1817 49.2621 40.7866 48.3356L52.721 41.4452Z" fill="black"/>
+<path id="Segment 3" d="M61.5467 53.6702L65.0211 62.0566L52.4865 69.2934L46.961 62.0913L61.5467 53.6702Z" fill="black"/>
+<path id="Segment 5" d="M67.3368 67.6478L69.2676 72.3065C69.8734 73.7111 70.356 76.2969 68.5328 77.3496L63.9748 79.9811C62.1516 81.0338 60.1535 79.3229 59.24 78.096L56.1708 74.0945L67.3368 67.6478Z" fill="black"/>
+<animateTransform attributeName="transform" type="rotate" values="0 44.5 41;4 44.5 41;0 44.5 41" dur="2s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></g>
+<rect id="Ring" x="42" y="40" width="5" height="2" rx="1" fill="black"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2038_25601">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

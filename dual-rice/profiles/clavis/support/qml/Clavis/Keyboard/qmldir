@@ -1,0 +1,8 @@
+module Clavis.Keyboard
+linktarget ClavisKeyboardplugin
+optional plugin ClavisKeyboardplugin
+classname Clavis_KeyboardPlugin
+typeinfo ClavisKeyboard.qmltypes
+prefer :/qt/qml/Clavis/Keyboard/
+depends QtQuick
+

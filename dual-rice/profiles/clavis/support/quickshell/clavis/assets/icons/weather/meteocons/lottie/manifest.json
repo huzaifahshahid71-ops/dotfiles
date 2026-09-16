@@ -1,0 +1,2469 @@
+{
+  "styles": [
+    "fill",
+    "flat",
+    "line",
+    "monochrome"
+  ],
+  "categories": [
+    {
+      "name": "Standard",
+      "slug": "standard",
+      "icons": [
+        {
+          "slug": "clear-day",
+          "name": "clear-day",
+          "animated": true
+        },
+        {
+          "slug": "clear-night",
+          "name": "clear-night",
+          "animated": true
+        },
+        {
+          "slug": "cloud-down",
+          "name": "cloud-down",
+          "animated": true
+        },
+        {
+          "slug": "cloud-up",
+          "name": "cloud-up",
+          "animated": true
+        },
+        {
+          "slug": "cloudy",
+          "name": "cloudy",
+          "animated": true
+        },
+        {
+          "slug": "drizzle",
+          "name": "drizzle",
+          "animated": true
+        },
+        {
+          "slug": "dust",
+          "name": "dust",
+          "animated": true
+        },
+        {
+          "slug": "dust-day",
+          "name": "dust-day",
+          "animated": true
+        },
+        {
+          "slug": "dust-night",
+          "name": "dust-night",
+          "animated": true
+        },
+        {
+          "slug": "fog",
+          "name": "fog",
+          "animated": true
+        },
+        {
+          "slug": "fog-day",
+          "name": "fog-day",
+          "animated": true
+        },
+        {
+          "slug": "fog-night",
+          "name": "fog-night",
+          "animated": true
+        },
+        {
+          "slug": "hail",
+          "name": "hail",
+          "animated": true
+        },
+        {
+          "slug": "haze",
+          "name": "haze",
+          "animated": true
+        },
+        {
+          "slug": "haze-day",
+          "name": "haze-day",
+          "animated": true
+        },
+        {
+          "slug": "haze-night",
+          "name": "haze-night",
+          "animated": true
+        },
+        {
+          "slug": "hurricane",
+          "name": "hurricane",
+          "animated": true
+        },
+        {
+          "slug": "mist",
+          "name": "mist",
+          "animated": true
+        },
+        {
+          "slug": "rain",
+          "name": "rain",
+          "animated": true
+        },
+        {
+          "slug": "sleet",
+          "name": "sleet",
+          "animated": true
+        },
+        {
+          "slug": "smoke",
+          "name": "smoke",
+          "animated": true
+        },
+        {
+          "slug": "snow",
+          "name": "snow",
+          "animated": true
+        },
+        {
+          "slug": "sun-hot",
+          "name": "sun-hot",
+          "animated": true
+        },
+        {
+          "slug": "tornado",
+          "name": "tornado",
+          "animated": true
+        }
+      ]
+    },
+    {
+      "name": "Partly Cloudy",
+      "slug": "partly-cloudy",
+      "icons": [
+        {
+          "slug": "partly-cloudy-day",
+          "name": "partly-cloudy-day",
+          "animated": true
+        },
+        {
+          "slug": "partly-cloudy-day-drizzle",
+          "name": "partly-cloudy-day-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "partly-cloudy-day-fog",
+          "name": "partly-cloudy-day-fog",
+          "animated": true
+        },
+        {
+          "slug": "partly-cloudy-day-hail",
+          "name": "partly-cloudy-day-hail",
+          "animated": true
+        },
+        {
+          "slug": "partly-cloudy-day-haze",
+          "name": "partly-cloudy-day-haze",
+          "animated": true
+        },
+        {
+          "slug": "partly-cloudy-day-rain",
+          "name": "partly-cloudy-day-rain",
+          "animated": true
+        },
+        {
+          "slug": "partly-cloudy-day-sleet",
+          "name": "partly-cloudy-day-sleet",
+          "animated": true
+        },
+        {
+          "slug": "partly-cloudy-day-smoke",
+          "name": "partly-cloudy-day-smoke",
+          "animated": true
+        },
+        {
+          "slug": "partly-cloudy-day-snow",
+          "name": "partly-cloudy-day-snow",
+          "animated": true
+        },
+        {
+          "slug": "partly-cloudy-night",
+          "name": "partly-cloudy-night",
+          "animated": true
+        },
+        {
+          "slug": "partly-cloudy-night-drizzle",
+          "name": "partly-cloudy-night-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "partly-cloudy-night-fog",
+          "name": "partly-cloudy-night-fog",
+          "animated": true
+        },
+        {
+          "slug": "partly-cloudy-night-hail",
+          "name": "partly-cloudy-night-hail",
+          "animated": true
+        },
+        {
+          "slug": "partly-cloudy-night-haze",
+          "name": "partly-cloudy-night-haze",
+          "animated": true
+        },
+        {
+          "slug": "partly-cloudy-night-rain",
+          "name": "partly-cloudy-night-rain",
+          "animated": true
+        },
+        {
+          "slug": "partly-cloudy-night-sleet",
+          "name": "partly-cloudy-night-sleet",
+          "animated": true
+        },
+        {
+          "slug": "partly-cloudy-night-smoke",
+          "name": "partly-cloudy-night-smoke",
+          "animated": true
+        },
+        {
+          "slug": "partly-cloudy-night-snow",
+          "name": "partly-cloudy-night-snow",
+          "animated": true
+        }
+      ]
+    },
+    {
+      "name": "Mostly Clear",
+      "slug": "mostly-clear",
+      "icons": [
+        {
+          "slug": "mostly-clear-day",
+          "name": "mostly-clear-day",
+          "animated": true
+        },
+        {
+          "slug": "mostly-clear-day-drizzle",
+          "name": "mostly-clear-day-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "mostly-clear-day-fog",
+          "name": "mostly-clear-day-fog",
+          "animated": true
+        },
+        {
+          "slug": "mostly-clear-day-hail",
+          "name": "mostly-clear-day-hail",
+          "animated": true
+        },
+        {
+          "slug": "mostly-clear-day-haze",
+          "name": "mostly-clear-day-haze",
+          "animated": true
+        },
+        {
+          "slug": "mostly-clear-day-rain",
+          "name": "mostly-clear-day-rain",
+          "animated": true
+        },
+        {
+          "slug": "mostly-clear-day-sleet",
+          "name": "mostly-clear-day-sleet",
+          "animated": true
+        },
+        {
+          "slug": "mostly-clear-day-smoke",
+          "name": "mostly-clear-day-smoke",
+          "animated": true
+        },
+        {
+          "slug": "mostly-clear-day-snow",
+          "name": "mostly-clear-day-snow",
+          "animated": true
+        },
+        {
+          "slug": "mostly-clear-night",
+          "name": "mostly-clear-night",
+          "animated": true
+        },
+        {
+          "slug": "mostly-clear-night-drizzle",
+          "name": "mostly-clear-night-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "mostly-clear-night-fog",
+          "name": "mostly-clear-night-fog",
+          "animated": true
+        },
+        {
+          "slug": "mostly-clear-night-hail",
+          "name": "mostly-clear-night-hail",
+          "animated": true
+        },
+        {
+          "slug": "mostly-clear-night-haze",
+          "name": "mostly-clear-night-haze",
+          "animated": true
+        },
+        {
+          "slug": "mostly-clear-night-rain",
+          "name": "mostly-clear-night-rain",
+          "animated": true
+        },
+        {
+          "slug": "mostly-clear-night-sleet",
+          "name": "mostly-clear-night-sleet",
+          "animated": true
+        },
+        {
+          "slug": "mostly-clear-night-smoke",
+          "name": "mostly-clear-night-smoke",
+          "animated": true
+        },
+        {
+          "slug": "mostly-clear-night-snow",
+          "name": "mostly-clear-night-snow",
+          "animated": true
+        }
+      ]
+    },
+    {
+      "name": "Overcast",
+      "slug": "overcast",
+      "icons": [
+        {
+          "slug": "overcast",
+          "name": "overcast",
+          "animated": true
+        },
+        {
+          "slug": "overcast-day",
+          "name": "overcast-day",
+          "animated": true
+        },
+        {
+          "slug": "overcast-day-drizzle",
+          "name": "overcast-day-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "overcast-day-fog",
+          "name": "overcast-day-fog",
+          "animated": true
+        },
+        {
+          "slug": "overcast-day-hail",
+          "name": "overcast-day-hail",
+          "animated": true
+        },
+        {
+          "slug": "overcast-day-haze",
+          "name": "overcast-day-haze",
+          "animated": true
+        },
+        {
+          "slug": "overcast-day-rain",
+          "name": "overcast-day-rain",
+          "animated": true
+        },
+        {
+          "slug": "overcast-day-sleet",
+          "name": "overcast-day-sleet",
+          "animated": true
+        },
+        {
+          "slug": "overcast-day-smoke",
+          "name": "overcast-day-smoke",
+          "animated": true
+        },
+        {
+          "slug": "overcast-day-snow",
+          "name": "overcast-day-snow",
+          "animated": true
+        },
+        {
+          "slug": "overcast-drizzle",
+          "name": "overcast-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "overcast-fog",
+          "name": "overcast-fog",
+          "animated": true
+        },
+        {
+          "slug": "overcast-hail",
+          "name": "overcast-hail",
+          "animated": true
+        },
+        {
+          "slug": "overcast-haze",
+          "name": "overcast-haze",
+          "animated": true
+        },
+        {
+          "slug": "overcast-night",
+          "name": "overcast-night",
+          "animated": true
+        },
+        {
+          "slug": "overcast-night-drizzle",
+          "name": "overcast-night-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "overcast-night-fog",
+          "name": "overcast-night-fog",
+          "animated": true
+        },
+        {
+          "slug": "overcast-night-hail",
+          "name": "overcast-night-hail",
+          "animated": true
+        },
+        {
+          "slug": "overcast-night-haze",
+          "name": "overcast-night-haze",
+          "animated": true
+        },
+        {
+          "slug": "overcast-night-rain",
+          "name": "overcast-night-rain",
+          "animated": true
+        },
+        {
+          "slug": "overcast-night-sleet",
+          "name": "overcast-night-sleet",
+          "animated": true
+        },
+        {
+          "slug": "overcast-night-smoke",
+          "name": "overcast-night-smoke",
+          "animated": true
+        },
+        {
+          "slug": "overcast-night-snow",
+          "name": "overcast-night-snow",
+          "animated": true
+        },
+        {
+          "slug": "overcast-rain",
+          "name": "overcast-rain",
+          "animated": true
+        },
+        {
+          "slug": "overcast-sleet",
+          "name": "overcast-sleet",
+          "animated": true
+        },
+        {
+          "slug": "overcast-smoke",
+          "name": "overcast-smoke",
+          "animated": true
+        },
+        {
+          "slug": "overcast-snow",
+          "name": "overcast-snow",
+          "animated": true
+        }
+      ]
+    },
+    {
+      "name": "Extreme",
+      "slug": "extreme",
+      "icons": [
+        {
+          "slug": "extreme",
+          "name": "extreme",
+          "animated": true
+        },
+        {
+          "slug": "extreme-day",
+          "name": "extreme-day",
+          "animated": true
+        },
+        {
+          "slug": "extreme-day-drizzle",
+          "name": "extreme-day-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "extreme-day-fog",
+          "name": "extreme-day-fog",
+          "animated": true
+        },
+        {
+          "slug": "extreme-day-hail",
+          "name": "extreme-day-hail",
+          "animated": true
+        },
+        {
+          "slug": "extreme-day-haze",
+          "name": "extreme-day-haze",
+          "animated": true
+        },
+        {
+          "slug": "extreme-day-rain",
+          "name": "extreme-day-rain",
+          "animated": true
+        },
+        {
+          "slug": "extreme-day-sleet",
+          "name": "extreme-day-sleet",
+          "animated": true
+        },
+        {
+          "slug": "extreme-day-smoke",
+          "name": "extreme-day-smoke",
+          "animated": true
+        },
+        {
+          "slug": "extreme-day-snow",
+          "name": "extreme-day-snow",
+          "animated": true
+        },
+        {
+          "slug": "extreme-drizzle",
+          "name": "extreme-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "extreme-fog",
+          "name": "extreme-fog",
+          "animated": true
+        },
+        {
+          "slug": "extreme-hail",
+          "name": "extreme-hail",
+          "animated": true
+        },
+        {
+          "slug": "extreme-haze",
+          "name": "extreme-haze",
+          "animated": true
+        },
+        {
+          "slug": "extreme-night",
+          "name": "extreme-night",
+          "animated": true
+        },
+        {
+          "slug": "extreme-night-drizzle",
+          "name": "extreme-night-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "extreme-night-fog",
+          "name": "extreme-night-fog",
+          "animated": true
+        },
+        {
+          "slug": "extreme-night-hail",
+          "name": "extreme-night-hail",
+          "animated": true
+        },
+        {
+          "slug": "extreme-night-haze",
+          "name": "extreme-night-haze",
+          "animated": true
+        },
+        {
+          "slug": "extreme-night-rain",
+          "name": "extreme-night-rain",
+          "animated": true
+        },
+        {
+          "slug": "extreme-night-sleet",
+          "name": "extreme-night-sleet",
+          "animated": true
+        },
+        {
+          "slug": "extreme-night-smoke",
+          "name": "extreme-night-smoke",
+          "animated": true
+        },
+        {
+          "slug": "extreme-night-snow",
+          "name": "extreme-night-snow",
+          "animated": true
+        },
+        {
+          "slug": "extreme-rain",
+          "name": "extreme-rain",
+          "animated": true
+        },
+        {
+          "slug": "extreme-sleet",
+          "name": "extreme-sleet",
+          "animated": true
+        },
+        {
+          "slug": "extreme-smoke",
+          "name": "extreme-smoke",
+          "animated": true
+        },
+        {
+          "slug": "extreme-snow",
+          "name": "extreme-snow",
+          "animated": true
+        }
+      ]
+    },
+    {
+      "name": "Thunderstorms",
+      "slug": "thunderstorms",
+      "icons": [
+        {
+          "slug": "thunderstorms",
+          "name": "thunderstorms",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-day",
+          "name": "thunderstorms-day",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-day-drizzle",
+          "name": "thunderstorms-day-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-day-fog",
+          "name": "thunderstorms-day-fog",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-day-hail",
+          "name": "thunderstorms-day-hail",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-day-haze",
+          "name": "thunderstorms-day-haze",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-day-rain",
+          "name": "thunderstorms-day-rain",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-day-sleet",
+          "name": "thunderstorms-day-sleet",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-day-smoke",
+          "name": "thunderstorms-day-smoke",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-day-snow",
+          "name": "thunderstorms-day-snow",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-drizzle",
+          "name": "thunderstorms-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme",
+          "name": "thunderstorms-extreme",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-day",
+          "name": "thunderstorms-extreme-day",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-day-drizzle",
+          "name": "thunderstorms-extreme-day-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-day-fog",
+          "name": "thunderstorms-extreme-day-fog",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-day-hail",
+          "name": "thunderstorms-extreme-day-hail",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-day-haze",
+          "name": "thunderstorms-extreme-day-haze",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-day-rain",
+          "name": "thunderstorms-extreme-day-rain",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-day-sleet",
+          "name": "thunderstorms-extreme-day-sleet",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-day-smoke",
+          "name": "thunderstorms-extreme-day-smoke",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-day-snow",
+          "name": "thunderstorms-extreme-day-snow",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-drizzle",
+          "name": "thunderstorms-extreme-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-fog",
+          "name": "thunderstorms-extreme-fog",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-hail",
+          "name": "thunderstorms-extreme-hail",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-haze",
+          "name": "thunderstorms-extreme-haze",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-night",
+          "name": "thunderstorms-extreme-night",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-night-drizzle",
+          "name": "thunderstorms-extreme-night-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-night-fog",
+          "name": "thunderstorms-extreme-night-fog",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-night-hail",
+          "name": "thunderstorms-extreme-night-hail",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-night-haze",
+          "name": "thunderstorms-extreme-night-haze",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-night-rain",
+          "name": "thunderstorms-extreme-night-rain",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-night-sleet",
+          "name": "thunderstorms-extreme-night-sleet",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-night-smoke",
+          "name": "thunderstorms-extreme-night-smoke",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-night-snow",
+          "name": "thunderstorms-extreme-night-snow",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-rain",
+          "name": "thunderstorms-extreme-rain",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-sleet",
+          "name": "thunderstorms-extreme-sleet",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-smoke",
+          "name": "thunderstorms-extreme-smoke",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-extreme-snow",
+          "name": "thunderstorms-extreme-snow",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-fog",
+          "name": "thunderstorms-fog",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-hail",
+          "name": "thunderstorms-hail",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-haze",
+          "name": "thunderstorms-haze",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-mostly-clear-day",
+          "name": "thunderstorms-mostly-clear-day",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-mostly-clear-day-drizzle",
+          "name": "thunderstorms-mostly-clear-day-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-mostly-clear-day-fog",
+          "name": "thunderstorms-mostly-clear-day-fog",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-mostly-clear-day-hail",
+          "name": "thunderstorms-mostly-clear-day-hail",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-mostly-clear-day-haze",
+          "name": "thunderstorms-mostly-clear-day-haze",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-mostly-clear-day-rain",
+          "name": "thunderstorms-mostly-clear-day-rain",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-mostly-clear-day-sleet",
+          "name": "thunderstorms-mostly-clear-day-sleet",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-mostly-clear-day-smoke",
+          "name": "thunderstorms-mostly-clear-day-smoke",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-mostly-clear-day-snow",
+          "name": "thunderstorms-mostly-clear-day-snow",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-mostly-clear-night",
+          "name": "thunderstorms-mostly-clear-night",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-mostly-clear-night-drizzle",
+          "name": "thunderstorms-mostly-clear-night-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-mostly-clear-night-fog",
+          "name": "thunderstorms-mostly-clear-night-fog",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-mostly-clear-night-hail",
+          "name": "thunderstorms-mostly-clear-night-hail",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-mostly-clear-night-haze",
+          "name": "thunderstorms-mostly-clear-night-haze",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-mostly-clear-night-rain",
+          "name": "thunderstorms-mostly-clear-night-rain",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-mostly-clear-night-sleet",
+          "name": "thunderstorms-mostly-clear-night-sleet",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-mostly-clear-night-smoke",
+          "name": "thunderstorms-mostly-clear-night-smoke",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-mostly-clear-night-snow",
+          "name": "thunderstorms-mostly-clear-night-snow",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-night",
+          "name": "thunderstorms-night",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-night-drizzle",
+          "name": "thunderstorms-night-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-night-fog",
+          "name": "thunderstorms-night-fog",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-night-hail",
+          "name": "thunderstorms-night-hail",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-night-haze",
+          "name": "thunderstorms-night-haze",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-night-rain",
+          "name": "thunderstorms-night-rain",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-night-sleet",
+          "name": "thunderstorms-night-sleet",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-night-smoke",
+          "name": "thunderstorms-night-smoke",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-night-snow",
+          "name": "thunderstorms-night-snow",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast",
+          "name": "thunderstorms-overcast",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-day",
+          "name": "thunderstorms-overcast-day",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-day-drizzle",
+          "name": "thunderstorms-overcast-day-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-day-fog",
+          "name": "thunderstorms-overcast-day-fog",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-day-hail",
+          "name": "thunderstorms-overcast-day-hail",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-day-haze",
+          "name": "thunderstorms-overcast-day-haze",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-day-rain",
+          "name": "thunderstorms-overcast-day-rain",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-day-sleet",
+          "name": "thunderstorms-overcast-day-sleet",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-day-smoke",
+          "name": "thunderstorms-overcast-day-smoke",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-day-snow",
+          "name": "thunderstorms-overcast-day-snow",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-drizzle",
+          "name": "thunderstorms-overcast-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-fog",
+          "name": "thunderstorms-overcast-fog",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-hail",
+          "name": "thunderstorms-overcast-hail",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-haze",
+          "name": "thunderstorms-overcast-haze",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-night",
+          "name": "thunderstorms-overcast-night",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-night-drizzle",
+          "name": "thunderstorms-overcast-night-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-night-fog",
+          "name": "thunderstorms-overcast-night-fog",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-night-hail",
+          "name": "thunderstorms-overcast-night-hail",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-night-haze",
+          "name": "thunderstorms-overcast-night-haze",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-night-rain",
+          "name": "thunderstorms-overcast-night-rain",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-night-sleet",
+          "name": "thunderstorms-overcast-night-sleet",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-night-smoke",
+          "name": "thunderstorms-overcast-night-smoke",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-night-snow",
+          "name": "thunderstorms-overcast-night-snow",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-rain",
+          "name": "thunderstorms-overcast-rain",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-sleet",
+          "name": "thunderstorms-overcast-sleet",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-smoke",
+          "name": "thunderstorms-overcast-smoke",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-overcast-snow",
+          "name": "thunderstorms-overcast-snow",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-rain",
+          "name": "thunderstorms-rain",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-sleet",
+          "name": "thunderstorms-sleet",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-smoke",
+          "name": "thunderstorms-smoke",
+          "animated": true
+        },
+        {
+          "slug": "thunderstorms-snow",
+          "name": "thunderstorms-snow",
+          "animated": true
+        }
+      ]
+    },
+    {
+      "name": "Extreme Thunderstorms",
+      "slug": "extreme-thunderstorms",
+      "icons": [
+        {
+          "slug": "extreme-thunderstorms",
+          "name": "extreme-thunderstorms",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-day",
+          "name": "extreme-thunderstorms-day",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-day-drizzle",
+          "name": "extreme-thunderstorms-day-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-day-fog",
+          "name": "extreme-thunderstorms-day-fog",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-day-hail",
+          "name": "extreme-thunderstorms-day-hail",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-day-haze",
+          "name": "extreme-thunderstorms-day-haze",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-day-rain",
+          "name": "extreme-thunderstorms-day-rain",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-day-sleet",
+          "name": "extreme-thunderstorms-day-sleet",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-day-smoke",
+          "name": "extreme-thunderstorms-day-smoke",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-day-snow",
+          "name": "extreme-thunderstorms-day-snow",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-drizzle",
+          "name": "extreme-thunderstorms-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme",
+          "name": "extreme-thunderstorms-extreme",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-day",
+          "name": "extreme-thunderstorms-extreme-day",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-day-drizzle",
+          "name": "extreme-thunderstorms-extreme-day-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-day-fog",
+          "name": "extreme-thunderstorms-extreme-day-fog",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-day-hail",
+          "name": "extreme-thunderstorms-extreme-day-hail",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-day-haze",
+          "name": "extreme-thunderstorms-extreme-day-haze",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-day-rain",
+          "name": "extreme-thunderstorms-extreme-day-rain",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-day-sleet",
+          "name": "extreme-thunderstorms-extreme-day-sleet",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-day-smoke",
+          "name": "extreme-thunderstorms-extreme-day-smoke",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-day-snow",
+          "name": "extreme-thunderstorms-extreme-day-snow",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-drizzle",
+          "name": "extreme-thunderstorms-extreme-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-fog",
+          "name": "extreme-thunderstorms-extreme-fog",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-hail",
+          "name": "extreme-thunderstorms-extreme-hail",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-haze",
+          "name": "extreme-thunderstorms-extreme-haze",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-night",
+          "name": "extreme-thunderstorms-extreme-night",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-night-drizzle",
+          "name": "extreme-thunderstorms-extreme-night-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-night-fog",
+          "name": "extreme-thunderstorms-extreme-night-fog",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-night-hail",
+          "name": "extreme-thunderstorms-extreme-night-hail",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-night-haze",
+          "name": "extreme-thunderstorms-extreme-night-haze",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-night-rain",
+          "name": "extreme-thunderstorms-extreme-night-rain",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-night-sleet",
+          "name": "extreme-thunderstorms-extreme-night-sleet",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-night-smoke",
+          "name": "extreme-thunderstorms-extreme-night-smoke",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-night-snow",
+          "name": "extreme-thunderstorms-extreme-night-snow",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-rain",
+          "name": "extreme-thunderstorms-extreme-rain",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-sleet",
+          "name": "extreme-thunderstorms-extreme-sleet",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-smoke",
+          "name": "extreme-thunderstorms-extreme-smoke",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-extreme-snow",
+          "name": "extreme-thunderstorms-extreme-snow",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-fog",
+          "name": "extreme-thunderstorms-fog",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-hail",
+          "name": "extreme-thunderstorms-hail",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-haze",
+          "name": "extreme-thunderstorms-haze",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-mostly-clear-day",
+          "name": "extreme-thunderstorms-mostly-clear-day",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-mostly-clear-day-drizzle",
+          "name": "extreme-thunderstorms-mostly-clear-day-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-mostly-clear-day-fog",
+          "name": "extreme-thunderstorms-mostly-clear-day-fog",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-mostly-clear-day-hail",
+          "name": "extreme-thunderstorms-mostly-clear-day-hail",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-mostly-clear-day-haze",
+          "name": "extreme-thunderstorms-mostly-clear-day-haze",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-mostly-clear-day-rain",
+          "name": "extreme-thunderstorms-mostly-clear-day-rain",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-mostly-clear-day-sleet",
+          "name": "extreme-thunderstorms-mostly-clear-day-sleet",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-mostly-clear-day-smoke",
+          "name": "extreme-thunderstorms-mostly-clear-day-smoke",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-mostly-clear-day-snow",
+          "name": "extreme-thunderstorms-mostly-clear-day-snow",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-mostly-clear-night",
+          "name": "extreme-thunderstorms-mostly-clear-night",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-mostly-clear-night-drizzle",
+          "name": "extreme-thunderstorms-mostly-clear-night-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-mostly-clear-night-fog",
+          "name": "extreme-thunderstorms-mostly-clear-night-fog",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-mostly-clear-night-hail",
+          "name": "extreme-thunderstorms-mostly-clear-night-hail",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-mostly-clear-night-haze",
+          "name": "extreme-thunderstorms-mostly-clear-night-haze",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-mostly-clear-night-rain",
+          "name": "extreme-thunderstorms-mostly-clear-night-rain",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-mostly-clear-night-sleet",
+          "name": "extreme-thunderstorms-mostly-clear-night-sleet",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-mostly-clear-night-smoke",
+          "name": "extreme-thunderstorms-mostly-clear-night-smoke",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-mostly-clear-night-snow",
+          "name": "extreme-thunderstorms-mostly-clear-night-snow",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-night",
+          "name": "extreme-thunderstorms-night",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-night-drizzle",
+          "name": "extreme-thunderstorms-night-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-night-fog",
+          "name": "extreme-thunderstorms-night-fog",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-night-hail",
+          "name": "extreme-thunderstorms-night-hail",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-night-haze",
+          "name": "extreme-thunderstorms-night-haze",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-night-rain",
+          "name": "extreme-thunderstorms-night-rain",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-night-sleet",
+          "name": "extreme-thunderstorms-night-sleet",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-night-smoke",
+          "name": "extreme-thunderstorms-night-smoke",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-night-snow",
+          "name": "extreme-thunderstorms-night-snow",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast",
+          "name": "extreme-thunderstorms-overcast",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-day",
+          "name": "extreme-thunderstorms-overcast-day",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-day-drizzle",
+          "name": "extreme-thunderstorms-overcast-day-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-day-fog",
+          "name": "extreme-thunderstorms-overcast-day-fog",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-day-hail",
+          "name": "extreme-thunderstorms-overcast-day-hail",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-day-haze",
+          "name": "extreme-thunderstorms-overcast-day-haze",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-day-rain",
+          "name": "extreme-thunderstorms-overcast-day-rain",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-day-sleet",
+          "name": "extreme-thunderstorms-overcast-day-sleet",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-day-smoke",
+          "name": "extreme-thunderstorms-overcast-day-smoke",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-day-snow",
+          "name": "extreme-thunderstorms-overcast-day-snow",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-drizzle",
+          "name": "extreme-thunderstorms-overcast-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-fog",
+          "name": "extreme-thunderstorms-overcast-fog",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-hail",
+          "name": "extreme-thunderstorms-overcast-hail",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-haze",
+          "name": "extreme-thunderstorms-overcast-haze",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-night",
+          "name": "extreme-thunderstorms-overcast-night",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-night-drizzle",
+          "name": "extreme-thunderstorms-overcast-night-drizzle",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-night-fog",
+          "name": "extreme-thunderstorms-overcast-night-fog",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-night-hail",
+          "name": "extreme-thunderstorms-overcast-night-hail",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-night-haze",
+          "name": "extreme-thunderstorms-overcast-night-haze",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-night-rain",
+          "name": "extreme-thunderstorms-overcast-night-rain",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-night-sleet",
+          "name": "extreme-thunderstorms-overcast-night-sleet",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-night-smoke",
+          "name": "extreme-thunderstorms-overcast-night-smoke",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-night-snow",
+          "name": "extreme-thunderstorms-overcast-night-snow",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-rain",
+          "name": "extreme-thunderstorms-overcast-rain",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-sleet",
+          "name": "extreme-thunderstorms-overcast-sleet",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-smoke",
+          "name": "extreme-thunderstorms-overcast-smoke",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-overcast-snow",
+          "name": "extreme-thunderstorms-overcast-snow",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-rain",
+          "name": "extreme-thunderstorms-rain",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-sleet",
+          "name": "extreme-thunderstorms-sleet",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-smoke",
+          "name": "extreme-thunderstorms-smoke",
+          "animated": true
+        },
+        {
+          "slug": "extreme-thunderstorms-snow",
+          "name": "extreme-thunderstorms-snow",
+          "animated": true
+        }
+      ]
+    },
+    {
+      "name": "Alarms",
+      "slug": "alarms",
+      "icons": [
+        {
+          "slug": "alert-avalanche-danger",
+          "name": "alert-avalanche-danger",
+          "animated": true
+        },
+        {
+          "slug": "alert-falling-rocks",
+          "name": "alert-falling-rocks",
+          "animated": true
+        },
+        {
+          "slug": "code-green",
+          "name": "code-green",
+          "animated": true
+        },
+        {
+          "slug": "code-orange",
+          "name": "code-orange",
+          "animated": true
+        },
+        {
+          "slug": "code-purple",
+          "name": "code-purple",
+          "animated": true
+        },
+        {
+          "slug": "code-red",
+          "name": "code-red",
+          "animated": true
+        },
+        {
+          "slug": "code-yellow",
+          "name": "code-yellow",
+          "animated": true
+        },
+        {
+          "slug": "flag-cold-wave",
+          "name": "flag-cold-wave",
+          "animated": false
+        },
+        {
+          "slug": "flag-fair",
+          "name": "flag-fair",
+          "animated": false
+        },
+        {
+          "slug": "flag-gale-warning",
+          "name": "flag-gale-warning",
+          "animated": false
+        },
+        {
+          "slug": "flag-hurricane-warning",
+          "name": "flag-hurricane-warning",
+          "animated": false
+        },
+        {
+          "slug": "flag-local-rain",
+          "name": "flag-local-rain",
+          "animated": false
+        },
+        {
+          "slug": "flag-ne-storm-warning",
+          "name": "flag-ne-storm-warning",
+          "animated": false
+        },
+        {
+          "slug": "flag-nw-storm-warning",
+          "name": "flag-nw-storm-warning",
+          "animated": false
+        },
+        {
+          "slug": "flag-rain",
+          "name": "flag-rain",
+          "animated": false
+        },
+        {
+          "slug": "flag-se-storm-warning",
+          "name": "flag-se-storm-warning",
+          "animated": false
+        },
+        {
+          "slug": "flag-small-craft-advisory",
+          "name": "flag-small-craft-advisory",
+          "animated": false
+        },
+        {
+          "slug": "flag-storm-warning",
+          "name": "flag-storm-warning",
+          "animated": false
+        },
+        {
+          "slug": "flag-sw-storm-warning",
+          "name": "flag-sw-storm-warning",
+          "animated": false
+        },
+        {
+          "slug": "flag-temperature-change",
+          "name": "flag-temperature-change",
+          "animated": false
+        },
+        {
+          "slug": "weather-alarm",
+          "name": "weather-alarm",
+          "animated": true
+        },
+        {
+          "slug": "weather-alarm-day",
+          "name": "weather-alarm-day",
+          "animated": true
+        },
+        {
+          "slug": "weather-alarm-night",
+          "name": "weather-alarm-night",
+          "animated": true
+        }
+      ]
+    },
+    {
+      "name": "Astronomical",
+      "slug": "astronomical",
+      "icons": [
+        {
+          "slug": "falling-stars",
+          "name": "falling-stars",
+          "animated": true
+        },
+        {
+          "slug": "horizon",
+          "name": "horizon",
+          "animated": true
+        },
+        {
+          "slug": "moon-first-quarter",
+          "name": "moon-first-quarter",
+          "animated": true
+        },
+        {
+          "slug": "moon-full",
+          "name": "moon-full",
+          "animated": true
+        },
+        {
+          "slug": "moon-last-quarter",
+          "name": "moon-last-quarter",
+          "animated": true
+        },
+        {
+          "slug": "moon-new",
+          "name": "moon-new",
+          "animated": false
+        },
+        {
+          "slug": "moon-waning-crescent",
+          "name": "moon-waning-crescent",
+          "animated": true
+        },
+        {
+          "slug": "moon-waning-gibbous",
+          "name": "moon-waning-gibbous",
+          "animated": true
+        },
+        {
+          "slug": "moon-waxing-crescent",
+          "name": "moon-waxing-crescent",
+          "animated": true
+        },
+        {
+          "slug": "moon-waxing-gibbous",
+          "name": "moon-waxing-gibbous",
+          "animated": true
+        },
+        {
+          "slug": "moonrise",
+          "name": "moonrise",
+          "animated": true
+        },
+        {
+          "slug": "moonset",
+          "name": "moonset",
+          "animated": true
+        },
+        {
+          "slug": "solar-eclipse",
+          "name": "solar-eclipse",
+          "animated": true
+        },
+        {
+          "slug": "starry-night",
+          "name": "starry-night",
+          "animated": true
+        },
+        {
+          "slug": "sunrise",
+          "name": "sunrise",
+          "animated": true
+        },
+        {
+          "slug": "sunset",
+          "name": "sunset",
+          "animated": true
+        }
+      ]
+    },
+    {
+      "name": "Miscellaneous",
+      "slug": "miscellaneous",
+      "icons": [
+        {
+          "slug": "barometer",
+          "name": "barometer",
+          "animated": true
+        },
+        {
+          "slug": "barometer-extreme",
+          "name": "barometer-extreme",
+          "animated": true
+        },
+        {
+          "slug": "barometer-high",
+          "name": "barometer-high",
+          "animated": true
+        },
+        {
+          "slug": "barometer-low",
+          "name": "barometer-low",
+          "animated": true
+        },
+        {
+          "slug": "barometer-moderate",
+          "name": "barometer-moderate",
+          "animated": true
+        },
+        {
+          "slug": "barometer-verry-high",
+          "name": "barometer-verry-high",
+          "animated": true
+        },
+        {
+          "slug": "compass",
+          "name": "compass",
+          "animated": true
+        },
+        {
+          "slug": "compass-e",
+          "name": "compass-e",
+          "animated": true
+        },
+        {
+          "slug": "compass-n",
+          "name": "compass-n",
+          "animated": true
+        },
+        {
+          "slug": "compass-ne",
+          "name": "compass-ne",
+          "animated": true
+        },
+        {
+          "slug": "compass-nw",
+          "name": "compass-nw",
+          "animated": true
+        },
+        {
+          "slug": "compass-s",
+          "name": "compass-s",
+          "animated": true
+        },
+        {
+          "slug": "compass-se",
+          "name": "compass-se",
+          "animated": true
+        },
+        {
+          "slug": "compass-sw",
+          "name": "compass-sw",
+          "animated": true
+        },
+        {
+          "slug": "compass-w",
+          "name": "compass-w",
+          "animated": true
+        },
+        {
+          "slug": "fahrenheit",
+          "name": "fahrenheit",
+          "animated": false
+        },
+        {
+          "slug": "beanie",
+          "name": "beanie",
+          "animated": false
+        },
+        {
+          "slug": "glove",
+          "name": "glove",
+          "animated": false
+        },
+        {
+          "slug": "humidity",
+          "name": "humidity",
+          "animated": true
+        },
+        {
+          "slug": "celsius",
+          "name": "celsius",
+          "animated": false
+        },
+        {
+          "slug": "kelvin",
+          "name": "kelvin",
+          "animated": false
+        },
+        {
+          "slug": "not-available",
+          "name": "not-available",
+          "animated": false
+        },
+        {
+          "slug": "lightning-bolt",
+          "name": "lightning-bolt",
+          "animated": true
+        },
+        {
+          "slug": "lightning-bolts",
+          "name": "lightning-bolts",
+          "animated": true
+        },
+        {
+          "slug": "pollen",
+          "name": "pollen",
+          "animated": true
+        },
+        {
+          "slug": "pollen-flower",
+          "name": "pollen-flower",
+          "animated": true
+        },
+        {
+          "slug": "pollen-grass",
+          "name": "pollen-grass",
+          "animated": true
+        },
+        {
+          "slug": "pollen-tree",
+          "name": "pollen-tree",
+          "animated": true
+        },
+        {
+          "slug": "pollen-tree-fir",
+          "name": "pollen-tree-fir",
+          "animated": true
+        },
+        {
+          "slug": "pressure-high",
+          "name": "pressure-high",
+          "animated": true
+        },
+        {
+          "slug": "pressure-high-alt",
+          "name": "pressure-high-alt",
+          "animated": false
+        },
+        {
+          "slug": "pressure-low",
+          "name": "pressure-low",
+          "animated": true
+        },
+        {
+          "slug": "pressure-low-alt",
+          "name": "pressure-low-alt",
+          "animated": false
+        },
+        {
+          "slug": "rainbow",
+          "name": "rainbow",
+          "animated": false
+        },
+        {
+          "slug": "rainbow-clear",
+          "name": "rainbow-clear",
+          "animated": true
+        },
+        {
+          "slug": "rainbow-cloud",
+          "name": "rainbow-cloud",
+          "animated": false
+        },
+        {
+          "slug": "raindrop",
+          "name": "raindrop",
+          "animated": true
+        },
+        {
+          "slug": "raindrop-measure",
+          "name": "raindrop-measure",
+          "animated": true
+        },
+        {
+          "slug": "raindrops",
+          "name": "raindrops",
+          "animated": true
+        },
+        {
+          "slug": "smoke-particles",
+          "name": "smoke-particles",
+          "animated": true
+        },
+        {
+          "slug": "snowflake",
+          "name": "snowflake",
+          "animated": true
+        },
+        {
+          "slug": "snowman",
+          "name": "snowman",
+          "animated": false
+        },
+        {
+          "slug": "soil-moisture",
+          "name": "soil-moisture",
+          "animated": true
+        },
+        {
+          "slug": "soil-temperature",
+          "name": "soil-temperature",
+          "animated": true
+        },
+        {
+          "slug": "star",
+          "name": "star",
+          "animated": true
+        },
+        {
+          "slug": "umbrella",
+          "name": "umbrella",
+          "animated": true
+        },
+        {
+          "slug": "umbrella-closed",
+          "name": "umbrella-closed",
+          "animated": true
+        },
+        {
+          "slug": "umbrella-wind",
+          "name": "umbrella-wind",
+          "animated": true
+        },
+        {
+          "slug": "umbrella-wind-alt",
+          "name": "umbrella-wind-alt",
+          "animated": true
+        },
+        {
+          "slug": "water",
+          "name": "water",
+          "animated": true
+        },
+        {
+          "slug": "water-tide-high",
+          "name": "water-tide-high",
+          "animated": true
+        },
+        {
+          "slug": "water-tide-low",
+          "name": "water-tide-low",
+          "animated": true
+        },
+        {
+          "slug": "windsock",
+          "name": "windsock",
+          "animated": true
+        },
+        {
+          "slug": "windsock-calm",
+          "name": "windsock-calm",
+          "animated": true
+        },
+        {
+          "slug": "windsock-moderate",
+          "name": "windsock-moderate",
+          "animated": true
+        },
+        {
+          "slug": "windsock-weak",
+          "name": "windsock-weak",
+          "animated": true
+        }
+      ]
+    },
+    {
+      "name": "Thermometer",
+      "slug": "thermometer",
+      "icons": [
+        {
+          "slug": "thermometer",
+          "name": "thermometer",
+          "animated": true
+        },
+        {
+          "slug": "thermometer-alarm",
+          "name": "thermometer-alarm",
+          "animated": true
+        },
+        {
+          "slug": "thermometer-celsius",
+          "name": "thermometer-celsius",
+          "animated": true
+        },
+        {
+          "slug": "thermometer-colder",
+          "name": "thermometer-colder",
+          "animated": true
+        },
+        {
+          "slug": "thermometer-fahrenheit",
+          "name": "thermometer-fahrenheit",
+          "animated": true
+        },
+        {
+          "slug": "thermometer-glass",
+          "name": "thermometer-glass",
+          "animated": false
+        },
+        {
+          "slug": "thermometer-glass-alarm",
+          "name": "thermometer-glass-alarm",
+          "animated": true
+        },
+        {
+          "slug": "thermometer-glass-celsius",
+          "name": "thermometer-glass-celsius",
+          "animated": false
+        },
+        {
+          "slug": "thermometer-glass-fahrenheit",
+          "name": "thermometer-glass-fahrenheit",
+          "animated": false
+        },
+        {
+          "slug": "thermometer-mercury",
+          "name": "thermometer-mercury",
+          "animated": true
+        },
+        {
+          "slug": "thermometer-mercury-cold",
+          "name": "thermometer-mercury-cold",
+          "animated": true
+        },
+        {
+          "slug": "thermometer-moon",
+          "name": "thermometer-moon",
+          "animated": true
+        },
+        {
+          "slug": "thermometer-raindrop",
+          "name": "thermometer-raindrop",
+          "animated": true
+        },
+        {
+          "slug": "thermometer-snow",
+          "name": "thermometer-snow",
+          "animated": true
+        },
+        {
+          "slug": "thermometer-sun",
+          "name": "thermometer-sun",
+          "animated": true
+        },
+        {
+          "slug": "thermometer-warmer",
+          "name": "thermometer-warmer",
+          "animated": true
+        },
+        {
+          "slug": "thermometer-water",
+          "name": "thermometer-water",
+          "animated": true
+        }
+      ]
+    },
+    {
+      "name": "Time",
+      "slug": "time",
+      "icons": [
+        {
+          "slug": "time-night",
+          "name": "time-night",
+          "animated": true
+        },
+        {
+          "slug": "time-late-night",
+          "name": "time-late-night",
+          "animated": true
+        },
+        {
+          "slug": "time-morning",
+          "name": "time-morning",
+          "animated": true
+        },
+        {
+          "slug": "time-late-morning",
+          "name": "time-late-morning",
+          "animated": true
+        },
+        {
+          "slug": "time-afternoon",
+          "name": "time-afternoon",
+          "animated": true
+        },
+        {
+          "slug": "time-late-afternoon",
+          "name": "time-late-afternoon",
+          "animated": true
+        },
+        {
+          "slug": "time-evening",
+          "name": "time-evening",
+          "animated": true
+        },
+        {
+          "slug": "time-late-everning",
+          "name": "time-late-everning",
+          "animated": true
+        }
+      ]
+    },
+    {
+      "name": "UV",
+      "slug": "uv",
+      "icons": [
+        {
+          "slug": "uv-index",
+          "name": "uv-index",
+          "animated": true
+        },
+        {
+          "slug": "uv-index-1",
+          "name": "uv-index-1",
+          "animated": true
+        },
+        {
+          "slug": "uv-index-2",
+          "name": "uv-index-2",
+          "animated": true
+        },
+        {
+          "slug": "uv-index-3",
+          "name": "uv-index-3",
+          "animated": true
+        },
+        {
+          "slug": "uv-index-4",
+          "name": "uv-index-4",
+          "animated": true
+        },
+        {
+          "slug": "uv-index-5",
+          "name": "uv-index-5",
+          "animated": true
+        },
+        {
+          "slug": "uv-index-6",
+          "name": "uv-index-6",
+          "animated": true
+        },
+        {
+          "slug": "uv-index-7",
+          "name": "uv-index-7",
+          "animated": true
+        },
+        {
+          "slug": "uv-index-8",
+          "name": "uv-index-8",
+          "animated": true
+        },
+        {
+          "slug": "uv-index-9",
+          "name": "uv-index-9",
+          "animated": true
+        },
+        {
+          "slug": "uv-index-10",
+          "name": "uv-index-10",
+          "animated": true
+        },
+        {
+          "slug": "uv-index-11",
+          "name": "uv-index-11",
+          "animated": true
+        },
+        {
+          "slug": "uv-index-11-plus",
+          "name": "uv-index-11-plus",
+          "animated": true
+        },
+        {
+          "slug": "uv-index-alert",
+          "name": "uv-index-alert",
+          "animated": true
+        }
+      ]
+    },
+    {
+      "name": "Wind",
+      "slug": "wind",
+      "icons": [
+        {
+          "slug": "wind",
+          "name": "wind",
+          "animated": true
+        },
+        {
+          "slug": "wind-alert",
+          "name": "wind-alert",
+          "animated": true
+        },
+        {
+          "slug": "wind-beaufort-0",
+          "name": "wind-beaufort-0",
+          "animated": true
+        },
+        {
+          "slug": "wind-beaufort-1",
+          "name": "wind-beaufort-1",
+          "animated": true
+        },
+        {
+          "slug": "wind-beaufort-2",
+          "name": "wind-beaufort-2",
+          "animated": true
+        },
+        {
+          "slug": "wind-beaufort-3",
+          "name": "wind-beaufort-3",
+          "animated": true
+        },
+        {
+          "slug": "wind-beaufort-4",
+          "name": "wind-beaufort-4",
+          "animated": true
+        },
+        {
+          "slug": "wind-beaufort-5",
+          "name": "wind-beaufort-5",
+          "animated": true
+        },
+        {
+          "slug": "wind-beaufort-6",
+          "name": "wind-beaufort-6",
+          "animated": true
+        },
+        {
+          "slug": "wind-beaufort-7",
+          "name": "wind-beaufort-7",
+          "animated": true
+        },
+        {
+          "slug": "wind-beaufort-8",
+          "name": "wind-beaufort-8",
+          "animated": true
+        },
+        {
+          "slug": "wind-beaufort-9",
+          "name": "wind-beaufort-9",
+          "animated": true
+        },
+        {
+          "slug": "wind-beaufort-10",
+          "name": "wind-beaufort-10",
+          "animated": true
+        },
+        {
+          "slug": "wind-beaufort-11",
+          "name": "wind-beaufort-11",
+          "animated": true
+        },
+        {
+          "slug": "wind-beaufort-12",
+          "name": "wind-beaufort-12",
+          "animated": true
+        },
+        {
+          "slug": "wind-direction-n",
+          "name": "wind-direction-n",
+          "animated": true
+        },
+        {
+          "slug": "wind-direction-ne",
+          "name": "wind-direction-ne",
+          "animated": true
+        },
+        {
+          "slug": "wind-direction-e",
+          "name": "wind-direction-e",
+          "animated": true
+        },
+        {
+          "slug": "wind-direction-se",
+          "name": "wind-direction-se",
+          "animated": true
+        },
+        {
+          "slug": "wind-direction-s",
+          "name": "wind-direction-s",
+          "animated": true
+        },
+        {
+          "slug": "wind-direction-sw",
+          "name": "wind-direction-sw",
+          "animated": true
+        },
+        {
+          "slug": "wind-direction-w",
+          "name": "wind-direction-w",
+          "animated": true
+        },
+        {
+          "slug": "wind-direction-nw",
+          "name": "wind-direction-nw",
+          "animated": true
+        },
+        {
+          "slug": "wind-dust",
+          "name": "wind-dust",
+          "animated": true
+        },
+        {
+          "slug": "wind-onshore",
+          "name": "wind-onshore",
+          "animated": true
+        },
+        {
+          "slug": "wind-offshore",
+          "name": "wind-offshore",
+          "animated": true
+        },
+        {
+          "slug": "wind-snow",
+          "name": "wind-snow",
+          "animated": true
+        },
+        {
+          "slug": "wind-spinner",
+          "name": "wind-spinner",
+          "animated": true
+        },
+        {
+          "slug": "windmill",
+          "name": "windmill",
+          "animated": true
+        }
+      ]
+    }
+  ]
+}

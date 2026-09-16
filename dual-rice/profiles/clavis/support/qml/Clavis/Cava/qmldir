@@ -1,0 +1,7 @@
+module Clavis.Cava
+linktarget ClavisCavaplugin
+optional plugin ClavisCavaplugin
+classname Clavis_CavaPlugin
+typeinfo ClavisCava.qmltypes
+prefer :/qt/qml/Clavis/Cava/
+

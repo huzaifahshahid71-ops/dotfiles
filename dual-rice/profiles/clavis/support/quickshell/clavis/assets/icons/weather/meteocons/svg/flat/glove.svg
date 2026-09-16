@@ -1,0 +1,14 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="glove" clip-path="url(#clip0_2045_50402)">
+<g id="Glove">
+<path id="Rectangle 7" d="M43.1967 59.6968C45.5398 57.3537 49.3388 57.3537 51.682 59.6968L58.0459 66.0608L49.5607 74.5461L43.1967 68.1821C40.8535 65.8389 40.8535 62.04 43.1967 59.6968Z" fill="#DC2626"/>
+<path id="Rectangle 6" d="M49 56C49 47.7157 55.7157 41 64 41C72.2843 41 79 47.7157 79 56V76H49V56Z" fill="#EF4444"/>
+<rect id="Rectangle 5" x="47" y="75" width="34" height="12" rx="3" fill="#E6EFFC"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2045_50402">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

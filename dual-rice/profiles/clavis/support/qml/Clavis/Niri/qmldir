@@ -1,0 +1,7 @@
+module Clavis.Niri
+linktarget ClavisNiriplugin
+optional plugin ClavisNiriplugin
+classname Clavis_NiriPlugin
+typeinfo ClavisNiri.qmltypes
+prefer :/qt/qml/Clavis/Niri/
+

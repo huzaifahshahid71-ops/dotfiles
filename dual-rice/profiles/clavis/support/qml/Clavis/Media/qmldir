@@ -1,0 +1,7 @@
+module Clavis.Media
+linktarget ClavisMediaplugin
+optional plugin ClavisMediaplugin
+classname Clavis_MediaPlugin
+typeinfo ClavisMedia.qmltypes
+prefer :/qt/qml/Clavis/Media/
+

@@ -1,0 +1,29 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="pollen-flower" clip-path="url(#clip0_2038_25668)">
+<g id="Flower">
+<g id="Leaves">
+<path d="M45.5211 65.652L46.6425 64.8866L56.1226 64.4031C56.4976 66.5229 57.7074 68.3545 59.4002 69.5462L54.2787 79.2131L53.2828 79.7248C49.6518 81.5906 45.1576 80.2635 43.0625 76.5227C40.9511 72.7529 42.096 67.9895 45.5211 65.652Z" fill="black"/>
+<path d="M61.1668 70.4838L56.1124 80.0241L56.1933 81.3851C56.449 85.6867 59.8972 89 64 89C68.1028 89 71.551 85.6867 71.8067 81.3851L71.8876 80.0241L66.8332 70.4838C65.9525 70.8174 64.9976 71 64 71C63.0024 71 62.0475 70.8174 61.1668 70.4838Z" fill="black"/>
+<path d="M68.5998 69.5462L73.7213 79.2131L74.7172 79.7248C78.3482 81.5906 82.8424 80.2635 84.9375 76.5227C87.0489 72.7529 85.904 67.9895 82.4789 65.6519L81.3575 64.8866L71.8774 64.4031C71.5024 66.5229 70.2926 68.3545 68.5998 69.5462Z" fill="black"/>
+<path d="M71.9783 62.4056L81.6703 62.9L82.4789 62.348C85.904 60.0105 87.0489 55.2471 84.9375 51.4773C82.8424 47.7365 78.3482 46.4094 74.7172 48.2752L73.5548 48.8724L68.9135 56.6862C70.6456 58.0361 71.8077 60.0831 71.9783 62.4056Z" fill="black"/>
+<path d="M67.1948 55.6634L71.8761 47.7824L71.8067 46.6149C71.551 42.3133 68.1028 39 64 39C59.8972 39 56.449 42.3133 56.1933 46.6149L56.1239 47.7824L60.8052 55.6634C61.7838 55.2367 62.8642 55 64 55C65.1358 55 66.2162 55.2367 67.1948 55.6634Z" fill="black"/>
+<path d="M59.0865 56.6862L54.4452 48.8724L53.2828 48.2751C49.6518 46.4094 45.1576 47.7365 43.0625 51.4773C40.9511 55.2471 42.096 60.0105 45.5211 62.348L46.3297 62.9L56.0217 62.4056C56.1923 60.0831 57.3545 58.0361 59.0865 56.6862Z" fill="black"/>
+</g>
+<circle id="Center" cx="64" cy="63" r="6" fill="black"/>
+</g>
+<g id="Pollen">
+<path id="Pollen 7" d="M90 53C91.6569 53 93 51.6569 93 50C93 48.3431 91.6569 47 90 47C88.3431 47 87 48.3431 87 50C87 51.6569 88.3431 53 90 53Z" fill="black"><animateTransform attributeName="transform" type="translate" values="0 0;8 -4" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1"/><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="0s" repeatCount="indefinite" keyTimes="0;0.2;0.8;1"/></path>
+<path id="Pollen 6" d="M80 42C81.1046 42 82 41.1046 82 40C82 38.8954 81.1046 38 80 38C78.8954 38 78 38.8954 78 40C78 41.1046 78.8954 42 80 42Z" fill="black" opacity="0"><animateTransform attributeName="transform" type="translate" values="0 0;8 -4" dur="3s" begin="0.35s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1"/><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="0.35s" repeatCount="indefinite" keyTimes="0;0.2;0.8;1"/></path>
+<path id="Pollen 5" d="M74 52C76.2091 52 78 50.2091 78 48C78 45.7909 76.2091 44 74 44C71.7909 44 70 45.7909 70 48C70 50.2091 71.7909 52 74 52Z" fill="black" opacity="0"><animateTransform attributeName="transform" type="translate" values="0 0;8 -4" dur="3s" begin="0.7s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1"/><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="0.7s" repeatCount="indefinite" keyTimes="0;0.2;0.8;1"/></path>
+<path id="Pollen 4" d="M64 41C65.6569 41 67 39.6569 67 38C67 36.3431 65.6569 35 64 35C62.3431 35 61 36.3431 61 38C61 39.6569 62.3431 41 64 41Z" fill="black" opacity="0"><animateTransform attributeName="transform" type="translate" values="0 0;8 -4" dur="3s" begin="1.0499999999999998s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1"/><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="1.0499999999999998s" repeatCount="indefinite" keyTimes="0;0.2;0.8;1"/></path>
+<path id="Pollen 3" d="M54 52C56.2091 52 58 50.2091 58 48C58 45.7909 56.2091 44 54 44C51.7909 44 50 45.7909 50 48C50 50.2091 51.7909 52 54 52Z" fill="black" opacity="0"><animateTransform attributeName="transform" type="translate" values="0 0;8 -4" dur="3s" begin="1.4s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1"/><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="1.4s" repeatCount="indefinite" keyTimes="0;0.2;0.8;1"/></path>
+<path id="Pollen 2" d="M48 42C49.1046 42 50 41.1046 50 40C50 38.8954 49.1046 38 48 38C46.8954 38 46 38.8954 46 40C46 41.1046 46.8954 42 48 42Z" fill="black" opacity="0"><animateTransform attributeName="transform" type="translate" values="0 0;8 -4" dur="3s" begin="1.75s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1"/><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="1.75s" repeatCount="indefinite" keyTimes="0;0.2;0.8;1"/></path>
+<path id="Pollen 1" d="M38 53C39.6569 53 41 51.6569 41 50C41 48.3431 39.6569 47 38 47C36.3431 47 35 48.3431 35 50C35 51.6569 36.3431 53 38 53Z" fill="black" opacity="0"><animateTransform attributeName="transform" type="translate" values="0 0;8 -4" dur="3s" begin="2.0999999999999996s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1"/><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="2.0999999999999996s" repeatCount="indefinite" keyTimes="0;0.2;0.8;1"/></path>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2038_25668">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

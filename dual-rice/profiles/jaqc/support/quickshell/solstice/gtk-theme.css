@@ -1,0 +1,354 @@
+@define-color theme_bg_color @BACKGROUND@;
+@define-color theme_fg_color @FOREGROUND@;
+@define-color theme_base_color @BACKGROUND@;
+@define-color theme_text_color @FOREGROUND@;
+@define-color theme_selected_bg_color @ACCENT@;
+@define-color theme_selected_fg_color @ON_ACCENT@;
+@define-color insensitive_bg_color @SURFACE@;
+@define-color insensitive_fg_color @MUTED@;
+@define-color borders @BORDER@;
+@define-color accent_color @ACCENT@;
+@define-color accent_bg_color @ACCENT@;
+@define-color accent_fg_color @ON_ACCENT@;
+@define-color destructive_color @RED@;
+@define-color destructive_bg_color @RED@;
+@define-color success_color @GREEN@;
+@define-color success_bg_color @GREEN@;
+@define-color warning_color @YELLOW@;
+@define-color warning_bg_color @YELLOW@;
+@define-color window_bg_color @BACKGROUND@;
+@define-color window_fg_color @FOREGROUND@;
+@define-color view_bg_color @BACKGROUND@;
+@define-color view_fg_color @FOREGROUND@;
+@define-color headerbar_bg_color @SURFACE@;
+@define-color headerbar_fg_color @FOREGROUND@;
+@define-color card_bg_color @SURFACE@;
+@define-color card_fg_color @FOREGROUND@;
+@define-color dialog_bg_color @BACKGROUND@;
+@define-color dialog_fg_color @FOREGROUND@;
+@define-color popover_bg_color @SURFACE@;
+@define-color popover_fg_color @FOREGROUND@;
+@define-color path_bar_bg_color @SELECTION@;
+
+* {
+  -gtk-secondary-caret-color: @ACCENT@;
+  color: @FOREGROUND@;
+  outline-color: alpha(@ACCENT@, 0.45);
+  border-color: transparent;
+  box-shadow: none;
+}
+
+window,
+.background,
+.view,
+textview text,
+iconview {
+  background-color: @BACKGROUND@;
+  color: @FOREGROUND@;
+}
+
+headerbar,
+.titlebar,
+toolbar,
+menubar {
+  background-color: @SURFACE@;
+  color: @FOREGROUND@;
+  border: none;
+  box-shadow: none;
+  padding: 4px;
+}
+
+button,
+modelbutton,
+combobox button {
+  background-color: @SURFACE@;
+  color: @FOREGROUND@;
+  border: none;
+  box-shadow: none;
+  border-radius: 8px;
+  min-height: 24px;
+  padding: 4px 9px;
+  margin: 2px;
+}
+
+button:hover,
+modelbutton:hover {
+  background-color: mix(@SURFACE@, @ACCENT@, 0.18);
+}
+
+button:active,
+button:checked,
+button.suggested-action,
+.suggested-action {
+  background-color: @ACCENT@;
+  color: @ON_ACCENT@;
+}
+
+button.destructive-action,
+.destructive-action,
+.error {
+  background-color: @RED@;
+  color: @ON_ACCENT@;
+}
+
+entry,
+spinbutton,
+searchentry,
+textview border {
+  background-color: @SURFACE@;
+  color: @FOREGROUND@;
+  border: none;
+  border-radius: 8px;
+  min-height: 24px;
+  padding: 4px 8px;
+  margin: 2px;
+}
+
+entry:focus,
+spinbutton:focus,
+searchentry:focus {
+  outline-color: alpha(@ACCENT@, 0.65);
+}
+
+selection,
+*:selected,
+.view:selected,
+row:selected {
+  background-color: @ACCENT@;
+  color: @ON_ACCENT@;
+}
+
+row,
+list row,
+flowboxchild {
+  border: none;
+  border-radius: 8px;
+  padding: 4px 6px;
+  margin: 1px 2px;
+}
+
+.sidebar,
+stacksidebar,
+.navigation-sidebar {
+  background-color: @SURFACE@;
+  color: @FOREGROUND@;
+  border-right: 3px solid @BORDER@;
+  -gtk-icon-style: regular;
+}
+
+.sidebar row,
+.sidebar row:focus,
+stacksidebar row,
+stacksidebar row:focus,
+.navigation-sidebar row,
+.navigation-sidebar row:focus {
+  color: @FOREGROUND@;
+  outline: none;
+}
+
+.sidebar row:selected,
+stacksidebar row:selected,
+.navigation-sidebar row:selected {
+  color: @ON_ACCENT@;
+}
+
+.thunar .sidebar,
+.thunar .sidebar .view {
+  background-color: mix(@SURFACE@, @BACKGROUND@, 0.35);
+  color: @FOREGROUND@;
+}
+
+.thunar .sidebar {
+  border-right: none;
+}
+
+.thunar .sidebar .view {
+  padding: 8px 6px;
+  -GtkTreeView-horizontal-separator: 4;
+  -GtkTreeView-vertical-separator: 8;
+}
+
+.thunar .sidebar .view *:hover {
+  background-color: mix(@SURFACE@, @FOREGROUND@, 0.08);
+}
+
+.thunar .sidebar .view:selected,
+.thunar .sidebar .view:selected:focus {
+  border-left: 3px solid @ACCENT@;
+}
+
+.thunar .sidebar .view *:selected,
+.thunar .sidebar .view *:selected:focus {
+  background-color: @SELECTION@;
+  color: @FOREGROUND@;
+}
+
+.thunar .sidebar .view *:disabled {
+  color: @MUTED@;
+}
+
+.sidebar separator,
+stacksidebar separator,
+.navigation-sidebar separator {
+  background-color: transparent;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+}
+
+popover,
+popover.background,
+menu,
+.menu,
+context-menu {
+  background-color: @SURFACE@;
+  color: @FOREGROUND@;
+  border: none;
+  border-radius: 10px;
+  padding: 4px;
+}
+
+menuitem,
+popover modelbutton {
+  border: none;
+  border-radius: 7px;
+  padding: 5px 8px;
+  margin: 1px;
+}
+
+notebook > header,
+notebook > stack,
+tabbar,
+tabview {
+  background-color: @BACKGROUND@;
+  color: @FOREGROUND@;
+  border: none;
+  padding: 3px;
+}
+
+notebook > header tab,
+tabbar tab {
+  border: none;
+  border-radius: 8px;
+  padding: 5px 9px;
+  margin: 2px;
+}
+
+notebook > header tab:checked,
+tabbar tab:checked {
+  background-color: @SURFACE@;
+  color: @ACCENT@;
+}
+
+switch,
+scale trough,
+progressbar trough,
+scrollbar trough {
+  background-color: @BORDER@;
+  border: none;
+}
+
+switch:checked,
+scale highlight,
+progressbar progress {
+  background-color: @ACCENT@;
+  color: @ON_ACCENT@;
+}
+
+switch slider,
+scale slider {
+  background-color: @FOREGROUND@;
+  border: none;
+}
+
+scrollbar slider {
+  background-color: @MUTED@;
+  border: none;
+  border-radius: 999px;
+  min-width: 6px;
+  min-height: 6px;
+  margin: 2px;
+}
+
+scrollbar slider:hover,
+scrollbar slider:active {
+  background-color: @ACCENT@;
+}
+
+check,
+radio {
+  background-color: @SURFACE@;
+  color: @ON_ACCENT@;
+  border: none;
+  margin: 2px;
+}
+
+check:checked,
+check:indeterminate,
+radio:checked,
+radio:indeterminate {
+  background-color: @ACCENT@;
+  color: @ON_ACCENT@;
+}
+
+tooltip,
+tooltip.background {
+  background-color: @SURFACE@;
+  color: @FOREGROUND@;
+  border: none;
+  border-radius: 8px;
+  padding: 4px 7px;
+}
+
+.dim-label,
+:disabled {
+  color: @MUTED@;
+}
+
+.success {
+  color: @GREEN@;
+}
+
+.warning {
+  color: @YELLOW@;
+}
+
+separator {
+  background-color: @BORDER@;
+  min-width: 1px;
+  min-height: 1px;
+  margin: 3px;
+}
+
+paned > separator,
+paned > separator:focus {
+  background-color: @BORDER@;
+  background-image: none;
+  border: none;
+  box-shadow: none;
+  outline: none;
+  min-width: 3px;
+  min-height: 1px;
+  margin: 0;
+}
+
+window.thunar toolbar entry,
+window.thunar toolbar .path-bar button {
+  background-color: @path_bar_bg_color;
+}
+
+.thunar paned > separator,
+.thunar paned > separator:focus {
+  background-color: transparent;
+  background-image: none;
+  border: none;
+  min-width: 6px;
+}
+
+spinner:not(:checked) {
+  opacity: 0;
+}
+
+spinner:checked {
+  opacity: 1;
+}

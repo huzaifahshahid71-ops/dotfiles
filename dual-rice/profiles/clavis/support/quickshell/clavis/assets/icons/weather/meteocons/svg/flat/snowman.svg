@@ -1,0 +1,37 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="snowman" clip-path="url(#clip0_2045_50398)">
+<g id="Snowman">
+<circle id="Body" cx="64" cy="76" r="21" fill="#F3F7FE"/>
+<g id="Buttons">
+<circle id="Top Button" cx="64" cy="69" r="2" fill="#364D6E"/>
+<circle id="Middle Button" cx="64" cy="75" r="2" fill="#364D6E"/>
+<circle id="Bottom Button" cx="64" cy="81" r="2" fill="#364D6E"/>
+</g>
+<g id="Arms">
+<circle id="Right Arm" cx="83.5" cy="68.5" r="4.5" fill="#E6EFFC"/>
+<circle id="Left Arm" cx="44.5" cy="68.5" r="4.5" fill="#E6EFFC"/>
+</g>
+<circle id="Head" cx="64" cy="46" r="15" fill="#F3F7FE"/>
+<path id="Mouth" d="M59.5 51.5L60.3448 51.8754C62.6718 52.9097 65.3282 52.9097 67.6552 51.8754L68.5 51.5" stroke="#364D6E" stroke-width="2" stroke-linecap="round"/>
+<path id="Nose" d="M57.1563 48.9946C55.9733 49.0968 55.5359 47.7287 56.6215 47.3214L63.5617 45.0769C63.8408 44.9723 64.1415 44.9787 64.3982 45.0702C64.9316 45.2602 64.9273 45.9416 64.79 46.4909C64.6527 47.0403 64.7698 47.7266 64.3677 48.1253C64.2003 48.2912 63.959 48.4064 63.6765 48.4308L57.1563 48.9946Z" fill="#FB923C"/>
+<g id="Eyes">
+<circle id="Left Eye" cx="59" cy="42" r="2" fill="#364D6E"/>
+<circle id="Right Eye" cx="69" cy="42" r="2" fill="#364D6E"/>
+</g>
+<g id="Hat">
+<rect id="Hat Top" x="57" y="22" width="14" height="15" rx="2" fill="#202939"/>
+<rect id="Hat Base" x="51" y="31" width="26" height="6" rx="2" fill="#202939"/>
+<line id="Hat Line" x1="57" y1="31.5" x2="71" y2="31.5" stroke="#DC2626"/>
+</g>
+<g id="Shawl">
+<rect id="Shawl Hanging" x="68" y="58" width="6" height="9" rx="2" fill="#DC2626"/>
+<path id="Shawl Base" d="M52 56.1805C52 55.5625 52.5549 55.0925 53.1644 55.1941L57.0952 55.8492C61.6669 56.6111 66.3331 56.6111 70.9048 55.8492L74.8356 55.1941C75.4451 55.0925 76 55.5625 76 56.1805V59.1529C76 59.6417 75.6466 60.0589 75.1644 60.1393L70.9048 60.8492C66.3331 61.6111 61.6669 61.6111 57.0952 60.8492L52.8356 60.1393C52.3534 60.0589 52 59.6417 52 59.1529V56.1805Z" fill="#EF4444"/>
+</g>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2045_50398">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

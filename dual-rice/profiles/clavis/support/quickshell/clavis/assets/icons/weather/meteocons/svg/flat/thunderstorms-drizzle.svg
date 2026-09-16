@@ -1,0 +1,26 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="thunderstorms-drizzle" clip-path="url(#clip0_2045_39928)">
+<g id="Sky">
+<g id="Clouds">
+<g id="Cloud">
+<path id="Cloud_2" d="M90.3887 63.0856C92.684 53.8819 87.741 44.1357 79.0087 40.4822C70.2654 36.8242 59.8278 40.1375 54.8373 48.2115C50.5364 45.625 44.9753 45.7781 40.824 48.5991C36.6833 51.4128 34.4998 56.5143 35.35 61.4539C28.3927 62.7685 23.3935 69.3393 24.0616 76.4076C24.7298 83.4776 30.872 89.0018 37.9535 89C55.6067 89 73.3061 89 90.9768 89C98.0447 89 104 83.1189 104 76.0281C104 68.7015 97.6776 62.7674 90.3887 63.0856Z" fill="#F3F7FE"/>
+</g>
+<animateTransform attributeName="transform" type="translate" values="0 0;0 -3;0 0" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></g>
+</g>
+<g id="Precipitation">
+<g id="Raindrops">
+<path id="Raindrop 1" d="M52 87V90" stroke="#0A5AD4" stroke-width="4" stroke-linecap="round"><animateTransform attributeName="transform" type="translate" values="0 0;0 20" dur="1s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 1 1"/><animate attributeName="opacity" values="0;1;1;0" dur="1s" begin="0s" repeatCount="indefinite" keyTimes="0;0.15;0.85;1"/></path>
+<path id="Raindrop 2" d="M64 87V90" stroke="#0A5AD4" stroke-width="4" stroke-linecap="round" opacity="0"><animateTransform attributeName="transform" type="translate" values="0 0;0 20" dur="1s" begin="0.4s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 1 1"/><animate attributeName="opacity" values="0;1;1;0" dur="1s" begin="0.4s" repeatCount="indefinite" keyTimes="0;0.15;0.85;1"/></path>
+<path id="Raindrop 3" d="M76 87V90" stroke="#0A5AD4" stroke-width="4" stroke-linecap="round" opacity="0"><animateTransform attributeName="transform" type="translate" values="0 0;0 20" dur="1s" begin="0.8s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 1 1"/><animate attributeName="opacity" values="0;1;1;0" dur="1s" begin="0.8s" repeatCount="indefinite" keyTimes="0;0.15;0.85;1"/></path>
+</g>
+</g>
+<g id="Lightning">
+<path id="Lightning Bolt" d="M60.0003 68L52 90.9092H60.0003L55.9995 110L76 83.2728H63.9996L71.9999 68H60.0003Z" fill="#F6A823"><animate attributeName="opacity" values="1;1;0;1;0;1;0;1;1" dur="2s" begin="0s" repeatCount="indefinite" keyTimes="0;0.25;0.33;0.42;0.5;0.57;0.63;0.67;1"/></path>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2045_39928">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

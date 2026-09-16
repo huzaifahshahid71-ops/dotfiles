@@ -1,0 +1,23 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="umbrella-wind" clip-path="url(#clip0_2045_48502)">
+<g id="Umbrella">
+<path id="Umbrella Stick" d="M38.1475 77.1246C36.3243 78.9478 35.2667 81.9357 37.4835 84.1525C39.7003 86.3693 42.6883 85.3117 44.5114 83.4886L86.6274 41.3726" stroke="#71717A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<g id="Umbrella Top">
+<path id="Vector" d="M60.2075 52.8708C67.3117 55.5897 72.3759 60.5976 75.1296 67.7929C75.3425 68.3491 75.7754 68.7954 76.3289 69.0151C76.859 69.2255 77.3828 69.4435 77.8995 69.6702C89.9323 61.028 86.6276 41.3728 86.6276 41.3728C86.6276 41.3728 66.9765 38.0688 58.3329 50.0972C58.5589 50.6163 58.7762 51.1414 58.9859 51.6714C59.2049 52.2252 59.6513 52.6579 60.2075 52.8708Z" fill="#F1F5F9"/>
+<g id="Vector_2">
+<path d="M94.9826 83.8999C103.167 72.8666 99.802 54.5472 86.6274 41.3726C86.6274 41.3726 89.9321 61.0278 77.8993 69.67C83.8341 72.2739 88.8238 76.0188 91.4409 82.3401L91.8562 83.3795C92.392 84.7205 94.1208 85.0616 94.9826 83.8999Z" fill="#EF4444"/>
+<path d="M86.6274 41.3726C73.4528 28.1979 55.1334 24.8325 44.1001 33.0173C42.9383 33.8792 43.2795 35.608 44.6205 36.1438L45.6599 36.5591C52.0765 39.0968 55.7676 44.2063 58.3327 50.097C66.9762 38.0686 86.6274 41.3726 86.6274 41.3726Z" fill="#EF4444"/>
+</g>
+</g>
+<animateTransform attributeName="transform" type="rotate" values="-6 66.2 58.6;6 66.2 58.6;-6 66.2 58.6" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></g>
+<g id="Wind">
+<path id="Wind Line 1" d="M44.3511 47.8436C47.1003 44.9344 52 47.1021 52 50.977C52 53.4748 50.01 55.5 47.5556 55.5H16" stroke="#E2E8F0" stroke-width="3" stroke-miterlimit="10" stroke-linecap="round" stroke-dasharray="50"><animate attributeName="stroke-dashoffset" values="0;1000" dur="6s" begin="0s" repeatCount="indefinite"/></path>
+<path id="Wind Line 1_2" d="M32.0569 69.1577C34.8534 72.008 40 70.0165 40 66.0238C40 63.5256 37.9335 61.5 35.3846 61.5C32.8358 61.5 16 61.5 16 61.5" stroke="#E2E8F0" stroke-width="3" stroke-miterlimit="10" stroke-linecap="round" stroke-dasharray="50"><animate attributeName="stroke-dashoffset" values="0;1000" dur="6s" begin="0.2s" repeatCount="indefinite"/></path>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2045_48502">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

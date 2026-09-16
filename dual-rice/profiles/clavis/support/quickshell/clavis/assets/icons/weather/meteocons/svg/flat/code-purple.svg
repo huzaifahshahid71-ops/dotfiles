@@ -1,0 +1,8 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="code-purple">
+<g id="Alarm">
+<g transform="translate(64.0,63.2)"><path id="Exclamation" d="M58.7698 39.3039C61.0632 35.2241 66.9368 35.2241 69.2302 39.3038L91.0171 78.0598C93.2655 82.0594 90.3752 87 85.7869 87H42.2131C37.6248 87 34.7345 82.0594 36.9829 78.0598L58.7698 39.3039Z" fill="#A855F7" transform="translate(-64.0,-63.2)"/><animateTransform attributeName="transform" type="scale" values="1 1;1.1 1.1;1 1" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1" additive="sum"/></g>
+<path id="ExclamationMark" d="M65.2636 68.65H62.7736L61.3636 60.28V54.64H66.6436V60.28L65.2636 68.65ZM66.6736 76H61.3336V70.99H66.6736V76Z" fill="white"/>
+</g>
+</g>
+</svg>

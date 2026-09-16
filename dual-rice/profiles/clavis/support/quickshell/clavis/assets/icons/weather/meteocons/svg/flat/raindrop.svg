@@ -1,0 +1,7 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="raindrop">
+<g transform="translate(64.5,64.0)"><g id="Raindrop" transform="translate(-64.5,-64.0)">
+<path id="Vector" d="M64.5 34C52.6294 52 45 63.25 45 74.175C45 85.1 53.7262 94 64.5 94C75.2738 94 84 85.125 84 74.175C84 63.225 76.3706 51.975 64.5 34Z" fill="#2563EB"/>
+</g><animateTransform attributeName="transform" type="scale" values="1 1;1.1 1.1;1 1" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1" additive="sum"/></g>
+</g>
+</svg>

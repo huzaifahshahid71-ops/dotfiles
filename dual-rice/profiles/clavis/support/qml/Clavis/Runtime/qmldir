@@ -1,0 +1,7 @@
+module Clavis.Runtime
+linktarget ClavisRuntimeplugin
+optional plugin ClavisRuntimeplugin
+classname Clavis_RuntimePlugin
+typeinfo ClavisRuntime.qmltypes
+prefer :/qt/qml/Clavis/Runtime/
+

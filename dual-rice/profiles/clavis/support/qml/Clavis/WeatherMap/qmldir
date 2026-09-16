@@ -1,0 +1,7 @@
+module Clavis.WeatherMap
+linktarget ClavisWeatherMapplugin
+optional plugin ClavisWeatherMapplugin
+classname Clavis_WeatherMapPlugin
+typeinfo ClavisWeatherMap.qmltypes
+prefer :/qt/qml/Clavis/WeatherMap/
+

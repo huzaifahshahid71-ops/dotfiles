@@ -1,0 +1,7 @@
+module Clavis.DesktopCards
+linktarget ClavisDesktopCardsplugin
+optional plugin ClavisDesktopCardsplugin
+classname Clavis_DesktopCardsPlugin
+typeinfo ClavisDesktopCards.qmltypes
+prefer :/qt/qml/Clavis/DesktopCards/
+

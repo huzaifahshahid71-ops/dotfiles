@@ -1,0 +1,35 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="windmill" clip-path="url(#clip0_2038_27006)">
+<g id="Windmill" clip-path="url(#clip1_2038_27006)">
+<g id="Mask group">
+<mask id="mask0_2038_27006" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="128">
+<path id="Mask" fill-rule="evenodd" clip-rule="evenodd" d="M128 0H0V128H128V0ZM64 68C67.7614 68 71 64.7614 71 61C71 57.2386 67.7614 54 64 54C60.2386 54 57 57.2386 57 61C57 64.7614 60.2386 68 64 68Z" fill="black"/>
+</mask>
+<g mask="url(#mask0_2038_27006)">
+<path id="Pole" fill-rule="evenodd" clip-rule="evenodd" d="M62 96V64H66V96H62Z" fill="black"/>
+</g>
+</g>
+<g id="Mask group_2">
+<mask id="mask1_2038_27006" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="128">
+<path id="Mask_2" fill-rule="evenodd" clip-rule="evenodd" d="M128 0H0V128H128V0ZM64 68C67.7614 68 71 64.7614 71 61C71 57.2386 67.7614 54 64 54C60.2386 54 57 57.2386 57 61C57 64.7614 60.2386 68 64 68Z" fill="black"/>
+</mask>
+<g mask="url(#mask1_2038_27006)">
+<g id="Blades">
+<path id="Blade" d="M62.0174 36.4679C62.3788 33.1774 65.6212 33.1774 65.9826 36.4679L67.9742 54.6035C68.1699 56.3854 67.2274 58 65.9916 58H62.0084C60.7726 58 59.8301 56.3854 60.0258 54.6035L62.0174 36.4679Z" fill="black"/>
+<path id="Blade_2" d="M86.2366 71.5491C88.9056 73.5073 87.2844 76.3153 84.254 74.983L67.5523 67.64C65.9113 66.9185 64.9842 65.295 65.6021 64.2248L67.5938 60.7752C68.2117 59.705 70.0812 59.6961 71.5265 60.7565L86.2366 71.5491Z" fill="black"/>
+<path id="Blade_3" d="M43.7457 74.983C40.7154 76.3153 39.0942 73.5073 41.7632 71.5491L56.4732 60.7565C57.9185 59.6961 59.7881 59.705 60.406 60.7752L62.3976 64.2248C63.0155 65.295 62.0884 66.9186 60.4474 67.64L43.7457 74.983Z" fill="black"/>
+<animateTransform attributeName="transform" type="rotate" values="0 64 61;360 64 61" dur="6s" begin="0s" repeatCount="indefinite"/></g>
+</g>
+</g>
+<circle id="Core" cx="64" cy="61" r="5" fill="black"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2038_27006">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+<clipPath id="clip1_2038_27006">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

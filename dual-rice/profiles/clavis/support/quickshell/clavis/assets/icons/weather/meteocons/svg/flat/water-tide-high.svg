@@ -1,0 +1,10 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="water-tide-high">
+<g id="Water">
+<g transform="translate(64.0,78.0)"><path id="Water_2" d="M34 58.5C34 57.5557 34.4446 56.6666 35.2 56.1L40.0748 52.4439C41.1997 51.6003 42.7596 51.6511 43.8272 52.5661L47.0476 55.3265C48.1711 56.2895 49.8289 56.2895 50.9524 55.3265L54.1728 52.5661C55.2404 51.6511 56.8003 51.6003 57.9252 52.4439L62.2 55.65C63.2667 56.45 64.7333 56.45 65.8 55.65L70.0748 52.4439C71.1997 51.6003 72.7596 51.6511 73.8272 52.5661L77.0476 55.3265C78.1711 56.2895 79.8289 56.2895 80.9524 55.3265L84.1728 52.5661C85.2404 51.6511 86.8003 51.6003 87.9252 52.4439L92.8 56.1C93.5554 56.6666 94 57.5557 94 58.5V72C94 75.3137 91.3137 78 88 78H40C36.6863 78 34 75.3137 34 72V58.5Z" fill="#2563EB" transform="translate(-64.0,-78.0)"/><animateTransform attributeName="transform" type="scale" values="1 1;1 1.08;1 1" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1" additive="sum"/></g>
+<g id="Arrow">
+<path id="_Arrow Detail" d="M64 43V25M64 25L58 31.9M64 25L70 31.9" stroke="#202939" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<animateTransform attributeName="transform" type="translate" values="0 0;0 -4;0 0" dur="2s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></g>
+</g>
+</g>
+</svg>

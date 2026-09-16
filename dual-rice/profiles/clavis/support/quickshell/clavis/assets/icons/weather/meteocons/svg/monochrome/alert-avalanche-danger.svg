@@ -1,0 +1,21 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="alert-avalanche-danger">
+<g id="Danger Zone">
+<g transform="translate(64.0,63.2)"><path id="Exclamation" fill-rule="evenodd" clip-rule="evenodd" d="M69.23 39.3039C66.9365 35.2242 61.063 35.2242 58.7695 39.3039L36.9826 78.0599C34.7342 82.0595 37.6246 87.0001 42.2128 87.0001H85.7867C90.3749 87.0001 93.2653 82.0595 91.0169 78.0599L69.23 39.3039ZM65.7485 43.0301C64.9855 41.6567 63.014 41.6567 62.251 43.0301L42.2554 79.0189C41.5126 80.3557 42.4772 82.0001 44.0042 82.0001H83.9953C85.5223 82.0001 86.4869 80.3557 85.7441 79.0189L65.7485 43.0301Z" fill="black" transform="translate(-64.0,-63.2)"/><animateTransform attributeName="transform" type="scale" values="1 1;1.1 1.1;1 1" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1" additive="sum"/></g>
+<g transform="translate(66.5,74.1)"><g id="Mask group" transform="translate(-66.5,-74.1)">
+<mask id="mask0_2045_28589" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="42" y="42" width="44" height="40">
+<path id="Clip" d="M62.2512 43.03C63.0143 41.6567 64.9857 41.6567 65.7488 43.03L85.7444 79.0188C86.4871 80.3557 85.5225 82 83.9956 82H44.0044C42.4775 82 41.5129 80.3556 42.2556 79.0188L62.2512 43.03Z" fill="black"/>
+</mask>
+<g mask="url(#mask0_2045_28589)">
+<g id="Inner">
+<path id="Hill" d="M47 83L86 67V83H47Z" fill="black"/>
+<rect id="Cube" x="54" y="69.5" width="9" height="9" rx="2" transform="rotate(-30 54 69.5)" fill="black"/>
+<circle id="Debris 1" cx="51.5" cy="77.5" r="1.5" fill="black"><animateTransform attributeName="transform" type="translate" values="0 0;8 -4" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1"/><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="0s" repeatCount="indefinite" keyTimes="0;0.2;0.8;1"/></circle>
+<circle id="Debris 2" cx="72.5" cy="70.5" r="1.5" fill="black" opacity="0"><animateTransform attributeName="transform" type="translate" values="0 0;8 -4" dur="3s" begin="0.3s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1"/><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="0.3s" repeatCount="indefinite" keyTimes="0;0.2;0.8;1"/></circle>
+<rect id="Debris 3" x="68.6543" y="65.2622" width="6" height="3" rx="1" transform="rotate(-22.5 68.6543 65.2622)" fill="black" opacity="0"><animateTransform attributeName="transform" type="translate" values="0 0;8 -4" dur="3s" begin="0.6s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1"/><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="0.6s" repeatCount="indefinite" keyTimes="0;0.2;0.8;1"/></rect>
+</g>
+</g>
+</g><animateTransform attributeName="transform" type="scale" values="1 1;1.1 1.1;1 1" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1" additive="sum"/></g>
+</g>
+</g>
+</svg>

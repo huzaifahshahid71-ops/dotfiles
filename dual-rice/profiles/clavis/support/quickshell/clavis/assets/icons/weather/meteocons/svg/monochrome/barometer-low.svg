@@ -1,0 +1,26 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="barometer-low">
+<g id="Barometer">
+<circle id="Housing" cx="64" cy="64" r="38.5" stroke="black" stroke-width="3"/>
+<g id="Lines">
+<path id="Line 1" d="M64 33V42" stroke="black" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 7" d="M42.0797 42.0797L48.4436 48.4436" stroke="black" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 5" d="M85.9203 42.0797L79.5564 48.4436" stroke="black" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 3" d="M95 64L86 64" stroke="black" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 8" d="M79.5563 79.5564L85.9203 85.9203" stroke="black" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 6" d="M48.4436 79.5564L42.0797 85.9203" stroke="black" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 4" d="M42 64L33 64" stroke="black" stroke-width="2" stroke-linecap="round"/>
+</g>
+</g>
+<g id="Barometer_2">
+<g id="Pointer" clip-path="url(#clip0_2038_25545)">
+<path id="Pointer_2" fill-rule="evenodd" clip-rule="evenodd" d="M47.0294 80.9706C47.8105 81.7516 49.0768 81.7516 49.8579 80.9706L62.1729 68.6556C63.9671 69.3587 66.0857 68.9853 67.5355 67.5355C68.9853 66.0857 69.3587 63.9671 68.6556 62.1729L70.364 60.4645C71.145 59.6834 71.145 58.4171 70.364 57.636C69.5829 56.855 68.3166 56.855 67.5355 57.636L65.8271 59.3444C64.0329 58.6413 61.9143 59.0147 60.4645 60.4645C59.0147 61.9143 58.6413 64.0329 59.3444 65.8271L47.0294 78.1421C46.2484 78.9232 46.2484 80.1895 47.0294 80.9706ZM66.1213 61.8787C64.9497 60.7071 63.0503 60.7071 61.8787 61.8787C60.7071 63.0503 60.7071 64.9497 61.8787 66.1213C63.0503 67.2929 64.9497 67.2929 66.1213 66.1213C67.2929 64.9497 67.2929 63.0503 66.1213 61.8787Z" fill="black"/>
+<animateTransform attributeName="transform" type="rotate" values="-6 64 64;6 64 64;-6 64 64" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></g>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2038_25545">
+<rect width="10" height="48" fill="white" transform="translate(50.565 84.5061) rotate(-135)"/>
+</clipPath>
+</defs>
+</svg>

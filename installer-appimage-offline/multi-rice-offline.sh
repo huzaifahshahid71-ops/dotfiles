@@ -76,6 +76,8 @@ managed_user_paths() {
         ".config/hypr" \
         ".config/niri" \
         ".config/quickshell/multi-rice-switcher" \
+        ".config/quickshell/solstice" \
+        ".config/quickshell/clavis" \
         ".config/environment.d/20-multi-rice-icons.conf" \
         ".local/share/desktop-switcher" \
         ".local/bin/multi-rice-control" \
@@ -478,7 +480,13 @@ preflight_payload() {
     done
     for profile in jaqc clavis nixri; do
         [[ -f "$REPO/dual-rice/profiles/$profile/niri/config.kdl" ]] || die "Missing $profile Niri profile in offline payload"
+        [[ -d "$REPO/dual-rice/profiles/$profile/support" ]] || die "Missing $profile runtime support in offline payload"
     done
+    [[ -f "$REPO/dual-rice/profiles/jaqc/support/quickshell/solstice/shell.qml" ]] || die "Bundled Solstice shell is missing"
+    [[ -f "$REPO/dual-rice/profiles/clavis/support/quickshell/clavis/shell.qml" ]] || die "Bundled Cipher shell is missing"
+    [[ -x "$REPO/dual-rice/profiles/clavis/support/bin/clavis-shell" ]] || die "Bundled Cipher launcher is missing or not executable"
+    [[ -d "$REPO/dual-rice/profiles/clavis/support/qml/Clavis" ]] || die "Bundled Cipher QML imports are missing"
+    [[ -x "$REPO/dual-rice/profiles/nixri/support/bin/nixri-dms" ]] || die "Bundled Astra runtime launcher is missing or not executable"
 
     [[ -f "$REPO/dual-rice/noctalia/config.toml" ]] || die "Missing Noctalia config in offline payload"
     [[ -f "$REPO/dual-rice/noctalia/settings.toml" ]] || die "Missing Noctalia settings in offline payload"
@@ -687,11 +695,24 @@ restore_profiles_and_configs() {
         rsync -a --delete "$src/profiles/$profile/hypr/" "$PROFILE_ROOT/$profile/hypr/"
     done
 
-    log "Restoring three Niri profiles"
+    log "Restoring three Niri profiles and runtime support"
     for profile in jaqc clavis nixri; do
-        mkdir -p "$PROFILE_ROOT/$profile/niri"
+        [[ -d "$src/profiles/$profile/support" ]] || die "Bundled $profile runtime support is missing"
+
+        mkdir -p "$PROFILE_ROOT/$profile/niri" "$PROFILE_ROOT/$profile/support"
         rsync -a --delete "$src/profiles/$profile/niri/" "$PROFILE_ROOT/$profile/niri/"
+        rsync -a --delete "$src/profiles/$profile/support/" "$PROFILE_ROOT/$profile/support/"
+
+        while IFS= read -r json; do
+            rewrite_home_paths_json "$json"
+        done < <(find "$PROFILE_ROOT/$profile/support" -type f -name '*.json' -print)
     done
+
+    log "Installing Niri Quickshell discovery links"
+    mkdir -p "$HOME/.config/quickshell"
+    rm -rf "$HOME/.config/quickshell/solstice" "$HOME/.config/quickshell/clavis"
+    ln -s "$PROFILE_ROOT/jaqc/support/quickshell/solstice" "$HOME/.config/quickshell/solstice"
+    ln -s "$PROFILE_ROOT/clavis/support/quickshell/clavis" "$HOME/.config/quickshell/clavis"
 
     if [[ -d "$src/caelestia" ]]; then
         mkdir -p "$HOME/.config/caelestia"

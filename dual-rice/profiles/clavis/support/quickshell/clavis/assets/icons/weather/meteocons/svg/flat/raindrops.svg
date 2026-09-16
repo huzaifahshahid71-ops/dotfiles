@@ -1,0 +1,17 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="raindrops">
+<g id="Mask group">
+<mask id="mask0_2045_48518" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="35" y="34" width="35" height="60">
+<path id="Mask" d="M69.6509 34H35V94H61.466C55.1418 89.7121 51 82.4014 51 74.175C51 67.7677 53.242 61.5439 56.7606 54.8742C60.5735 47.6468 65.0953 40.8021 69.6509 34Z" fill="black"/>
+</mask>
+<g mask="url(#mask0_2045_48518)">
+<g transform="translate(54.5,64.0)"><g id="Raindrop" transform="translate(-54.5,-64.0)">
+<path id="Vector" d="M54.5 34C42.6294 52 35 63.25 35 74.175C35 85.1 43.7262 94 54.5 94C65.2738 94 74 85.125 74 74.175C74 63.225 66.3706 51.975 54.5 34Z" fill="#2563EB"/>
+</g><animateTransform attributeName="transform" type="scale" values="1 1;1.1 1.1;1 1" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1" additive="sum"/></g>
+</g>
+</g>
+<g transform="translate(74.5,64.0)"><g id="Raindrop_2" transform="translate(-74.5,-64.0)">
+<path id="Vector_2" d="M74.5 34C62.6294 52 55 63.25 55 74.175C55 85.1 63.7262 94 74.5 94C85.2738 94 94 85.125 94 74.175C94 63.225 86.3706 51.975 74.5 34Z" fill="#2563EB"/>
+</g><animateTransform attributeName="transform" type="scale" values="1 1;1.1 1.1;1 1" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1" additive="sum"/></g>
+</g>
+</svg>

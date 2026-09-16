@@ -1,0 +1,14 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="beanie" clip-path="url(#clip0_2045_50400)">
+<g id="Beanie">
+<path id="Rectangle 6" d="M49 68C49 59.7157 55.7157 53 64 53C72.2843 53 79 59.7157 79 68V76H49V68Z" fill="#EF4444"/>
+<rect id="Rectangle 5" x="47" y="75" width="34" height="12" rx="3" fill="#E6EFFC"/>
+<circle id="Ellipse 1" cx="64" cy="46" r="5" fill="#E6EFFC"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2045_50400">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

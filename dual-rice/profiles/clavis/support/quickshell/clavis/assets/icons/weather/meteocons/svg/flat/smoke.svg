@@ -1,0 +1,21 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="smoke" clip-path="url(#clip0_2045_39752)">
+<g id="Sky">
+<g id="Clouds">
+<g id="Cloud">
+<path id="Cloud_2" d="M90.3886 63.0856C92.6838 53.8819 87.7408 44.1357 79.0085 40.4822C70.2653 36.8242 59.8277 40.1375 54.8372 48.2115C50.5363 45.625 44.9752 45.7781 40.8239 48.5991C36.6832 51.4128 34.4996 56.5143 35.3499 61.4539C28.3926 62.7685 23.3934 69.3393 24.0614 76.4076C24.7297 83.4776 30.8718 89.0018 37.9534 89C55.6066 89 73.306 89 90.9767 89C98.0446 89 104 83.1189 104 76.0281C104 68.7015 97.6775 62.7674 90.3886 63.0856Z" fill="#F3F7FE"/>
+</g>
+<animateTransform attributeName="transform" type="translate" values="0 0;0 -3;0 0" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></g>
+</g>
+<g id="Smoke">
+<path id="Smoke 1" d="M62.5 110C64.9853 110 67 107.985 67 105.5C67 103.015 64.9853 101 62.5 101C60.0147 101 58 103.015 58 105.5C58 107.985 60.0147 110 62.5 110Z" fill="#94A3B8" opacity="0"><animateTransform attributeName="transform" type="translate" values="0 0;8 -4" dur="3s" begin="0.1s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1"/><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="0.1s" repeatCount="indefinite" keyTimes="0;0.2;0.8;1"/></path>
+<path id="Smoke 2" d="M53.5 101C57.6421 101 61 97.6421 61 93.5C61 89.3579 57.6421 86 53.5 86C49.3579 86 46 89.3579 46 93.5C46 97.6421 49.3579 101 53.5 101Z" fill="#94A3B8" opacity="0"><animateTransform attributeName="transform" type="translate" values="0 0;8 -4" dur="3s" begin="0.5s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1"/><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="0.5s" repeatCount="indefinite" keyTimes="0;0.2;0.8;1"/></path>
+<path id="Smoke 3" d="M71.5 89C77.299 89 82 84.299 82 78.5C82 72.701 77.299 68 71.5 68C65.701 68 61 72.701 61 78.5C61 84.299 65.701 89 71.5 89Z" fill="#94A3B8" opacity="0"><animateTransform attributeName="transform" type="translate" values="0 0;8 -4" dur="3s" begin="0.9s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1"/><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="0.9s" repeatCount="indefinite" keyTimes="0;0.2;0.8;1"/></path>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2045_39752">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

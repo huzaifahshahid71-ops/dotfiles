@@ -1,0 +1,22 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="moonrise" clip-path="url(#clip0_2045_48363)">
+<g id="Horizon">
+<path id="Horizon Rise" d="M37 92H53.7456C55.1989 92 56.6029 91.4725 57.6966 90.5155L62.0245 86.7286C63.1556 85.7389 64.8444 85.7389 65.9755 86.7286L70.3034 90.5155C71.3971 91.4725 72.8011 92 74.2544 92H91" stroke="#202939" stroke-width="4" stroke-linecap="round"/>
+</g>
+<g id="Mask group">
+<mask id="mask0_2045_48363" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="9" width="128" height="77">
+<path id="Mask" d="M0 9H128V86H75.0523C74.3711 86 73.7102 85.7682 73.1783 85.3426L67.7482 80.9985C65.5569 79.2455 62.4431 79.2455 60.2518 80.9985L54.8217 85.3426C54.2898 85.7682 53.6289 86 52.9477 86H0V9Z" fill="black"/>
+</mask>
+<g mask="url(#mask0_2045_48363)">
+<g id="Moon">
+<path id="Moon_2" d="M60.9624 34C44.6764 35.7576 32 49.3624 32 65.8982C32 83.6267 46.5673 98 64.5358 98C79.6824 98 92.3733 87.7745 96 73.9491C74.381 76.267 55.3288 55.4643 60.9624 34Z" fill="#72B9D5"/>
+<animateTransform attributeName="transform" type="rotate" values="-6 64.0 66.0;6 64.0 66.0;-6 64.0 66.0" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></g>
+</g>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2045_48363">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

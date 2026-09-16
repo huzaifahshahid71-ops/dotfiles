@@ -1,0 +1,21 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="barometer-high">
+<g id="Barometer">
+<circle id="Housing" cx="64" cy="64" r="38.5" stroke="black" stroke-width="3"/>
+<g id="Lines">
+<path id="Line 1" d="M64 33V42" stroke="black" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 7" d="M42.0797 42.0797L48.4437 48.4436" stroke="black" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 5" d="M85.9203 42.0797L79.5563 48.4436" stroke="black" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 3" d="M95 64L86 64" stroke="black" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 8" d="M79.5563 79.5564L85.9203 85.9203" stroke="black" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 6" d="M48.4437 79.5564L42.0797 85.9203" stroke="black" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 4" d="M42 64L33 64" stroke="black" stroke-width="2" stroke-linecap="round"/>
+</g>
+</g>
+<g id="Barometer_2">
+<g id="Pointer">
+<path id="Pointer_2" fill-rule="evenodd" clip-rule="evenodd" d="M64 40C62.8954 40 62 40.8954 62 42V59.416C60.2341 60.1876 59 61.9497 59 64C59 66.0503 60.2341 67.8124 62 68.584V71C62 72.1046 62.8954 73 64 73C65.1046 73 66 72.1046 66 71V68.584C67.7659 67.8124 69 66.0503 69 64C69 61.9497 67.7659 60.1876 66 59.416V42C66 40.8954 65.1046 40 64 40ZM64 67C65.6569 67 67 65.6569 67 64C67 62.3431 65.6569 61 64 61C62.3431 61 61 62.3431 61 64C61 65.6569 62.3431 67 64 67Z" fill="black"/>
+<animateTransform attributeName="transform" type="rotate" values="-6 64 64;6 64 64;-6 64 64" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></g>
+</g>
+</g>
+</svg>

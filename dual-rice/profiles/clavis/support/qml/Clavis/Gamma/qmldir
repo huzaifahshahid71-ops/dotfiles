@@ -1,0 +1,7 @@
+module Clavis.Gamma
+linktarget ClavisGammaplugin
+optional plugin ClavisGammaplugin
+classname Clavis_GammaPlugin
+typeinfo ClavisGamma.qmltypes
+prefer :/qt/qml/Clavis/Gamma/
+

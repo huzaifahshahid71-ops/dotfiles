@@ -1,0 +1,39 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="extreme-thunderstorms-mostly-clear-night-drizzle" clip-path="url(#clip0_2045_40353)">
+<g id="Sky">
+<g id="Mask group">
+<mask id="mask0_2045_40353" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="128">
+<g id="Cloud Mask">
+<path id="Subtract" fill-rule="evenodd" clip-rule="evenodd" d="M128 0H0V128H128V0ZM45.7659 92.9738C38.5211 92.9752 32.6946 87.1992 32.0583 80.2797C31.5271 74.502 34.6888 68.8399 39.8787 66.3259C40.2467 62.5107 42.2306 58.8988 45.4847 56.6258C48.6511 54.4142 52.6276 53.774 56.2644 54.7472C61.1723 49.4038 69.1219 47.396 76.0847 50.3904C82.7866 53.2725 86.825 59.99 86.8607 66.9528C92.2096 68.7071 95.9985 73.8803 95.9985 79.6405C95.9985 86.6991 90.2863 92.9738 82.8822 92.9738H82.8786C74.6341 92.9663 66.3903 92.9688 58.1446 92.9713H58.1404C54.0165 92.9726 49.8921 92.9738 45.7669 92.9738H45.7659Z" fill="black"/>
+<animateTransform attributeName="transform" type="translate" values="0 0;0 -3;0 0" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></g>
+</mask>
+<g mask="url(#mask0_2045_40353)">
+<g id="Moon">
+<path id="Moon_2" d="M52.9117 42C41.715 43.2083 33 52.5617 33 63.93C33 76.1183 43.015 86 55.3683 86C65.7817 86 74.5067 78.97 77 69.465C62.137 71.0586 49.0386 56.7567 52.9117 42Z" fill="#72B9D5"/>
+<animateTransform attributeName="transform" type="rotate" values="-6 55.0 64.0;6 55.0 64.0;-6 55.0 64.0" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></g>
+</g>
+</g>
+<g id="Clouds">
+<g id="Cloud">
+<path id="Cloud_2" d="M82.472 70.3409C84.0557 63.8088 80.7234 56.7415 74.5059 54.0658C68.3257 51.4061 61.0326 53.8953 57.586 59.6311C54.5784 57.7706 50.6744 57.8846 47.7767 59.9101C44.8412 61.962 43.3557 65.6449 43.9449 69.166C38.9752 70.1319 35.5842 74.9402 36.043 79.9331C36.5011 84.9188 40.7092 89.0013 45.7673 89C58.1373 89 70.512 88.9887 82.8837 89C87.9397 89 92 84.6545 92 79.6598C92 74.5027 87.6888 70.1066 82.472 70.3409Z" fill="#F3F7FE"/>
+</g>
+<animateTransform attributeName="transform" type="translate" values="0 0;0 -3;0 0" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></g>
+</g>
+<g id="Precipitation">
+<g id="Raindrops">
+<path id="Raindrop 1" d="M52 87V90" stroke="#0A5AD4" stroke-width="4" stroke-linecap="round"><animateTransform attributeName="transform" type="translate" values="0 0;0 20" dur="1s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 1 1"/><animate attributeName="opacity" values="0;1;1;0" dur="1s" begin="0s" repeatCount="indefinite" keyTimes="0;0.15;0.85;1"/></path>
+<path id="Raindrop 2" d="M64 87V90" stroke="#0A5AD4" stroke-width="4" stroke-linecap="round" opacity="0"><animateTransform attributeName="transform" type="translate" values="0 0;0 20" dur="1s" begin="0.4s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 1 1"/><animate attributeName="opacity" values="0;1;1;0" dur="1s" begin="0.4s" repeatCount="indefinite" keyTimes="0;0.15;0.85;1"/></path>
+<path id="Raindrop 3" d="M76 87V90" stroke="#0A5AD4" stroke-width="4" stroke-linecap="round" opacity="0"><animateTransform attributeName="transform" type="translate" values="0 0;0 20" dur="1s" begin="0.8s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 1 1"/><animate attributeName="opacity" values="0;1;1;0" dur="1s" begin="0.8s" repeatCount="indefinite" keyTimes="0;0.15;0.85;1"/></path>
+</g>
+</g>
+<g id="Lightning">
+<path id="Lightning Bolt" d="M54.0003 68L46 90.9092H54.0003L49.9995 110L70 83.2728H57.9996L65.9999 68H54.0003Z" fill="#F6A823"><animate attributeName="opacity" values="1;1;0;1;0;1;0;1;1" dur="2s" begin="0s" repeatCount="indefinite" keyTimes="0;0.25;0.33;0.42;0.5;0.57;0.63;0.67;1"/></path>
+<path id="Lightning Bolt Small" d="M74.0002 68L70 79.4546H74.0002L71.9998 89L82 75.6364H75.9998L80 68H74.0002Z" fill="#F6A823"><animate attributeName="opacity" values="1;1;0;1;0;1;0;1;1" dur="2s" begin="0.5s" repeatCount="indefinite" keyTimes="0;0.25;0.33;0.42;0.5;0.57;0.63;0.67;1"/></path>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2045_40353">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

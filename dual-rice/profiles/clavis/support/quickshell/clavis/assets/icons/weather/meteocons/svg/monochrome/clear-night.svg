@@ -1,0 +1,7 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="clear-night">
+<g id="Moon">
+<path id="Moon_2" d="M58.4004 34.416C54.9191 55.2254 72.5264 74.4529 93.2227 74.1201C88.98 85.6985 77.7637 93.9998 64.5361 94C47.6469 94 34.0001 80.497 34 63.8984C34 49.3677 44.4604 37.2181 58.4004 34.416Z" stroke="black" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<animateTransform attributeName="transform" type="rotate" values="-6 63.6 64.2;6 63.6 64.2;-6 63.6 64.2" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></g>
+</g>
+</svg>

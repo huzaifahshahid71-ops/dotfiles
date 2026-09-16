@@ -1,0 +1,7 @@
+module Clavis.I18n
+linktarget ClavisI18nplugin
+optional plugin ClavisI18nplugin
+classname Clavis_I18nPlugin
+typeinfo ClavisI18n.qmltypes
+prefer :/qt/qml/Clavis/I18n/
+

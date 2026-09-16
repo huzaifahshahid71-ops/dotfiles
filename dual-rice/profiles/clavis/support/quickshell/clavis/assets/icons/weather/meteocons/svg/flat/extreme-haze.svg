@@ -1,0 +1,35 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="extreme-haze" clip-path="url(#clip0_2045_39836)">
+<g id="Sky">
+<g id="Clouds" clip-path="url(#clip1_2045_39836)">
+<g id="Mask group">
+<mask id="mask0_2045_39836" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="128">
+<g id="Cloud Mask">
+<path id="Subtract" fill-rule="evenodd" clip-rule="evenodd" d="M128 0H0V128H128V0ZM37.9519 93H90.9752C100.227 93 107.998 85.353 107.998 76.0281C107.998 68.0217 102.305 61.3501 94.9248 59.5512C95.3619 49.9005 89.6744 40.6093 80.5509 36.7922C71.1071 32.8411 60.0664 35.6119 53.5305 43.2384C48.5702 41.5956 42.9815 42.2957 38.5741 45.2907C34.1459 48.2998 31.4305 53.2809 31.1846 58.5379C24.0633 61.463 19.3278 68.8506 20.0776 76.7839C20.942 85.9295 28.8285 93.0018 37.9519 93Z" fill="black"><animateTransform attributeName="transform" type="translate" values="0 -3;0 0;0 -3" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></path>
+<animateTransform attributeName="transform" type="translate" values="0 0;0 -3;0 0" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></g>
+</mask>
+<g mask="url(#mask0_2045_39836)">
+<g id="Secondary Cloud">
+<path id="Cloud" d="M101.194 55.5621C102.367 51.05 99.7603 46.4225 95.5044 44.7133C91.192 42.9813 85.9613 44.4743 83.4187 48.423C81.2649 47.1797 78.4961 47.2496 76.4121 48.609C74.3809 49.934 73.2435 52.372 73.6751 54.7789C70.2999 55.3911 67.6875 58.4688 68.0308 61.9561C68.375 65.4511 71.5396 68.0008 74.9768 68C83.8127 68 92.6515 67.9925 101.488 68C104.911 68 108 65.2849 108 61.774C108 58.1428 104.721 55.4142 101.194 55.5621Z" fill="#B0BCCD"/>
+<animateTransform attributeName="transform" type="translate" values="0 -3;0 0;0 -3" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></g>
+</g>
+<animateTransform attributeName="transform" type="translate" values="0 0;0 -3;0 0" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></g>
+<g id="Cloud_2">
+<path id="Cloud_3" d="M90.3884 63.0856C92.6837 53.8819 87.7407 44.1357 79.0084 40.4822C70.2652 36.8242 59.8275 40.1375 54.837 48.2115C50.5362 45.625 44.9751 45.7781 40.8237 48.5991C36.6831 51.4128 34.4995 56.5143 35.3498 61.4539C28.3924 62.7685 23.3933 69.3393 24.0613 76.4076C24.7295 83.4776 30.8717 89.0018 37.9533 89C55.6065 89 73.3059 89 90.9766 89C98.0444 89 104 83.1189 104 76.0281C104 68.7015 97.6774 62.7674 90.3884 63.0856Z" fill="#7C8CA2"/>
+<animateTransform attributeName="transform" type="translate" values="0 0;0 -3;0 0" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></g>
+</g>
+</g>
+<g id="Precipitation">
+<path id="Line 2" d="M40 95H88" stroke="#E2E8F0" stroke-width="3" stroke-miterlimit="10" stroke-linecap="round" stroke-dasharray="12 9"><animateTransform attributeName="transform" type="translate" values="0 0;3 0;0 0" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></path>
+<path id="Line 1" d="M40 103H88" stroke="#E2E8F0" stroke-width="3" stroke-miterlimit="10" stroke-linecap="round" stroke-dasharray="12 9"><animateTransform attributeName="transform" type="translate" values="0 0;3 0;0 0" dur="3s" begin="0.2s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></path>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2045_39836">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+<clipPath id="clip1_2045_39836">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

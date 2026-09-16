@@ -1,0 +1,7 @@
+module Clavis.Lyrics
+linktarget ClavisLyricsplugin
+optional plugin ClavisLyricsplugin
+classname Clavis_LyricsPlugin
+typeinfo ClavisLyrics.qmltypes
+prefer :/qt/qml/Clavis/Lyrics/
+

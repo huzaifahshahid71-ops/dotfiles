@@ -1,0 +1,14 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="raindrop-measure">
+<path id="Ruler" d="M84 34H92V94H84M86 64H92M88 78H92M88 48H92" stroke="#E5E7EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Background" d="M64.5 34C52.6294 52 45 63.25 45 74.175C45 85.1 53.7262 94 64.5 94C75.2738 94 84 85.125 84 74.175C84 63.225 76.3706 51.975 64.5 34Z" fill="#BFDBFE"/>
+<g id="Mask group">
+<mask id="mask0_2045_48521" style="mask-type:alpha" maskUnits="userSpaceOnUse">
+<rect id="Water Level" x="45" y="64" width="39" height="30" fill="black"><animate attributeName="y" values="64;56;64" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/><animate attributeName="height" values="30;38;30" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1"/></rect>
+</mask>
+<g mask="url(#mask0_2045_48521)">
+<g transform="translate(64.5,64.0)"><path id="Raindrop" d="M64.5 34C52.6294 52 45 63.25 45 74.175C45 85.1 53.7262 94 64.5 94C75.2738 94 84 85.125 84 74.175C84 63.225 76.3706 51.975 64.5 34Z" fill="#2563EB" transform="translate(-64.5,-64.0)"/><animateTransform attributeName="transform" type="scale" values="1 1;1.1 1.1;1 1" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1" additive="sum"/></g>
+</g>
+</g>
+</g>
+</svg>

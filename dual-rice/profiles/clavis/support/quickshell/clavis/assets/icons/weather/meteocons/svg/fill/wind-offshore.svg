@@ -1,0 +1,54 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="wind-offshore" clip-path="url(#clip0_1950_1007)">
+<g id="Shore">
+<g id="Tree">
+<rect id="Branch" x="76.3415" y="58.3415" width="1" height="7" transform="rotate(-30 76.3415 58.3415)" fill="url(#paint0_linear_1950_1007)" stroke="#654427" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Trunk" d="M81.501 53.75H82.126C82.4521 53.7499 82.7655 53.8778 82.999 54.1055C83.2324 54.3331 83.3678 54.6428 83.376 54.9688V54.9707L83.5273 59.79C83.5309 59.9017 83.6085 59.9972 83.7168 60.0244C83.8251 60.0516 83.9383 60.004 83.9941 59.9072L86.2168 56.0576C86.2859 55.9384 86.4382 55.898 86.5576 55.9668L86.9912 56.2168C87.1104 56.2858 87.1516 56.4382 87.083 56.5576L83.7217 62.3789C83.6519 62.4998 83.6177 62.6378 83.6221 62.7773L83.876 70.8389C83.8767 70.8612 83.8807 70.8828 83.8867 70.9033C83.8848 71.0515 83.859 71.1984 83.8057 71.3369C83.7454 71.4934 83.6537 71.6363 83.5371 71.7568C83.4206 71.8772 83.2811 71.9727 83.127 72.0381C82.9726 72.1035 82.8063 72.1378 82.6387 72.1377H81.001C80.8333 72.1378 80.6671 72.1035 80.5127 72.0381C80.3583 71.9727 80.2182 71.8774 80.1016 71.7568C79.985 71.6363 79.8943 71.4934 79.834 71.3369C79.7888 71.2197 79.7614 71.0966 79.7529 70.9717L79.751 70.8457L80.251 54.9707V54.9688C80.2591 54.6427 80.3945 54.3332 80.6279 54.1055C80.8615 53.8778 81.1748 53.7499 81.501 53.75ZM84.0742 71.0801C84.0904 71.0838 84.1069 71.0864 84.124 71.0869C84.1069 71.0864 84.0903 71.084 84.0742 71.0801Z" fill="url(#paint1_linear_1950_1007)" stroke="#654427" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle id="Branch Canopy" cx="76" cy="57" r="4.25" fill="url(#paint2_linear_1950_1007)" stroke="#16A34A" stroke-width="0.5" stroke-miterlimit="10" stroke-linecap="round"/>
+<circle id="Main Canopy" cx="82" cy="48" r="9.75" fill="url(#paint3_linear_1950_1007)" stroke="#16A34A" stroke-width="0.5" stroke-miterlimit="10" stroke-linecap="round"/>
+<circle id="Side Canopy" cx="88" cy="53.5" r="5.75" fill="url(#paint4_linear_1950_1007)" stroke="#16A34A" stroke-width="0.5" stroke-miterlimit="10" stroke-linecap="round"/>
+</g>
+<g transform="translate(64.0,97.5)"><g id="Water" transform="translate(-64.0,-97.5)">
+<path id="Water_2" d="M84.498 72.9453C85.3876 72.1829 86.6877 72.1409 87.625 72.8438L92.5 76.5C93.1295 76.9721 93.5 77.7131 93.5 78.5V92C93.5 95.0376 91.0376 97.5 88 97.5H40C36.9624 97.5 34.5 95.0376 34.5 92V78.5L34.5039 78.3535C34.5468 77.6218 34.9097 76.9427 35.5 76.5L40.375 72.8438C41.3123 72.1409 42.6124 72.1829 43.502 72.9453L46.7227 75.7061C48.0333 76.8293 49.9667 76.8293 51.2773 75.7061L54.498 72.9453C55.3876 72.1829 56.6877 72.1409 57.625 72.8438L61.9004 76.0498C63.1448 76.983 64.8552 76.983 66.0996 76.0498L70.375 72.8438C71.3123 72.1409 72.6124 72.1829 73.502 72.9453L76.7227 75.7061C78.0333 76.8293 79.9667 76.8293 81.2773 75.7061L84.498 72.9453Z" fill="url(#paint5_linear_1950_1007)" stroke="#1D4ED8" stroke-miterlimit="10"/>
+</g><animateTransform attributeName="transform" type="scale" values="1 1;1 1.08;1 1" dur="3s" begin="0s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1; .42 0 .58 1" additive="sum"/></g>
+<path id="Shore_2" d="M76 71.5H88C91.0376 71.5 93.5 73.9624 93.5 77V92C93.5 95.0376 91.0376 97.5 88 97.5H49.5068C49.7734 83.0952 61.5315 71.5 76 71.5Z" fill="url(#paint6_linear_1950_1007)" stroke="#EDC38B"/>
+</g>
+<g id="Wind">
+<path id="Wind Line 1" d="M38.6489 41.8436C35.8997 38.9344 31 41.1021 31 44.977C31 47.4748 32.99 49.5 35.4444 49.5H67" stroke="#E2E8F0" stroke-width="3" stroke-miterlimit="10" stroke-linecap="round" stroke-dasharray="50"><animate attributeName="stroke-dashoffset" values="0;1000" dur="6s" begin="0s" repeatCount="indefinite"/></path>
+<path id="Wind Line 1_2" d="M50.9431 63.1577C48.1466 66.008 43 64.0165 43 60.0238C43 57.5256 45.0665 55.5 47.6154 55.5C50.1642 55.5 67 55.5 67 55.5" stroke="#E2E8F0" stroke-width="3" stroke-miterlimit="10" stroke-linecap="round" stroke-dasharray="50"><animate attributeName="stroke-dashoffset" values="0;1000" dur="6s" begin="0.2s" repeatCount="indefinite"/></path>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_1950_1007" x1="76.8086" y1="58.2053" x2="76.8086" y2="65.75" gradientUnits="userSpaceOnUse">
+<stop stop-color="#875B34"/>
+<stop offset="1" stop-color="#654427"/>
+</linearGradient>
+<linearGradient id="paint1_linear_1950_1007" x1="83.839" y1="53.3875" x2="83.839" y2="72.3875" gradientUnits="userSpaceOnUse">
+<stop stop-color="#875B34"/>
+<stop offset="1" stop-color="#654427"/>
+</linearGradient>
+<linearGradient id="paint2_linear_1950_1007" x1="76" y1="52.5" x2="76" y2="61.5" gradientUnits="userSpaceOnUse">
+<stop stop-color="#22C55E"/>
+<stop offset="1" stop-color="#16A34A"/>
+</linearGradient>
+<linearGradient id="paint3_linear_1950_1007" x1="82" y1="38" x2="82" y2="58" gradientUnits="userSpaceOnUse">
+<stop stop-color="#22C55E"/>
+<stop offset="1" stop-color="#16A34A"/>
+</linearGradient>
+<linearGradient id="paint4_linear_1950_1007" x1="88" y1="47.5" x2="88" y2="59.5" gradientUnits="userSpaceOnUse">
+<stop stop-color="#22C55E"/>
+<stop offset="1" stop-color="#16A34A"/>
+</linearGradient>
+<linearGradient id="paint5_linear_1950_1007" x1="64" y1="77" x2="64" y2="98" gradientUnits="userSpaceOnUse">
+<stop stop-color="#2563EB"/>
+<stop offset="1" stop-color="#1D4ED8"/>
+</linearGradient>
+<linearGradient id="paint6_linear_1950_1007" x1="71.5" y1="71" x2="71.5" y2="98" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F4DAB4"/>
+<stop offset="1" stop-color="#EDC38B"/>
+</linearGradient>
+<clipPath id="clip0_1950_1007">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

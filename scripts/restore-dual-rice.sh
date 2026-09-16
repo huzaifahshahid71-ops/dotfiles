@@ -226,6 +226,7 @@ done
 for profile in "${NIRI_PROFILES[@]}"; do
     [[ -d "$SRC/profiles/$profile/niri" ]] || die "Missing Niri profile: $profile"
     [[ -f "$SRC/profiles/$profile/niri/config.kdl" ]] || die "Missing $profile config.kdl"
+    [[ -d "$SRC/profiles/$profile/support" ]] || die "Missing $profile runtime support"
 done
 
 log "Updating the system before Multi-Rice restore"
@@ -285,11 +286,22 @@ for profile in "${HYPR_PROFILES[@]}"; do
     rsync -a --delete "$SRC/profiles/$profile/hypr/" "$PROFILE_ROOT/$profile/hypr/"
 done
 
-log "Restoring three Niri profiles"
+log "Restoring three Niri profiles and runtime support"
 for profile in "${NIRI_PROFILES[@]}"; do
-    mkdir -p "$PROFILE_ROOT/$profile/niri"
+    mkdir -p "$PROFILE_ROOT/$profile/niri" "$PROFILE_ROOT/$profile/support"
     rsync -a --delete "$SRC/profiles/$profile/niri/" "$PROFILE_ROOT/$profile/niri/"
+    rsync -a --delete "$SRC/profiles/$profile/support/" "$PROFILE_ROOT/$profile/support/"
+
+    while IFS= read -r json; do
+        rewrite_home_paths_json "$json"
+    done < <(find "$PROFILE_ROOT/$profile/support" -type f -name '*.json' -print)
 done
+
+log "Installing Niri Quickshell discovery links"
+mkdir -p "$HOME/.config/quickshell"
+rm -rf "$HOME/.config/quickshell/solstice" "$HOME/.config/quickshell/clavis"
+ln -s "$PROFILE_ROOT/jaqc/support/quickshell/solstice" "$HOME/.config/quickshell/solstice"
+ln -s "$PROFILE_ROOT/clavis/support/quickshell/clavis" "$HOME/.config/quickshell/clavis"
 
 if [[ -d "$SRC/caelestia" ]]; then
     log "Restoring Caelestia user configuration"
