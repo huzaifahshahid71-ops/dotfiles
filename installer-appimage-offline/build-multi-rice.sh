@@ -238,7 +238,7 @@ log "Publishing Multi-Rice offline artifact"
 rm -f "$NEW_OUT" "$NEW_SHA"
 mv "$BUILT_OUT" "$NEW_OUT"
 chmod +x "$NEW_OUT"
-sha256sum "$NEW_OUT" > "$NEW_SHA"
+( cd "$DIST"; sha256sum "$(basename "$NEW_OUT")" > "$(basename "$NEW_SHA")" )
 
 printf '\nBuilt:\n'
 ls -lh "$NEW_OUT" "$NEW_SHA"

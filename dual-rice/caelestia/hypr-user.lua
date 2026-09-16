@@ -14,3 +14,11 @@ hl.bind(
     hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/refresh-switch"),
     { description = "Display: Switch refresh rate" }
 )
+
+-- HUZAIFAH-SCREENSHOT
+hl.unbind("SUPER + SHIFT + S")
+hl.bind(
+    "SUPER + SHIFT + S",
+    hl.dsp.exec_cmd(os.getenv("HOME") .. "/.config/caelestia/huz-screenshot"),
+    { description = "Screenshot: Select area" }
+)
