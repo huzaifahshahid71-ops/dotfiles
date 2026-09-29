@@ -7,11 +7,11 @@ v5.1 changes the hierarchy: Revo Shell becomes the Hyprland shell platform and t
 - Revo upstream is cloned in full at install time to `~/.local/share/revo-shell`.
 - The upstream snapshot is pinned to commit `a15d62c87aa992ab8e5d366575bb4074eada7d98`.
 - Revo's Hyprland configuration is installed as the shared `revo` desktop profile.
-- All 21 Revo Quickshell configs are deployed to `~/.config/quickshell`; **19 are selectable desktop shells**. `11` is HyprQuickFrame (a screenshot overlay) and `macduo` is the Mac lid-animation companion, so those two remain installed as utilities instead of rice cards.
+- All 21 Revo Quickshell configs remain deployed for upstream compatibility, but **15 are selectable desktop shells**. `11` is HyprQuickFrame, `macduo` is the Mac lid-animation companion, and EQSH/K4/Ryoku/Vast are retained only as hidden support/experimental configs.
 - The existing 10 Huzaifah profiles remain first-class profiles:
   - Hyprland: Aether, Obsidian, Crimson, Materia, Aurora, Nocturne, Lumina
   - Niri: Solstice, Cipher, Astra
-- Unified catalog: **29 selectable profiles total** — **26 Hyprland + 3 Niri**.
+- Unified catalog: **25 selectable profiles total** — **22 Hyprland + 3 Niri**.
 - Every switcher calls the same `multi-rice-control` backend:
   - Revo graphical switcher: **Super+B** → patched `DotsBrowser.qml`
   - Huzaifah graphical switcher: **Super+Shift+D** → `qs -c multi-rice-switcher`
