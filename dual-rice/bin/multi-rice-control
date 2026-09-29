@@ -9,6 +9,9 @@ ACTIVE_FILE="$STATE_DIR/active"
 HYPR_LINK="$HOME/.config/hypr"
 NIRI_LINK="$HOME/.config/niri"
 
+QS_ROOT="$HOME/.config/quickshell"
+REVO_SHELL_FILE="$STATE_DIR/revo-shell"
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 load_metadata() {
@@ -29,7 +32,27 @@ load_metadata() {
 load_metadata
 
 is_installed() {
-    profile_config_path "$ROOT" "$1" >/dev/null 2>&1
+    local profile="$1"
+    local kind shell dir
+
+    profile_config_path "$ROOT" "$profile" >/dev/null 2>&1 || return 1
+
+    kind="$(profile_kind "$profile" 2>/dev/null || true)"
+    if [ "$kind" = "revo-shell" ]; then
+        shell="$(profile_shell "$profile" 2>/dev/null || true)"
+        [ -n "$shell" ] || return 1
+        dir="$QS_ROOT/$shell"
+        [ -d "$dir" ] || return 1
+
+        if [ -f "$dir/shell.qml" ]; then
+            return 0
+        fi
+
+        compgen -G "$dir/*.qml" >/dev/null 2>&1
+        return $?
+    fi
+
+    return 0
 }
 
 detect_compositor() {
@@ -52,7 +75,7 @@ detect_compositor() {
 profile_from_link() {
     local compositor="$1"
     local link=""
-    local profile target resolved
+    local profile target resolved revo_target revo_shell
 
     case "$compositor" in
         hyprland) link="$HYPR_LINK" ;;
@@ -65,12 +88,24 @@ profile_from_link() {
     resolved="$(readlink -f "$link" 2>/dev/null || true)"
     [ -n "$resolved" ] || return 1
 
+    if [ "$compositor" = "hyprland" ]; then
+        revo_target="$(profile_config_path "$ROOT" revo-lucid 2>/dev/null || true)"
+        if [ -n "$revo_target" ] && [ "$resolved" = "$revo_target" ] && [ -f "$REVO_SHELL_FILE" ]; then
+            revo_shell="$(tr -d "[:space:]" < "$REVO_SHELL_FILE")"
+            profile="$(profile_for_shell "$revo_shell" 2>/dev/null || true)"
+            if [ -n "$profile" ] && is_installed "$profile"; then
+                printf "%s\n" "$profile"
+                return 0
+            fi
+        fi
+    fi
+
     while IFS= read -r profile; do
+        [ "$(profile_kind "$profile" 2>/dev/null || true)" = "revo-shell" ] && continue
         target="$(profile_config_path "$ROOT" "$profile" 2>/dev/null || true)"
 
         if [ -n "$target" ] && [ "$resolved" = "$target" ]; then
-            printf "%s
-" "$profile"
+            printf "%s\n" "$profile"
             return 0
         fi
     done < <(profile_ids_for_compositor "$compositor")
@@ -156,12 +191,14 @@ show_status() {
 }
 
 show_list() {
-    local active profile compositor installed active_flag
+    local active profile compositor installed active_flag kind shell
 
     active="$(current_profile)"
 
     while IFS= read -r profile; do
         compositor="$(profile_compositor "$profile")"
+        kind="$(profile_kind "$profile" 2>/dev/null || echo desktop)"
+        shell="$(profile_shell "$profile" 2>/dev/null || true)"
 
         if is_installed "$profile"; then
             installed="true"
@@ -175,14 +212,21 @@ show_list() {
             active_flag="false"
         fi
 
-        printf "%s|%s|%s|%s|%s|%s
-"             "$profile"             "$(profile_name "$profile")"             "$(profile_icon "$profile")"             "$compositor"             "$installed"             "$active_flag"
+        printf "%s|%s|%s|%s|%s|%s|%s|%s\n" \
+            "$profile" \
+            "$(profile_name "$profile")" \
+            "$(profile_icon "$profile")" \
+            "$compositor" \
+            "$installed" \
+            "$active_flag" \
+            "$kind" \
+            "$shell"
     done < <(profile_ids)
 }
 
 plan_switch() {
     local profile="${1:-}"
-    local current current_comp target_comp installed action
+    local current current_comp target_comp installed action target_kind current_kind
 
     if [ -z "$profile" ]; then
         echo "multi-rice-control: plan requires a profile id" >&2
@@ -190,14 +234,16 @@ plan_switch() {
     fi
 
     target_comp="$(profile_compositor "$profile" 2>/dev/null || true)"
+    target_kind="$(profile_kind "$profile" 2>/dev/null || true)"
 
-    if [ -z "$target_comp" ]; then
+    if [ -z "$target_comp" ] || [ -z "$target_kind" ]; then
         echo "multi-rice-control: unknown profile: $profile" >&2
         return 2
     fi
 
     current_comp="$(detect_compositor)"
     current="$(current_profile)"
+    current_kind="$(profile_kind "$current" 2>/dev/null || true)"
 
     if is_installed "$profile"; then
         installed="true"
@@ -211,26 +257,24 @@ plan_switch() {
         action="noop"
     elif [ "$current_comp" = "unknown" ]; then
         action="unsupported-session"
+    elif [ "$target_kind" = "revo-shell" ] &&
+         [ "$current_kind" = "revo-shell" ] &&
+         [ "$target_comp" = "$current_comp" ]; then
+        action="hot-shell"
     elif [ "$target_comp" = "$current_comp" ]; then
         action="same-compositor"
     else
         action="cross-compositor"
     fi
 
-    printf "current_compositor=%s
-" "$current_comp"
-    printf "current_profile=%s
-" "$current"
-    printf "target_profile=%s
-" "$profile"
-    printf "target_name=%s
-" "$(profile_name "$profile")"
-    printf "target_compositor=%s
-" "$target_comp"
-    printf "installed=%s
-" "$installed"
-    printf "action=%s
-" "$action"
+    printf "current_compositor=%s\n" "$current_comp"
+    printf "current_profile=%s\n" "$current"
+    printf "target_profile=%s\n" "$profile"
+    printf "target_name=%s\n" "$(profile_name "$profile")"
+    printf "target_compositor=%s\n" "$target_comp"
+    printf "target_kind=%s\n" "$target_kind"
+    printf "installed=%s\n" "$installed"
+    printf "action=%s\n" "$action"
 }
 
 write_active_profile() {
@@ -242,6 +286,44 @@ write_active_profile() {
     tmp="$STATE_DIR/.active.$$"
     printf "%s\n" "$profile" > "$tmp"
     mv -f "$tmp" "$ACTIVE_FILE"
+}
+
+write_revo_shell() {
+    local profile="$1"
+    local shell tmp
+
+    shell="$(profile_shell "$profile" 2>/dev/null || true)"
+    [ -n "$shell" ] || {
+        echo "multi-rice-control: no Revo shell mapped for $profile" >&2
+        return 2
+    }
+
+    mkdir -p "$STATE_DIR"
+    tmp="$STATE_DIR/.revo-shell.$$"
+    printf "%s\n" "$shell" > "$tmp"
+    mv -f "$tmp" "$REVO_SHELL_FILE"
+}
+
+schedule_revo_shell_switch() {
+    local profile="$1"
+    local shell launcher cmd unit
+
+    shell="$(profile_shell "$profile")"
+    launcher="$HOME/.local/bin/revo-shell-launch"
+
+    [ -x "$launcher" ] || {
+        echo "multi-rice-control: Revo launcher not installed: $launcher" >&2
+        return 4
+    }
+
+    printf -v cmd 'sleep 0.20; pkill -x quickshell >/dev/null 2>&1 || true; REVO_SHELL=%q %q' "$shell" "$launcher"
+
+    if command -v systemd-run >/dev/null 2>&1; then
+        unit="revo-shell-switch-$$"
+        systemd-run --user --collect --unit="$unit" bash -lc "$cmd" >/dev/null 2>&1
+    else
+        setsid bash -lc "$cmd" >/dev/null 2>&1 </dev/null &
+    fi
 }
 
 cleanup_current_profile() {
@@ -390,7 +472,7 @@ exit_current_session() {
 
 switch_profile() {
     local profile="${1:-}"
-    local current current_comp target_comp
+    local current current_comp target_comp target_kind current_kind
 
     if [ -z "$profile" ]; then
         echo "multi-rice-control: switch requires a profile id" >&2
@@ -398,8 +480,9 @@ switch_profile() {
     fi
 
     target_comp="$(profile_compositor "$profile" 2>/dev/null || true)"
+    target_kind="$(profile_kind "$profile" 2>/dev/null || true)"
 
-    if [ -z "$target_comp" ]; then
+    if [ -z "$target_comp" ] || [ -z "$target_kind" ]; then
         echo "multi-rice-control: unknown profile: $profile" >&2
         return 2
     fi
@@ -411,6 +494,7 @@ switch_profile() {
 
     current_comp="$(detect_compositor)"
     current="$(current_profile)"
+    current_kind="$(profile_kind "$current" 2>/dev/null || true)"
 
     if [ "$profile" = "$current" ]; then
         printf "action=noop\n"
@@ -422,6 +506,28 @@ switch_profile() {
     if [ "$current_comp" = "unknown" ]; then
         echo "multi-rice-control: unsupported graphical session" >&2
         return 5
+    fi
+
+    if [ "$target_kind" = "revo-shell" ]; then
+        write_revo_shell "$profile" || return $?
+    fi
+
+    if [ "$target_kind" = "revo-shell" ] &&
+       [ "$current_kind" = "revo-shell" ] &&
+       [ "$target_comp" = "$current_comp" ]; then
+        write_active_profile "$profile"
+        schedule_revo_shell_switch "$profile" || return $?
+
+        notify-send \
+            "Revo × Huzaifah" \
+            "Switching shell to $(profile_name "$profile")…" \
+            2>/dev/null || true
+
+        printf "action=hot-shell\n"
+        printf "profile=%s\n" "$profile"
+        printf "name=%s\n" "$(profile_name "$profile")"
+        printf "compositor=%s\n" "$target_comp"
+        return 0
     fi
 
     if [ "$target_comp" = "$current_comp" ]; then
@@ -439,7 +545,6 @@ switch_profile() {
         2>/dev/null || true
 
     sleep 0.35
-
     exit_current_session "$current_comp"
 }
 
