@@ -307,7 +307,7 @@ write_revo_shell() {
 
 schedule_revo_shell_switch() {
     local profile="$1"
-    local shell launcher cmd unit
+    local shell launcher cmd
 
     shell="$(profile_shell "$profile")"
     launcher="$HOME/.local/bin/revo-shell-launch"
@@ -317,21 +317,14 @@ schedule_revo_shell_switch() {
         return 4
     }
 
+    # Do not use a transient systemd service here. Quickshell children inherit
+    # the service cgroup and get killed when the helper exits. A new session
+    # gives the hot-switched shell an independent lifetime while preserving the
+    # live Wayland/Hyprland environment inherited from the switcher.
     printf -v cmd 'sleep 0.20; REVO_SHELL=%q %q --replace' "$shell" "$launcher"
-
-    if command -v systemd-run >/dev/null 2>&1; then
-        unit="revo-shell-switch-$"
-        systemd-run --user --collect --unit="$unit" \
-            --setenv="WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-}" \
-            --setenv="HYPRLAND_INSTANCE_SIGNATURE=${HYPRLAND_INSTANCE_SIGNATURE:-}" \
-            --setenv="XDG_CURRENT_DESKTOP=${XDG_CURRENT_DESKTOP:-Hyprland}" \
-            --setenv="XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" \
-            --setenv="DBUS_SESSION_BUS_ADDRESS=${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/$(id -u)/bus}" \
-            bash -lc "$cmd" >/dev/null 2>&1
-    else
-        setsid bash -lc "$cmd" >/dev/null 2>&1 </dev/null &
-    fi
+    setsid -f bash -lc "$cmd" >/dev/null 2>&1 </dev/null
 }
+
 
 cleanup_current_profile() {
     local current="$1"
