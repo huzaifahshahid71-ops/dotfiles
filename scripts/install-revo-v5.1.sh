@@ -71,12 +71,12 @@ install_dependencies_arch() {
 
     local requested=(
         hyprland xdg-desktop-portal-hyprland hypridle hyprlock hyprpolkitagent hyprsunset polkit
-        qt6-base qt6-declarative qt6-5compat qt6-multimedia qt6-shadertools qt6-wayland qt6-svg qt6-tools qt6-imageformats qt6-location qt6-positioning qt6-lottie qtkeychain-qt6
+        qt6-base qt6-declarative qt6-5compat qt6-multimedia qt6-shadertools qt6-wayland qt6-svg qt6-tools qt6-imageformats qt6-location qt6-positioning qt6-lottie qt6-graphs qtkeychain-qt6
         git curl wget jq python python-pip libnotify xdg-utils procps-ng psmisc util-linux coreutils findutils fd gawk sed grep zenity
-        pipewire pipewire-pulse wireplumber libpulse playerctl cava mpv-mpris networkmanager bluez bluez-utils brightnessctl upower power-profiles-daemon lm_sensors rfkill ddcutil
+        pipewire pipewire-pulse wireplumber libpulse playerctl cava mpv-mpris networkmanager bluez bluez-utils brightnessctl upower power-profiles-daemon lm_sensors rfkill ddcutil fftw
         grim slurp wf-recorder hyprshot hyprpicker ffmpeg imagemagick wl-clipboard cliphist wtype swappy matugen swww hyprpaper swaybg mpvpaper swaync swayosd easyeffects
         kitty nautilus thunar rofi-wayland wofi fastfetch starship fish gnome-calculator papirus-icon-theme adwaita-cursors xdg-desktop-portal-gtk
-        ttf-jetbrains-mono-nerd ttf-nerd-fonts-symbols-common noto-fonts noto-fonts-emoji base-devel cmake ninja pkgconf clang gcc stb
+        ttf-jetbrains-mono-nerd ttf-nerd-fonts-symbols-common noto-fonts noto-fonts-emoji base-devel cmake ninja pkgconf clang gcc go extra-cmake-modules wayland stb
     )
 
     local installable=()
@@ -518,6 +518,10 @@ install -Dm755 "$REPO_ROOT/dual-rice/bin/revo-shell-launch" "$HOME/.local/bin/re
 install -Dm755 "$REPO_ROOT/v5.1/revo/qs-list" "$HOME/.local/bin/qs-list"
 install -Dm644 "$REPO_ROOT/dual-rice/lib/profile-metadata.sh" "$HOME/.local/share/desktop-switcher/profile-metadata.sh"
 install_revo_switch_helpers
+
+log "Hydrating Revo shells with external/native runtimes"
+bash "$REPO_ROOT/v5.1/revo/setup-special-shells.sh" --all || \
+    warn "One or more special Revo runtimes could not be prepared; see warnings above"
 
 mkdir -p "$STATE_DIR"
 if [[ ! -s "$STATE_DIR/revo-shell" ]]; then
