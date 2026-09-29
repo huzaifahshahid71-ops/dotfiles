@@ -316,7 +316,7 @@ schedule_revo_shell_switch() {
         return 4
     }
 
-    printf -v cmd 'sleep 0.20; pkill -x quickshell >/dev/null 2>&1 || true; REVO_SHELL=%q %q' "$shell" "$launcher"
+    printf -v cmd 'sleep 0.20; pkill -f "[r]yoku/shell/ipc/ryoku-shell" >/dev/null 2>&1 || true; pkill -x quickshell >/dev/null 2>&1 || true; REVO_SHELL=%q %q' "$shell" "$launcher"
 
     if command -v systemd-run >/dev/null 2>&1; then
         unit="revo-shell-switch-$$"
