@@ -143,7 +143,16 @@ ShellRoot {
                     return
                 }
 
+                if (visibleRices.length === 0) {
+                    actionMessage = "No profiles are available"
+                    return
+                }
+
                 const profile = visibleRices[riceIndex]
+                if (!profile) {
+                    actionMessage = "Profile list is still loading"
+                    return
+                }
 
                 if (!profileInstalled(profile.id)) {
                     actionMessage =
@@ -245,12 +254,14 @@ ShellRoot {
                         event.accepted = true
                     }
                 } else {
-                    if (event.key === Qt.Key_Up) {
+                    if (event.key === Qt.Key_Up &&
+                        visibleRices.length > 0) {
                         riceIndex =
                             (riceIndex - 1 + visibleRices.length)
                             % visibleRices.length
                         event.accepted = true
-                    } else if (event.key === Qt.Key_Down) {
+                    } else if (event.key === Qt.Key_Down &&
+                               visibleRices.length > 0) {
                         riceIndex =
                             (riceIndex + 1)
                             % visibleRices.length
@@ -344,7 +355,7 @@ ShellRoot {
                             model: [
                                 {
                                     name: "HYPRLAND",
-                                    subtitle: "7 RICES",
+                                    subtitle: "28 RICES",
                                     detail: "Currently Active"
                                 },
                                 {
