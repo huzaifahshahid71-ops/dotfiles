@@ -53,6 +53,20 @@ for f in "$LOG_DIR"/*.log; do
 done
 echo
 
+echo "=== RYOKU SOURCE LOG ==="
+tail -n 120 "$HOME/.local/state/ryoku-shell.log" 2>/dev/null || true
+echo
+
+echo "=== SPECIAL QML MODULES ==="
+for module in CavaMonitor M3Shapes AnotherRipple Vast/Translation; do
+    if [[ -e "$HOME/.local/lib/qt6/qml/$module/qmldir" ]]; then
+        echo "ready: $module"
+    else
+        echo "missing: $module"
+    fi
+done
+echo
+
 echo "=== MAC LEGACY LOG ==="
 tail -n 100 "$HOME/macos.log" 2>/dev/null || true
 echo
