@@ -38,6 +38,7 @@ jobs:
           bash -n v5.1/revo/diagnose-runtime.sh
           bash -n v5.1/revo/vmrun-agent.sh
           bash -n v5.1/revo/vmrun-host.sh
+          bash -n v5.1/revo/setup-special-shells.sh
 
       - name: ShellCheck errors
         run: |
@@ -53,7 +54,8 @@ jobs:
             v5.1/revo/repair-runtime.sh \
             v5.1/revo/diagnose-runtime.sh \
             v5.1/revo/vmrun-agent.sh \
-            v5.1/revo/vmrun-host.sh
+            v5.1/revo/vmrun-host.sh \
+            v5.1/revo/setup-special-shells.sh
 
       - name: Python syntax
         run: |
@@ -168,4 +170,7 @@ jobs:
           grep -q 'SHELL_QML=' dual-rice/bin/multi-rice-switcher
           grep -q -- '--replace' dual-rice/bin/revo-shell-launch
           grep -q 'HYPRLIQUID_REF=' scripts/install-revo-v5.1.sh
+          grep -q 'setup-special-shells.sh' scripts/install-revo-v5.1.sh
+          grep -q 'vast-shell-v5.1' dual-rice/bin/revo-shell-launch
+          grep -q 'QSG_RHI_BACKEND=vulkan' dual-rice/bin/revo-shell-launch
           grep -q 'text = text.replace("h.exec_once(", "hl.exec_cmd(")' scripts/install-revo-v5.1.sh
