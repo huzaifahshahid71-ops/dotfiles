@@ -27,6 +27,35 @@ revo_shell_ids() {
         zesis
 }
 
+revo_selectable_shell_ids() {
+    printf '%s\n' \
+        Q1 \
+        brain_shell \
+        cartoon-shell \
+        end4-pc \
+        eqsh \
+        ii \
+        imported-1789667132 \
+        k4 \
+        lotus-dotfiles \
+        lucid \
+        macos \
+        nibrasshell \
+        persona-quickshell \
+        revo-editorial \
+        ryoku \
+        shell \
+        synoptik \
+        vast-shell \
+        zesis
+}
+
+revo_utility_shell_ids() {
+    # Eleven is HyprQuickFrame (screenshot overlay), not a persistent desktop.
+    # MacDuo is the macOS lid/suspend animation companion.
+    printf '%s\n' 11 macduo
+}
+
 revo_profile_ids() {
     printf '%s\n' \
         revo-11 \
