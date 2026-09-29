@@ -1,0 +1,91 @@
+name: v5.1 Revo validation
+
+on:
+  push:
+    branches:
+      - v5.1.0-revo-dev
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install static validators
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
+      - name: Bash syntax
+        run: |
+          bash -n dual-rice/bin/multi-rice-control
+          bash -n dual-rice/bin/revo-shell-launch
+          bash -n dual-rice/lib/profile-metadata.sh
+          bash -n scripts/install-revo-v5.1.sh
+          bash -n v5.1/revo/qs-list
+          bash -n v5.1/revo/revo-shells.sh
+          bash -n v5.1/revo/toggle_qs_dots-unified.sh
+
+      - name: ShellCheck errors
+        run: |
+          shellcheck -S error \
+            dual-rice/bin/multi-rice-control \
+            dual-rice/bin/revo-shell-launch \
+            dual-rice/lib/profile-metadata.sh \
+            scripts/install-revo-v5.1.sh \
+            v5.1/revo/qs-list \
+            v5.1/revo/revo-shells.sh \
+            v5.1/revo/toggle_qs_dots-unified.sh
+
+      - name: Python syntax
+        run: |
+          python -m py_compile v5.1/revo/patch-revo-dots-browser.py
+
+      - name: Validate unified registry
+        shell: bash
+        run: |
+          source dual-rice/lib/profile-metadata.sh
+
+          [[ "$(profile_ids | wc -l)" -eq 31 ]]
+          [[ "$(profile_ids_for_compositor hyprland | wc -l)" -eq 28 ]]
+          [[ "$(profile_ids_for_compositor niri | wc -l)" -eq 3 ]]
+
+          [[ "$(profile_kind revo-lucid)" == "revo-shell" ]]
+          [[ "$(profile_shell revo-lucid)" == "lucid" ]]
+          [[ "$(profile_for_shell lucid)" == "revo-lucid" ]]
+          [[ "$(profile_name caelestia)" == "Aether" ]]
+          [[ "$(profile_name jaqc)" == "Solstice" ]]
+
+      - name: Validate Revo shell registry
+        shell: bash
+        run: |
+          source v5.1/revo/revo-shells.sh
+          [[ "$(revo_shell_ids | wc -l)" -eq 21 ]]
+          [[ "$(revo_profile_ids | wc -l)" -eq 21 ]]
+
+      - name: Test pinned DotsBrowser patch
+        run: |
+          git clone https://github.com/vzbc/revo-shell.git /tmp/revo-shell
+          git -C /tmp/revo-shell checkout --detach a15d62c87aa992ab8e5d366575bb4074eada7d98
+
+          python v5.1/revo/patch-revo-dots-browser.py \
+            /tmp/revo-shell/hypr/scripts/quickshell/DotsBrowser.qml
+
+          grep -q 'multi-rice-control' \
+            /tmp/revo-shell/hypr/scripts/quickshell/DotsBrowser.qml
+          grep -q 'REVO × HUZAIFAH' \
+            /tmp/revo-shell/hypr/scripts/quickshell/DotsBrowser.qml
+
+      - name: Check graphical switcher integration markers
+        run: |
+          grep -q 'ListView {' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -q 'modelData.kind === "revo-shell"' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -q 'multi-rice-control' dual-rice/quickshell/multi-rice-switcher/shell.qml
