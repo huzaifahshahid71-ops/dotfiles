@@ -58,7 +58,6 @@ revo_utility_shell_ids() {
 
 revo_profile_ids() {
     printf '%s\n' \
-        revo-11 \
         revo-q1 \
         revo-brain-shell \
         revo-cartoon-shell \
@@ -69,7 +68,6 @@ revo_profile_ids() {
         revo-k4 \
         revo-lotus \
         revo-lucid \
-        revo-macduo \
         revo-macos \
         revo-nibrasshell \
         revo-persona \
