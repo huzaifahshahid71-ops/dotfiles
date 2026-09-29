@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+QS_ROOT="$CONFIG_HOME/quickshell"
+SHELL_QML="$QS_ROOT/multi-rice-switcher/shell.qml"
+
+[[ -f "$SHELL_QML" ]] || {
+    echo "multi-rice-switcher: missing $SHELL_QML" >&2
+    exit 4
+}
+
+if command -v qs >/dev/null 2>&1; then
+    exec qs -p "$SHELL_QML"
+fi
+
+if command -v quickshell >/dev/null 2>&1; then
+    exec quickshell -p "$SHELL_QML"
+fi
+
+echo "multi-rice-switcher: Quickshell executable not found" >&2
+exit 4
