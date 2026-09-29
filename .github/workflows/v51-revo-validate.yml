@@ -66,8 +66,8 @@ jobs:
         run: |
           source dual-rice/lib/profile-metadata.sh
 
-          [[ "$(profile_ids | wc -l)" -eq 31 ]]
-          [[ "$(profile_ids_for_compositor hyprland | wc -l)" -eq 28 ]]
+          [[ "$(profile_ids | wc -l)" -eq 29 ]]
+          [[ "$(profile_ids_for_compositor hyprland | wc -l)" -eq 26 ]]
           [[ "$(profile_ids_for_compositor niri | wc -l)" -eq 3 ]]
 
           [[ "$(profile_kind revo-lucid)" == "revo-shell" ]]
@@ -82,7 +82,9 @@ jobs:
         run: |
           source v5.1/revo/revo-shells.sh
           [[ "$(revo_shell_ids | wc -l)" -eq 21 ]]
-          [[ "$(revo_profile_ids | wc -l)" -eq 21 ]]
+          [[ "$(revo_profile_ids | wc -l)" -eq 19 ]]
+          [[ "$(revo_selectable_shell_ids | wc -l)" -eq 19 ]]
+          [[ "$(revo_utility_shell_ids | wc -l)" -eq 2 ]]
 
       - name: Simulate Revo backend hot switch
         shell: bash
@@ -137,8 +139,8 @@ jobs:
           printf 'installed_count=%s\n' "$installed_count"
 
           [[ "$profile_out" == "revo-lucid" ]]
-          [[ "$list_count" -eq 31 ]]
-          [[ "$installed_count" -eq 21 ]]
+          [[ "$list_count" -eq 29 ]]
+          [[ "$installed_count" -eq 19 ]]
 
           printf 'revo-lucid\n' > "$HOME/.config/desktop-profile/active"
           plan_out="$("$HOME/.local/bin/multi-rice-control" plan revo-macos)"
@@ -172,5 +174,8 @@ jobs:
           grep -q 'HYPRLIQUID_REF=' scripts/install-revo-v5.1.sh
           grep -q 'setup-special-shells.sh' scripts/install-revo-v5.1.sh
           grep -q 'vast-shell-v5.1' dual-rice/bin/revo-shell-launch
-          grep -q 'QSG_RHI_BACKEND=vulkan' dual-rice/bin/revo-shell-launch
+          grep -q 'QSG_RHI_BACKEND=opengl' dual-rice/bin/revo-shell-launch
+          grep -q 'macduo-macos.log' dual-rice/bin/revo-shell-launch
+          grep -q 'HUZAIFAH_V51_VM_OPENGL' v5.1/revo/setup-special-shells.sh
+          grep -q 'AnotherRipple' dual-rice/bin/revo-shell-launch
           grep -q 'text = text.replace("h.exec_once(", "hl.exec_cmd(")' scripts/install-revo-v5.1.sh
