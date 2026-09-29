@@ -33,20 +33,16 @@ revo_selectable_shell_ids() {
         brain_shell \
         cartoon-shell \
         end4-pc \
-        eqsh \
         ii \
         imported-1789667132 \
-        k4 \
         lotus-dotfiles \
         lucid \
         macos \
         nibrasshell \
         persona-quickshell \
         revo-editorial \
-        ryoku \
         shell \
         synoptik \
-        vast-shell \
         zesis
 }
 
@@ -56,26 +52,28 @@ revo_utility_shell_ids() {
     printf '%s\n' 11 macduo
 }
 
+revo_disabled_shell_ids() {
+    # Kept on disk because Mac/upstream assets may reference them, but these
+    # are intentionally hidden from the rice selector after VM validation.
+    printf '%s\n' eqsh k4 ryoku vast-shell
+}
+
 revo_profile_ids() {
     printf '%s\n' \
         revo-q1 \
         revo-brain-shell \
         revo-cartoon-shell \
         revo-end4-pc \
-        revo-eqsh \
         revo-ii \
         revo-clavis \
-        revo-k4 \
         revo-lotus \
         revo-lucid \
         revo-macos \
         revo-nibrasshell \
         revo-persona \
         revo-editorial \
-        revo-ryoku \
         revo-caelestia \
         revo-synoptik \
-        revo-vast \
         revo-zesis
 }
 
