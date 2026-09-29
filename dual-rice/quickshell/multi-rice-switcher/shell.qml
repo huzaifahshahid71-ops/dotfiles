@@ -575,6 +575,7 @@ ShellRoot {
                             }
                         }
                     }
+                }
 
                 Rectangle {
                     Layout.fillWidth: true
