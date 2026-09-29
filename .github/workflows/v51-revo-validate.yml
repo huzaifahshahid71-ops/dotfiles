@@ -36,6 +36,8 @@ jobs:
           bash -n v5.1/revo/toggle_qs_dots-unified.sh
           bash -n v5.1/revo/repair-runtime.sh
           bash -n v5.1/revo/diagnose-runtime.sh
+          bash -n v5.1/revo/vmrun-agent.sh
+          bash -n v5.1/revo/vmrun-host.sh
 
       - name: ShellCheck errors
         run: |
@@ -49,7 +51,9 @@ jobs:
             v5.1/revo/revo-shells.sh \
             v5.1/revo/toggle_qs_dots-unified.sh \
             v5.1/revo/repair-runtime.sh \
-            v5.1/revo/diagnose-runtime.sh
+            v5.1/revo/diagnose-runtime.sh \
+            v5.1/revo/vmrun-agent.sh \
+            v5.1/revo/vmrun-host.sh
 
       - name: Python syntax
         run: |
