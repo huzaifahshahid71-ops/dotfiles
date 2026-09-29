@@ -59,6 +59,20 @@ cleanup_stale() {
         -mmin +10 -delete 2>/dev/null || true
 }
 
+refresh_graphical_env() {
+    local pid=""
+    pid="$(pgrep -n Hyprland 2>/dev/null || pgrep -n hyprland 2>/dev/null || true)"
+    [[ -n "$pid" ]] || return 0
+
+    while IFS= read -r -d '' entry; do
+        case "$entry" in
+            WAYLAND_DISPLAY=*|HYPRLAND_INSTANCE_SIGNATURE=*|XDG_CURRENT_DESKTOP=*|XDG_RUNTIME_DIR=*|DBUS_SESSION_BUS_ADDRESS=*)
+                export "$entry"
+                ;;
+        esac
+    done < "/proc/$pid/environ" 2>/dev/null || true
+}
+
 run_job() {
     local cmdfile="$1"
     local stem="${cmdfile%.cmd}"
@@ -72,6 +86,8 @@ run_job() {
     mv "$cmdfile" "$runfile" 2>/dev/null || return 0
 
     command="$(base64 -d < "$runfile" 2>/dev/null || true)"
+    refresh_graphical_env
+
     if [[ -z "$command" ]]; then
         printf 'vmrun-agent: empty or invalid command payload\n' > "$tmpout"
         printf '2\n' > "$tmprc"
