@@ -60,6 +60,18 @@ ensure_revo_wallpaper() {
 }
 
 
+is_virtual_machine() {
+    command -v systemd-detect-virt >/dev/null 2>&1 &&
+        systemd-detect-virt --quiet
+}
+
+use_vm_opengl() {
+    if is_virtual_machine; then
+        export QSG_RHI_BACKEND=opengl
+        log "VM detected; forcing Qt scenegraph to OpenGL"
+    fi
+}
+
 stop_all_quickshell() {
     pkill -9 -f "ryoku/shell/ipc/ryoku-shell" >/dev/null 2>&1 || true
     pkill -9 -f "quickshell -p" >/dev/null 2>&1 || true
@@ -138,22 +150,17 @@ case "$shell" in
         export QUICKSHELL_CONFIG_DIR="$vast_src/Qml"
         export QT_MEDIA_BACKEND="ffmpeg"
         export VDPAU_DRIVER="${VDPAU_DRIVER:-va_gl}"
+        # AnotherRipple installs its backing library beside the QML plugin,
+        # but upstream does not currently give that plugin an ORIGIN rpath.
+        export LD_LIBRARY_PATH="$HOME/.local/lib/qt6/qml/AnotherRipple:$HOME/.local/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
         log "Launching Vast from pinned source runtime -> $shell_log"
         setsid -f "$runner" -p "$vast_qml" >"$shell_log" 2>&1
         ;;
 
     macos)
-        # Revo's bundled eqsh glass shaders contain GLSL 4.40 variants. The
-        # virtio/virgl test VM exposes an older OpenGL profile, but the same
-        # baked shaders contain SPIR-V. Use Qt's Vulkan RHI only in a VM;
-        # physical hosts keep their native renderer.
-        if [[ -z "${QSG_RHI_BACKEND:-}" ]] &&
-           command -v systemd-detect-virt >/dev/null 2>&1 &&
-           systemd-detect-virt --quiet &&
-           compgen -G '/usr/share/vulkan/icd.d/*.json' >/dev/null; then
-            export QSG_RHI_BACKEND=vulkan
-            log "VM + Vulkan ICD detected; Mac shell using QSG_RHI_BACKEND=vulkan"
-        fi
+        # virtio/virgl in the validation VM has working OpenGL but no usable
+        # Vulkan physical device. Physical hosts keep their native backend.
+        use_vm_opengl
 
         log "Launching macos -> $shell_log"
         setsid -f "$runner" -p "$dir/shell.qml" >"$shell_log" 2>&1
@@ -161,6 +168,11 @@ case "$shell" in
         # Revo intentionally pairs Mac with K4's Dynamic Island.
         if [[ -x "$QS_ROOT/k4/arrancar" ]]; then
             setsid -f "$QS_ROOT/k4/arrancar" >"$LOG_DIR/k4-macos.log" 2>&1
+        fi
+
+        # MacDuo is a companion utility, not a selectable rice.
+        if [[ -f "$QS_ROOT/macduo/shell.qml" ]]; then
+            setsid -f "$runner" -p "$QS_ROOT/macduo/shell.qml" >"$LOG_DIR/macduo-macos.log" 2>&1
         fi
         ;;
 
@@ -171,8 +183,15 @@ case "$shell" in
 
     k4)
         [[ -x "$dir/arrancar" ]] || exit 4
+        use_vm_opengl
         log "Launching k4 wrapper -> $shell_log"
         setsid -f "$dir/arrancar" >"$shell_log" 2>&1
+        ;;
+
+    eqsh)
+        use_vm_opengl
+        log "Launching eqsh -> $shell_log"
+        setsid -f "$runner" -p "$dir/shell.qml" >"$shell_log" 2>&1
         ;;
 
     ryoku)
