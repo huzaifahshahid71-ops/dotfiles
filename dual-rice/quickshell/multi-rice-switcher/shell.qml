@@ -675,16 +675,6 @@ ShellRoot {
                                                 ? "#6d5bd0"
                                                 : "#34343f"
 
-                                        scale:
-                                            nativeCard.selected
-                                            ? 1.025 : 1.0
-
-                                        Behavior on scale {
-                                            NumberAnimation {
-                                                duration: 110
-                                            }
-                                        }
-
                                         onSelectedChanged: {
                                             if (nativeCard.selected)
                                                 Qt.callLater(
@@ -793,16 +783,6 @@ ShellRoot {
                                             : revoCard.active
                                                 ? "#6d5bd0"
                                                 : "#34343f"
-
-                                        scale:
-                                            revoCard.selected
-                                            ? 1.025 : 1.0
-
-                                        Behavior on scale {
-                                            NumberAnimation {
-                                                duration: 110
-                                            }
-                                        }
 
                                         onSelectedChanged: {
                                             if (revoCard.selected)
