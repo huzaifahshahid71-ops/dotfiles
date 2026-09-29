@@ -109,25 +109,7 @@ jobs:
 
           printf 'revo-lucid\n' > "$HOME/.config/desktop-profile/active"
           "$HOME/.local/bin/multi-rice-control" plan revo-macos \
-            | grep -q '^action=hot-shell      - name: Test pinned DotsBrowser patch
-        run: |
-          git clone https://github.com/vzbc/revo-shell.git /tmp/revo-shell
-          git -C /tmp/revo-shell checkout --detach a15d62c87aa992ab8e5d366575bb4074eada7d98
-
-          python v5.1/revo/patch-revo-dots-browser.py \
-            /tmp/revo-shell/hypr/scripts/quickshell/DotsBrowser.qml
-
-          grep -q 'multi-rice-control' \
-            /tmp/revo-shell/hypr/scripts/quickshell/DotsBrowser.qml
-          grep -q 'REVO × HUZAIFAH' \
-            /tmp/revo-shell/hypr/scripts/quickshell/DotsBrowser.qml
-
-      - name: Check graphical switcher integration markers
-        run: |
-          grep -q 'ListView {' dual-rice/quickshell/multi-rice-switcher/shell.qml
-          grep -q 'modelData.kind === "revo-shell"' dual-rice/quickshell/multi-rice-switcher/shell.qml
-          grep -q 'multi-rice-control' dual-rice/quickshell/multi-rice-switcher/shell.qml
-
+            | grep -q '^action=hot-shell'
 
       - name: Test pinned DotsBrowser patch
         run: |
