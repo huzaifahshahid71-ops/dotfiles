@@ -18,6 +18,37 @@ dir="$QS_ROOT/$shell"
     exit 4
 }
 
+# Preserve upstream-specific launch semantics.
+case "$shell" in
+    macos)
+        runner=""
+        if command -v quickshell >/dev/null 2>&1; then
+            runner="quickshell"
+        elif command -v qs >/dev/null 2>&1; then
+            runner="qs"
+        else
+            echo "revo-shell-launch: Quickshell is not installed" >&2
+            exit 4
+        fi
+
+        setsid -f "$runner" -p "$dir/shell.qml" >"$HOME/macos.log" 2>&1
+
+        # Revo's macOS profile intentionally pairs the shell with K4's
+        # Dynamic Island. Preserve that upstream behavior.
+        if [[ -x "$QS_ROOT/k4/arrancar" ]]; then
+            setsid -f "$QS_ROOT/k4/arrancar" >/tmp/k4.log 2>&1
+        fi
+        exit 0
+        ;;
+
+    ii)
+        if command -v qs >/dev/null 2>&1; then
+            exec qs -p "$dir"
+        fi
+        exec quickshell -p "$dir"
+        ;;
+esac
+
 # A few imported shells provide their own wrapper. Prefer it when present.
 if [[ -x "$dir/launch.sh" ]]; then
     exec "$dir/launch.sh"
