@@ -253,17 +253,33 @@ ShellRoot {
                         event.accepted = true
                     }
                 } else {
-                    if (event.key === Qt.Key_Up &&
+                    const columns =
+                        compositorIndex === 0 ? 5 : 3
+
+                    if (event.key === Qt.Key_Left &&
                         visibleRices.length > 0) {
-                        riceIndex =
-                            (riceIndex - 1 + visibleRices.length)
-                            % visibleRices.length
+                        riceIndex = Math.max(0, riceIndex - 1)
+                        event.accepted = true
+                    } else if (event.key === Qt.Key_Right &&
+                               visibleRices.length > 0) {
+                        riceIndex = Math.min(
+                            visibleRices.length - 1,
+                            riceIndex + 1
+                        )
+                        event.accepted = true
+                    } else if (event.key === Qt.Key_Up &&
+                               visibleRices.length > 0) {
+                        riceIndex = Math.max(
+                            0,
+                            riceIndex - columns
+                        )
                         event.accepted = true
                     } else if (event.key === Qt.Key_Down &&
                                visibleRices.length > 0) {
-                        riceIndex =
-                            (riceIndex + 1)
-                            % visibleRices.length
+                        riceIndex = Math.min(
+                            visibleRices.length - 1,
+                            riceIndex + columns
+                        )
                         event.accepted = true
                     } else if (
                         event.key === Qt.Key_Return ||
@@ -271,10 +287,7 @@ ShellRoot {
                     ) {
                         activateSelection()
                         event.accepted = true
-                    } else if (
-                        event.key === Qt.Key_Escape ||
-                        event.key === Qt.Key_Left
-                    ) {
+                    } else if (event.key === Qt.Key_Escape) {
                         goBack()
                         event.accepted = true
                     }
@@ -463,114 +476,143 @@ ShellRoot {
                         }
                     }
 
-                    ListView {
+                    GridView {
                         id: ricePage
                         anchors.fill: parent
-                        spacing: 6
                         clip: true
                         visible: root.page === 1
                         model: root.visibleRices
                         currentIndex: root.riceIndex
                         boundsBehavior: Flickable.StopAtBounds
+                        cellWidth: width /
+                            (root.compositorIndex === 0 ? 5 : 3)
+                        cellHeight: cellWidth
 
-                        delegate: Rectangle {
+                        delegate: Item {
                             required property int index
                             required property var modelData
 
-                            width: ricePage.width
-                            height: 38
-                            radius: 12
-                            antialiasing: true
+                            width: ricePage.cellWidth
+                            height: ricePage.cellHeight
 
-                            property bool selected:
-                                root.riceIndex === index
-
-                            opacity:
-                                root.profileInstalled(modelData.id)
-                                ? 1.0
-                                : 0.38
-
-                            color: selected
-                                ? "#26263a"
-                                : "transparent"
-
-                            border.width: selected ? 1 : 0
-                            border.color: "#8b5cf6"
-
-                            RowLayout {
+                            Rectangle {
                                 anchors.fill: parent
-                                anchors.leftMargin: 18
-                                anchors.rightMargin: 18
+                                anchors.margins: 6
+                                radius: 18
+                                antialiasing: true
 
-                                Text {
-                                    text: modelData.icon
-                                    color: selected
-                                        ? "#c4b5fd"
-                                        : "#a1a1aa"
-                                    font.family:
-                                        "JetBrainsMono Nerd Font"
-                                    font.pixelSize: 18
+                                property bool selected:
+                                    root.riceIndex === index
+
+                                property bool active:
+                                    modelData.id === root.activeProfile
+
+                                opacity:
+                                    root.profileInstalled(modelData.id)
+                                    ? 1.0
+                                    : 0.38
+
+                                color: selected
+                                    ? "#202033"
+                                    : "#17171f"
+
+                                border.width:
+                                    selected || active ? 2 : 1
+
+                                border.color:
+                                    selected
+                                    ? "#a78bfa"
+                                    : active
+                                        ? "#6d5bd0"
+                                        : "#34343f"
+
+                                scale: selected ? 1.025 : 1.0
+
+                                Behavior on scale {
+                                    NumberAnimation {
+                                        duration: 110
+                                    }
                                 }
 
-                                Text {
-                                    text: modelData.name
-                                    color: selected
-                                        ? "#fafafa"
-                                        : "#d4d4d8"
-                                    font.family:
-                                        "JetBrainsMono Nerd Font"
-                                    font.pixelSize: 16
-                                    font.bold: selected
+                                Column {
+                                    anchors.centerIn: parent
+                                    width: parent.width - 18
+                                    spacing: 7
+
+                                    Text {
+                                        width: parent.width
+                                        horizontalAlignment:
+                                            Text.AlignHCenter
+                                        text: modelData.icon
+                                        color: selected
+                                            ? "#c4b5fd"
+                                            : "#a1a1aa"
+                                        font.family:
+                                            "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 28
+                                    }
+
+                                    Text {
+                                        width: parent.width
+                                        horizontalAlignment:
+                                            Text.AlignHCenter
+                                        text: modelData.name
+                                        elide: Text.ElideRight
+                                        color: "#fafafa"
+                                        font.family:
+                                            "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 14
+                                        font.bold: selected || active
+                                    }
+
+                                    Text {
+                                        width: parent.width
+                                        horizontalAlignment:
+                                            Text.AlignHCenter
+                                        text:
+                                            modelData.kind === "revo-shell"
+                                            ? "REVO"
+                                            : "HUZAIFAH"
+                                        color:
+                                            modelData.kind === "revo-shell"
+                                            ? "#a78bfa"
+                                            : "#71717a"
+                                        font.family:
+                                            "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 9
+                                        font.bold: true
+                                    }
+
+                                    Text {
+                                        width: parent.width
+                                        horizontalAlignment:
+                                            Text.AlignHCenter
+                                        visible:
+                                            active ||
+                                            !root.profileInstalled(
+                                                modelData.id
+                                            )
+                                        text: active
+                                            ? "ACTIVE"
+                                            : "NOT INSTALLED"
+                                        color: active
+                                            ? "#a78bfa"
+                                            : "#71717a"
+                                        font.family:
+                                            "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 9
+                                        font.bold: true
+                                    }
                                 }
 
-                                Text {
-                                    visible: modelData.kind === "revo-shell"
-                                    text: "REVO"
-                                    color: "#71717a"
-                                    font.family:
-                                        "JetBrainsMono Nerd Font"
-                                    font.pixelSize: 10
-                                    font.bold: true
-                                }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
 
-                                Item {
-                                    Layout.fillWidth: true
-                                }
-
-                                Text {
-                                    visible:
-                                        modelData.id ===
-                                            root.activeProfile ||
-                                        !root.profileInstalled(
-                                            modelData.id
-                                        )
-
-                                    text:
-                                        modelData.id ===
-                                            root.activeProfile
-                                        ? "ACTIVE"
-                                        : "NOT INSTALLED"
-
-                                    color:
-                                        modelData.id ===
-                                            root.activeProfile
-                                        ? "#a78bfa"
-                                        : "#71717a"
-
-                                    font.family:
-                                        "JetBrainsMono Nerd Font"
-                                    font.pixelSize: 11
-                                    font.bold: true
-                                }
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-
-                                onClicked: {
-                                    root.riceIndex = index
-                                    root.activateSelection()
+                                    onClicked: {
+                                        root.riceIndex = index
+                                        root.activateSelection()
+                                    }
                                 }
                             }
                         }
@@ -591,7 +633,7 @@ ShellRoot {
                             ? root.actionMessage
                             : root.page === 0
                                 ? "← →  Select compositor"
-                                : "↑ ↓  Select rice"
+                                : "← ↑ ↓ →  Select rice"
                         color: "#71717a"
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 12
