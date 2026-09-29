@@ -52,6 +52,35 @@ if [[ -d "$REVO_RUNTIME/wallpapers" ]]; then
     rsync -a "$REVO_RUNTIME/wallpapers/" "$HOME/Pictures/Wallpapers/Revo/"
 fi
 
+if [[ -d "$wall_dir" ]]; then
+    cat > "$wall_dir/set.sh" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+wall="${1:-}"
+[[ -n "$wall" && -f "$wall" ]] || exit 0
+
+if command -v awww >/dev/null 2>&1; then
+    pgrep -x awww-daemon >/dev/null 2>&1 || {
+        setsid -f awww-daemon >/tmp/revo-awww.log 2>&1
+        sleep 0.3
+    }
+    awww img --transition-type center --transition-step 90 "$wall"
+elif command -v swww >/dev/null 2>&1; then
+    pgrep -x swww-daemon >/dev/null 2>&1 || {
+        setsid -f swww-daemon >/tmp/revo-swww.log 2>&1
+        sleep 0.3
+    }
+    swww img "$wall" --transition-type center
+elif command -v hyprctl >/dev/null 2>&1; then
+    hyprctl hyprpaper preload "$wall" >/dev/null 2>&1 || true
+    hyprctl hyprpaper wallpaper ",$wall" >/dev/null 2>&1 || true
+fi
+
+command -v wal >/dev/null 2>&1 && wal -i "$wall" >/dev/null 2>&1 || true
+EOF
+    chmod +x "$wall_dir/set.sh"
+fi
+
 manager="$PROFILE_ROOT/revo/hypr/scripts/qs_manager.sh"
 if [[ -f "$manager" ]] && ! grep -q 'HUZAIFAH_REVO_V51_ANY_SHELL_GUARD' "$manager"; then
     log "Stopping Revo base UI from respawning behind selected shells"
