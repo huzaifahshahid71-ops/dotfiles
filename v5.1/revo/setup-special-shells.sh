@@ -402,11 +402,12 @@ setup_vast() {
 
 case "${1:---all}" in
     --all)
+        # Stable release path: keep only support required by selectable shells.
+        # K4/EQSH assets are still used by Mac; Ryoku/Vast are deliberately
+        # not hydrated because those shells are disabled in the v5.1 catalog.
         bootstrap_k4_state || true
         setup_vm_graphics_compat || true
         setup_persona_cava || true
-        setup_ryoku || true
-        setup_vast || true
         ;;
     --persona)
         setup_persona_cava
