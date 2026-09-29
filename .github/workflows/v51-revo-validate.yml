@@ -34,6 +34,8 @@ jobs:
           bash -n v5.1/revo/qs-list
           bash -n v5.1/revo/revo-shells.sh
           bash -n v5.1/revo/toggle_qs_dots-unified.sh
+          bash -n v5.1/revo/repair-runtime.sh
+          bash -n v5.1/revo/diagnose-runtime.sh
 
       - name: ShellCheck errors
         run: |
@@ -45,7 +47,9 @@ jobs:
             scripts/install-revo-v5.1.sh \
             v5.1/revo/qs-list \
             v5.1/revo/revo-shells.sh \
-            v5.1/revo/toggle_qs_dots-unified.sh
+            v5.1/revo/toggle_qs_dots-unified.sh \
+            v5.1/revo/repair-runtime.sh \
+            v5.1/revo/diagnose-runtime.sh
 
       - name: Python syntax
         run: |
