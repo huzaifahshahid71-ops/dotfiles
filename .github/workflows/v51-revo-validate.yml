@@ -1,0 +1,186 @@
+name: v5.1 Revo validation
+
+on:
+  push:
+    branches:
+      - v5.1.0-revo-dev
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install static validators
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
+      - name: Bash syntax
+        run: |
+          bash -n dual-rice/bin/multi-rice-control
+          bash -n dual-rice/bin/revo-shell-launch
+          bash -n dual-rice/bin/multi-rice-switcher
+          bash -n dual-rice/lib/profile-metadata.sh
+          bash -n scripts/install-revo-v5.1.sh
+          bash -n v5.1/revo/qs-list
+          bash -n v5.1/revo/revo-shells.sh
+          bash -n v5.1/revo/toggle_qs_dots-unified.sh
+          bash -n v5.1/revo/repair-runtime.sh
+          bash -n v5.1/revo/diagnose-runtime.sh
+          bash -n v5.1/revo/vmrun-agent.sh
+          bash -n v5.1/revo/vmrun-host.sh
+          bash -n v5.1/revo/setup-special-shells.sh
+
+      - name: ShellCheck errors
+        run: |
+          shellcheck -S error \
+            dual-rice/bin/multi-rice-control \
+            dual-rice/bin/revo-shell-launch \
+            dual-rice/bin/multi-rice-switcher \
+            dual-rice/lib/profile-metadata.sh \
+            scripts/install-revo-v5.1.sh \
+            v5.1/revo/qs-list \
+            v5.1/revo/revo-shells.sh \
+            v5.1/revo/toggle_qs_dots-unified.sh \
+            v5.1/revo/repair-runtime.sh \
+            v5.1/revo/diagnose-runtime.sh \
+            v5.1/revo/vmrun-agent.sh \
+            v5.1/revo/vmrun-host.sh \
+            v5.1/revo/setup-special-shells.sh
+
+      - name: Python syntax
+        run: |
+          python -m py_compile v5.1/revo/patch-revo-dots-browser.py
+
+      - name: Validate unified registry
+        shell: bash
+        run: |
+          source dual-rice/lib/profile-metadata.sh
+
+          [[ "$(profile_ids | wc -l)" -eq 25 ]]
+          [[ "$(profile_ids_for_compositor hyprland | wc -l)" -eq 22 ]]
+          [[ "$(profile_ids_for_compositor niri | wc -l)" -eq 3 ]]
+
+          [[ "$(profile_kind revo-lucid)" == "revo-shell" ]]
+          [[ "$(profile_shell revo-lucid)" == "lucid" ]]
+          [[ "$(profile_for_shell lucid)" == "revo-lucid" ]]
+          [[ "$(profile_name caelestia)" == "Aether" ]]
+          [[ "$(profile_name jaqc)" == "Solstice" ]]
+          [[ "$(profile_name revo-macos)" == "Mac" ]]
+          ! profile_ids | grep -qx 'revo-eqsh'
+          ! profile_ids | grep -qx 'revo-k4'
+          ! profile_ids | grep -qx 'revo-ryoku'
+          ! profile_ids | grep -qx 'revo-vast'
+
+      - name: Validate Revo shell registry
+        shell: bash
+        run: |
+          source v5.1/revo/revo-shells.sh
+          [[ "$(revo_shell_ids | wc -l)" -eq 21 ]]
+          [[ "$(revo_profile_ids | wc -l)" -eq 15 ]]
+          [[ "$(revo_selectable_shell_ids | wc -l)" -eq 15 ]]
+          [[ "$(revo_utility_shell_ids | wc -l)" -eq 2 ]]
+          [[ "$(revo_disabled_shell_ids | wc -l)" -eq 4 ]]
+
+      - name: Simulate Revo backend hot switch
+        shell: bash
+        run: |
+          TEST_HOME="$(mktemp -d)"
+          export HOME="$TEST_HOME"
+          export XDG_CONFIG_HOME="$HOME/.config"
+          export XDG_CURRENT_DESKTOP=Hyprland
+
+          mkdir -p \
+            "$HOME/.local/share/desktop-switcher" \
+            "$HOME/.local/share/desktop-profiles/revo/hypr" \
+            "$HOME/.local/bin" \
+            "$HOME/.config/quickshell" \
+            "$HOME/.config/desktop-profile"
+
+          cp dual-rice/lib/profile-metadata.sh \
+            "$HOME/.local/share/desktop-switcher/profile-metadata.sh"
+          cp dual-rice/bin/multi-rice-control \
+            "$HOME/.local/bin/multi-rice-control"
+          cp dual-rice/bin/revo-shell-launch \
+            "$HOME/.local/bin/revo-shell-launch"
+          chmod +x \
+            "$HOME/.local/bin/multi-rice-control" \
+            "$HOME/.local/bin/revo-shell-launch"
+
+          touch "$HOME/.local/share/desktop-profiles/revo/hypr/hyprland.lua"
+          ln -s "$HOME/.local/share/desktop-profiles/revo/hypr" \
+            "$HOME/.config/hypr"
+
+          source v5.1/revo/revo-shells.sh
+          while IFS= read -r shell; do
+            mkdir -p "$HOME/.config/quickshell/$shell"
+            touch "$HOME/.config/quickshell/$shell/shell.qml"
+          done < <(revo_shell_ids)
+
+          printf 'lucid\n' > "$HOME/.config/desktop-profile/revo-shell"
+
+          source "$HOME/.local/share/desktop-switcher/profile-metadata.sh"
+          printf 'kind=%s\n' "$(profile_kind revo-lucid)"
+          printf 'config=%s\n' "$(profile_config_path "$HOME/.local/share/desktop-profiles" revo-lucid || true)"
+          printf 'shell=%s\n' "$(profile_shell revo-lucid)"
+          ls -l "$HOME/.local/share/desktop-profiles/revo/hypr/hyprland.lua"
+          ls -l "$HOME/.config/quickshell/lucid/shell.qml"
+
+          profile_out="$("$HOME/.local/bin/multi-rice-control" profile)"
+          list_count="$("$HOME/.local/bin/multi-rice-control" list | wc -l)"
+          installed_count="$("$HOME/.local/bin/multi-rice-control" list | awk -F'|' '$5=="true"{n++} END{print n+0}')"
+
+          printf 'profile=%s\n' "$profile_out"
+          printf 'list_count=%s\n' "$list_count"
+          printf 'installed_count=%s\n' "$installed_count"
+
+          [[ "$profile_out" == "revo-lucid" ]]
+          [[ "$list_count" -eq 25 ]]
+          [[ "$installed_count" -eq 15 ]]
+
+          printf 'revo-lucid\n' > "$HOME/.config/desktop-profile/active"
+          plan_out="$("$HOME/.local/bin/multi-rice-control" plan revo-macos)"
+          printf '%s\n' "$plan_out"
+          printf '%s\n' "$plan_out" | grep -q '^action=hot-shell$'
+
+      - name: Test pinned DotsBrowser patch
+        run: |
+          git clone https://github.com/vzbc/revo-shell.git /tmp/revo-shell
+          git -C /tmp/revo-shell checkout --detach a15d62c87aa992ab8e5d366575bb4074eada7d98
+
+          python v5.1/revo/patch-revo-dots-browser.py \
+            /tmp/revo-shell/hypr/scripts/quickshell/DotsBrowser.qml
+
+          grep -q 'multi-rice-control' \
+            /tmp/revo-shell/hypr/scripts/quickshell/DotsBrowser.qml
+          grep -q 'REVO × HUZAIFAH' \
+            /tmp/revo-shell/hypr/scripts/quickshell/DotsBrowser.qml
+
+      - name: Check v5.1 integration markers
+        run: |
+          grep -q 'Flickable {' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -q 'visibleNativeRices' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -q 'visibleRevoRices' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -q 'columns: 4' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -q 'scale:' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -q 'multi-rice-control' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -q 'text.trim().split("\\n")' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -q 'SHELL_QML=' dual-rice/bin/multi-rice-switcher
+          grep -q -- '--replace' dual-rice/bin/revo-shell-launch
+          grep -q 'HYPRLIQUID_REF=' scripts/install-revo-v5.1.sh
+          grep -q 'setup-special-shells.sh' scripts/install-revo-v5.1.sh
+          grep -q 'vast-shell-v5.1' dual-rice/bin/revo-shell-launch
+          grep -q 'QSG_RHI_BACKEND=opengl' dual-rice/bin/revo-shell-launch
+          grep -q 'macduo-macos.log' dual-rice/bin/revo-shell-launch
+          grep -q 'HUZAIFAH_V51_VM_OPENGL' v5.1/revo/setup-special-shells.sh
+          grep -q 'AnotherRipple' dual-rice/bin/revo-shell-launch
+          grep -q 'text = text.replace("h.exec_once(", "hl.exec_cmd(")' scripts/install-revo-v5.1.sh
