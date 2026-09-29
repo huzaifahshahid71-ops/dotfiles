@@ -68,7 +68,13 @@ install_dependencies_arch() {
     done
 
     if (( ${#installable[@]} > 0 )); then
-        sudo pacman -S --needed --noconfirm "${installable[@]}"
+        if ! sudo pacman -S --needed --noconfirm "${installable[@]}"; then
+            warn "Pacman could not retrieve one or more dependency packages."
+            warn "On CachyOS, refresh mirrors and fully update the VM before retrying:"
+            warn "  sudo cachyos-rate-mirrors"
+            warn "  sudo pacman -Syu"
+            return 1
+        fi
     else
         ok "All repo dependencies already installed"
     fi
