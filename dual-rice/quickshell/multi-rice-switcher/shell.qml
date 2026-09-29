@@ -52,8 +52,7 @@ ShellRoot {
 
             function applyStatus(text) {
                 const values = {}
-                const lines = text.trim().split("
-")
+                const lines = text.trim().split("\\n")
 
                 for (let i = 0; i < lines.length; ++i) {
                     const pos = lines[i].indexOf("=")
