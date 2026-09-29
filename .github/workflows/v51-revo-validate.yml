@@ -65,6 +65,7 @@ jobs:
           [[ "$(profile_for_shell lucid)" == "revo-lucid" ]]
           [[ "$(profile_name caelestia)" == "Aether" ]]
           [[ "$(profile_name jaqc)" == "Solstice" ]]
+          [[ "$(profile_name revo-macos)" == "Mac" ]]
 
       - name: Validate Revo shell registry
         shell: bash
@@ -91,7 +92,11 @@ jobs:
             "$HOME/.local/share/desktop-switcher/profile-metadata.sh"
           cp dual-rice/bin/multi-rice-control \
             "$HOME/.local/bin/multi-rice-control"
-          chmod +x "$HOME/.local/bin/multi-rice-control"
+          cp dual-rice/bin/revo-shell-launch \
+            "$HOME/.local/bin/revo-shell-launch"
+          chmod +x \
+            "$HOME/.local/bin/multi-rice-control" \
+            "$HOME/.local/bin/revo-shell-launch"
 
           touch "$HOME/.local/share/desktop-profiles/revo/hypr/hyprland.lua"
           ln -s "$HOME/.local/share/desktop-profiles/revo/hypr" \
@@ -120,30 +125,7 @@ jobs:
           printf 'revo-lucid\n' > "$HOME/.config/desktop-profile/active"
           plan_out="$("$HOME/.local/bin/multi-rice-control" plan revo-macos)"
           printf '%s\n' "$plan_out"
-          grep -q '^action=hot-shell
-      - name: Test pinned DotsBrowser patch
-        run: |
-          git clone https://github.com/vzbc/revo-shell.git /tmp/revo-shell
-          git -C /tmp/revo-shell checkout --detach a15d62c87aa992ab8e5d366575bb4074eada7d98
-
-          python v5.1/revo/patch-revo-dots-browser.py \
-            /tmp/revo-shell/hypr/scripts/quickshell/DotsBrowser.qml
-
-          grep -q 'multi-rice-control' \
-            /tmp/revo-shell/hypr/scripts/quickshell/DotsBrowser.qml
-          grep -q 'REVO × HUZAIFAH' \
-            /tmp/revo-shell/hypr/scripts/quickshell/DotsBrowser.qml
-
-      - name: Check graphical switcher integration markers
-        run: |
-          grep -q 'Flickable {' dual-rice/quickshell/multi-rice-switcher/shell.qml
-          grep -q 'visibleNativeRices' dual-rice/quickshell/multi-rice-switcher/shell.qml
-          grep -q 'visibleRevoRices' dual-rice/quickshell/multi-rice-switcher/shell.qml
-          grep -q 'columns: 4' dual-rice/quickshell/multi-rice-switcher/shell.qml
-          grep -q 'multi-rice-control' dual-rice/quickshell/multi-rice-switcher/shell.qml
-          grep -q 'text.trim().split("\\n")' dual-rice/quickshell/multi-rice-switcher/shell.qml
-          grep -q 'SHELL_QML=' dual-rice/bin/multi-rice-switcher
- <<< "$plan_out"
+          printf '%s\n' "$plan_out" | grep -q '^action=hot-shell$'
 
       - name: Test pinned DotsBrowser patch
         run: |
@@ -158,12 +140,16 @@ jobs:
           grep -q 'REVO × HUZAIFAH' \
             /tmp/revo-shell/hypr/scripts/quickshell/DotsBrowser.qml
 
-      - name: Check graphical switcher integration markers
+      - name: Check v5.1 integration markers
         run: |
           grep -q 'Flickable {' dual-rice/quickshell/multi-rice-switcher/shell.qml
           grep -q 'visibleNativeRices' dual-rice/quickshell/multi-rice-switcher/shell.qml
           grep -q 'visibleRevoRices' dual-rice/quickshell/multi-rice-switcher/shell.qml
           grep -q 'columns: 4' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -q 'scale:' dual-rice/quickshell/multi-rice-switcher/shell.qml
           grep -q 'multi-rice-control' dual-rice/quickshell/multi-rice-switcher/shell.qml
           grep -q 'text.trim().split("\\n")' dual-rice/quickshell/multi-rice-switcher/shell.qml
           grep -q 'SHELL_QML=' dual-rice/bin/multi-rice-switcher
+          grep -q -- '--replace' dual-rice/bin/revo-shell-launch
+          grep -q 'HYPRLIQUID_REF=' scripts/install-revo-v5.1.sh
+          grep -q 'text = text.replace("h.exec_once(", "hl.exec_cmd(")' scripts/install-revo-v5.1.sh
