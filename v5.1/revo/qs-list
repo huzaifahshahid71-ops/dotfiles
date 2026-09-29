@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CONTROL="${MULTI_RICE_CONTROL:-$HOME/.local/bin/multi-rice-control}"
+
+[[ -x "$CONTROL" ]] || {
+    echo "qs-list: unified Multi-Rice backend not found: $CONTROL" >&2
+    exit 1
+}
+
+mapfile -t rows < <("$CONTROL" list)
+
+profiles=()
+names=()
+compositors=()
+installed=()
+active=()
+
+printf '\033[1;35m\n'
+printf '  ╔══════════════════════════════════════════════╗\n'
+printf '  ║       REVO × HUZAIFAH — RICE SWITCHER       ║\n'
+printf '  ╚══════════════════════════════════════════════╝\n'
+printf '\033[0m\n'
+
+index=0
+for row in "${rows[@]}"; do
+    IFS='|' read -r id name icon compositor is_installed is_active kind shell <<< "$row"
+    [[ "$is_installed" == "true" ]] || continue
+
+    profiles+=("$id")
+    names+=("$name")
+    compositors+=("$compositor")
+    installed+=("$is_installed")
+    active+=("$is_active")
+
+    index=$((index + 1))
+    marker=" "
+    [[ "$is_active" == "true" ]] && marker="*"
+    printf '  [%2d] %s %-22s  %-8s  %s\n' "$index" "$marker" "$name" "$compositor" "${shell:+[$shell]}"
+done
+
+printf '\n  * = active\n\n'
+read -r -p "  Select rice (Enter to cancel): " choice
+
+[[ -n "$choice" ]] || exit 0
+[[ "$choice" =~ ^[0-9]+$ ]] || {
+    echo "Invalid selection" >&2
+    exit 2
+}
+
+idx=$((choice - 1))
+(( idx >= 0 && idx < ${#profiles[@]} )) || {
+    echo "Selection out of range" >&2
+    exit 2
+}
+
+exec "$CONTROL" switch "${profiles[$idx]}"
