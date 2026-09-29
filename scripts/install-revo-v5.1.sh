@@ -425,7 +425,7 @@ patch_revo_dots_browser() {
     }
 
     python "$REPO_ROOT/v5.1/revo/patch-revo-dots-browser.py" "$dots"
-    ok "Revo DotsBrowser now uses the unified 29-profile backend"
+    ok "Revo DotsBrowser now uses the unified 25-profile backend"
 }
 
 install_revo_switch_helpers() {
@@ -519,7 +519,7 @@ install -Dm755 "$REPO_ROOT/v5.1/revo/qs-list" "$HOME/.local/bin/qs-list"
 install -Dm644 "$REPO_ROOT/dual-rice/lib/profile-metadata.sh" "$HOME/.local/share/desktop-switcher/profile-metadata.sh"
 install_revo_switch_helpers
 
-log "Hydrating Revo shells with external/native runtimes"
+log "Preparing support runtimes for the stable Revo shell set"
 bash "$REPO_ROOT/v5.1/revo/setup-special-shells.sh" --all || \
     warn "One or more special Revo runtimes could not be prepared; see warnings above"
 
@@ -536,9 +536,9 @@ build_native_shells
 
 ok "Revo v5.1 integration installed"
 printf '\n'
-printf 'Revo configs deployed: 21 (19 selectable + 2 utilities)\n'
+printf 'Revo configs deployed: 21 (15 selectable + 2 utilities + 4 disabled)\n'
 printf 'Huzaifah profiles: 10\n'
-printf 'Unified selectable total: 29\n'
+printf 'Unified selectable total: 25\n'
 printf 'Revo GUI:     SUPER+B (DotsBrowser)\n'
 printf 'Huzaifah GUI: SUPER+SHIFT+D or ~/.local/bin/multi-rice-switcher\n'
 printf 'Unified CLI:  SUPER+SHIFT+Q or qs-list\n'
