@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-STATE_DIR="$HOME/.config/desktop-profile"
+CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+STATE_DIR="$CONFIG_HOME/desktop-profile"
 STATE_FILE="$STATE_DIR/revo-shell"
-QS_ROOT="$HOME/.config/quickshell"
+QS_ROOT="$CONFIG_HOME/quickshell"
 DEFAULT_SHELL="lucid"
 
 shell="${REVO_SHELL:-}"
