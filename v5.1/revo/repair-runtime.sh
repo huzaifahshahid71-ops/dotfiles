@@ -145,7 +145,7 @@ if [[ -f "$autostart" ]]; then
     sed -i 's/h\.exec_once(/hl.exec_cmd(/g' "$autostart"
 fi
 
-log "Preparing Vast, Ryoku and Persona runtimes"
+log "Preparing special Revo runtimes, VM graphics compatibility and K4 state"
 bash "$REPO_ROOT/v5.1/revo/setup-special-shells.sh" --all || true
 
 ok "Runtime repair applied"
