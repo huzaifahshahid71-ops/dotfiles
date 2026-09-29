@@ -321,7 +321,13 @@ schedule_revo_shell_switch() {
 
     if command -v systemd-run >/dev/null 2>&1; then
         unit="revo-shell-switch-$"
-        systemd-run --user --collect --unit="$unit" bash -lc "$cmd" >/dev/null 2>&1
+        systemd-run --user --collect --unit="$unit" \
+            --setenv="WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-}" \
+            --setenv="HYPRLAND_INSTANCE_SIGNATURE=${HYPRLAND_INSTANCE_SIGNATURE:-}" \
+            --setenv="XDG_CURRENT_DESKTOP=${XDG_CURRENT_DESKTOP:-Hyprland}" \
+            --setenv="XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" \
+            --setenv="DBUS_SESSION_BUS_ADDRESS=${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/$(id -u)/bus}" \
+            bash -lc "$cmd" >/dev/null 2>&1
     else
         setsid bash -lc "$cmd" >/dev/null 2>&1 </dev/null &
     fi
