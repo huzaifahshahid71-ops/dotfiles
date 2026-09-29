@@ -9,6 +9,11 @@ install_agent() {
     install -Dm755 "$0" "$SELF"
     mkdir -p "$QUEUE" "$(dirname "$SERVICE")"
 
+    src_dir="$(cd "$(dirname "$0")" && pwd)"
+    if [[ -f "$src_dir/vmrun-host.sh" ]]; then
+        install -Dm755 "$src_dir/vmrun-host.sh" "$HOME/hostshare/vmrun"
+    fi
+
     cat > "$SERVICE" <<EOF
 [Unit]
 Description=Host-to-VM command bridge over 9P
