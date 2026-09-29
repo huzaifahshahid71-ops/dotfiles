@@ -35,6 +35,31 @@ rewrite_home_paths() {
     done < <(grep -rIlZ '/home/revo' "$root" 2>/dev/null || true)
 }
 
+rewrite_revo_symlinks() {
+    local root="$1"
+    local link target new_target
+    local fixed=0
+
+    [[ -d "$root" ]] || return 0
+
+    while IFS= read -r -d '' link; do
+        target="$(readlink "$link" 2>/dev/null || true)"
+        [[ -n "$target" ]] || continue
+
+        case "$target" in
+            /home/revo/*)
+                new_target="$HOME/${target#/home/revo/}"
+                ln -sfn "$new_target" "$link"
+                fixed=$((fixed + 1))
+                ;;
+        esac
+    done < <(find "$root" -type l -print0 2>/dev/null)
+
+    if (( fixed > 0 )); then
+        ok "Rewrote $fixed Revo symlink target(s) under $root"
+    fi
+}
+
 install_dependencies_arch() {
     [[ "${INSTALL_REVO_DEPS:-1}" == "1" ]] || return 0
     command -v pacman >/dev/null 2>&1 || {
@@ -466,6 +491,7 @@ rm -rf "$PROFILE_ROOT/revo"
 mkdir -p "$PROFILE_ROOT/revo/hypr"
 rsync -a --exclude '.git' "$REVO_ROOT/hypr/" "$PROFILE_ROOT/revo/hypr/"
 rewrite_home_paths "$PROFILE_ROOT/revo/hypr"
+rewrite_revo_symlinks "$PROFILE_ROOT/revo/hypr"
 patch_revo_wallpapers
 patch_revo_autostart
 patch_revo_lua_safety
@@ -477,6 +503,7 @@ log "Deploying all Revo Quickshell configs"
 mkdir -p "$QS_ROOT"
 rsync -a --exclude '.git' "$REVO_ROOT/quickshell/" "$QS_ROOT/"
 rewrite_home_paths "$QS_ROOT"
+rewrite_revo_symlinks "$QS_ROOT"
 
 log "Restoring Huzaifah switcher after Revo overlay"
 rm -rf "$QS_ROOT/multi-rice-switcher"
