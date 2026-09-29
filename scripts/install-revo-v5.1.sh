@@ -76,7 +76,7 @@ install_dependencies_arch() {
         pipewire pipewire-pulse wireplumber libpulse playerctl cava mpv-mpris networkmanager bluez bluez-utils brightnessctl upower power-profiles-daemon lm_sensors rfkill ddcutil fftw
         grim slurp wf-recorder hyprshot hyprpicker ffmpeg imagemagick wl-clipboard cliphist wtype swappy matugen swww hyprpaper swaybg mpvpaper swaync swayosd easyeffects
         kitty nautilus thunar rofi-wayland wofi fastfetch starship fish gnome-calculator papirus-icon-theme adwaita-cursors xdg-desktop-portal-gtk
-        ttf-jetbrains-mono-nerd ttf-nerd-fonts-symbols-common noto-fonts noto-fonts-emoji base-devel cmake ninja pkgconf clang gcc go extra-cmake-modules wayland stb
+        ttf-jetbrains-mono-nerd ttf-nerd-fonts-symbols-common noto-fonts noto-fonts-emoji base-devel cmake ninja pkgconf clang gcc extra-cmake-modules wayland stb
     )
 
     local installable=()
