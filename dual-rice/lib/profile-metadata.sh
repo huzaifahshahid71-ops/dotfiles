@@ -202,20 +202,16 @@ profile_ids() {
         revo-brain-shell \
         revo-cartoon-shell \
         revo-end4-pc \
-        revo-eqsh \
         revo-ii \
         revo-clavis \
-        revo-k4 \
         revo-lotus \
         revo-lucid \
         revo-macos \
         revo-nibrasshell \
         revo-persona \
         revo-editorial \
-        revo-ryoku \
         revo-caelestia \
         revo-synoptik \
-        revo-vast \
         revo-zesis
 }
 
