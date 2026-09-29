@@ -28,6 +28,7 @@ jobs:
         run: |
           bash -n dual-rice/bin/multi-rice-control
           bash -n dual-rice/bin/revo-shell-launch
+          bash -n dual-rice/bin/multi-rice-switcher
           bash -n dual-rice/lib/profile-metadata.sh
           bash -n scripts/install-revo-v5.1.sh
           bash -n v5.1/revo/qs-list
@@ -39,6 +40,7 @@ jobs:
           shellcheck -S error \
             dual-rice/bin/multi-rice-control \
             dual-rice/bin/revo-shell-launch \
+            dual-rice/bin/multi-rice-switcher \
             dual-rice/lib/profile-metadata.sh \
             scripts/install-revo-v5.1.sh \
             v5.1/revo/qs-list \
@@ -129,3 +131,5 @@ jobs:
           grep -q 'ListView {' dual-rice/quickshell/multi-rice-switcher/shell.qml
           grep -q 'modelData.kind === "revo-shell"' dual-rice/quickshell/multi-rice-switcher/shell.qml
           grep -q 'multi-rice-control' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -q 'text.trim().split("\\n")' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -q 'SHELL_QML=' dual-rice/bin/multi-rice-switcher
