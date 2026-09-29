@@ -425,7 +425,7 @@ patch_revo_dots_browser() {
     }
 
     python "$REPO_ROOT/v5.1/revo/patch-revo-dots-browser.py" "$dots"
-    ok "Revo DotsBrowser now uses the unified 31-profile backend"
+    ok "Revo DotsBrowser now uses the unified 29-profile backend"
 }
 
 install_revo_switch_helpers() {
@@ -536,9 +536,9 @@ build_native_shells
 
 ok "Revo v5.1 integration installed"
 printf '\n'
-printf 'Revo shells: 21\n'
+printf 'Revo configs deployed: 21 (19 selectable + 2 utilities)\n'
 printf 'Huzaifah profiles: 10\n'
-printf 'Unified total: 31\n'
+printf 'Unified selectable total: 29\n'
 printf 'Revo GUI:     SUPER+B (DotsBrowser)\n'
 printf 'Huzaifah GUI: SUPER+SHIFT+D or ~/.local/bin/multi-rice-switcher\n'
 printf 'Unified CLI:  SUPER+SHIFT+Q or qs-list\n'
