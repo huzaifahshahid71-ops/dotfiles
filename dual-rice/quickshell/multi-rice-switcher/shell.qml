@@ -40,21 +40,8 @@ ShellRoot {
             property int niriInstalled: 0
             property var installedProfiles: ({})
 
-            property var hyprRices: [
-                { id: "caelestia",   icon: "✦", name: "Aether" },
-                { id: "end4",        icon: "◈", name: "Obsidian" },
-                { id: "ambxst",      icon: "◆", name: "Crimson" },
-                { id: "dms",         icon: "●", name: "Materia" },
-                { id: "serpantinum", icon: "◇", name: "Aurora" },
-                { id: "noctalia",    icon: "◉", name: "Nocturne" },
-                { id: "sayconlun",   icon: "⬡", name: "Lumina" }
-            ]
-
-            property var niriRices: [
-                { id: "jaqc",   icon: "☀", name: "Solstice" },
-                { id: "clavis", icon: "❖", name: "Cipher" },
-                { id: "nixri",  icon: "✧", name: "Astra" }
-            ]
+            property var hyprRices: []
+            property var niriRices: []
 
             property var visibleRices:
                 compositorIndex === 0 ? hyprRices : niriRices
@@ -97,20 +84,41 @@ ShellRoot {
 
             function applyList(text) {
                 const next = {}
-                const lines = text.trim().split("
-")
+                const hypr = []
+                const niri = []
+                const lines = text.trim().split("\n")
 
                 for (let i = 0; i < lines.length; ++i) {
                     if (lines[i].length === 0)
                         continue
 
                     const parts = lines[i].split("|")
+                    if (parts.length < 6)
+                        continue
 
-                    if (parts.length >= 6)
-                        next[parts[0]] = parts[4] === "true"
+                    const item = {
+                        id: parts[0],
+                        name: parts[1],
+                        icon: parts[2],
+                        compositor: parts[3],
+                        kind: parts.length > 6 ? parts[6] : "desktop",
+                        shell: parts.length > 7 ? parts[7] : ""
+                    }
+
+                    next[item.id] = parts[4] === "true"
+
+                    if (item.compositor === "hyprland")
+                        hypr.push(item)
+                    else if (item.compositor === "niri")
+                        niri.push(item)
                 }
 
                 installedProfiles = next
+                hyprRices = hypr
+                niriRices = niri
+
+                if (riceIndex >= visibleRices.length)
+                    riceIndex = Math.max(0, visibleRices.length - 1)
             }
 
             function openCompositor() {
@@ -445,109 +453,118 @@ ShellRoot {
                         }
                     }
 
-                    Column {
+                    ListView {
                         id: ricePage
                         anchors.fill: parent
                         spacing: 6
+                        clip: true
                         visible: root.page === 1
+                        model: root.visibleRices
+                        currentIndex: root.riceIndex
+                        boundsBehavior: Flickable.StopAtBounds
 
-                        Repeater {
-                            model: root.visibleRices
+                        delegate: Rectangle {
+                            required property int index
+                            required property var modelData
 
-                            delegate: Rectangle {
-                                required property int index
-                                required property var modelData
+                            width: ricePage.width
+                            height: 38
+                            radius: 12
+                            antialiasing: true
 
-                                width: ricePage.width
-                                height: 38
-                                radius: 12
+                            property bool selected:
+                                root.riceIndex === index
 
-                                antialiasing: true
-                                property bool selected:
-                                    root.riceIndex === index
+                            opacity:
+                                root.profileInstalled(modelData.id)
+                                ? 1.0
+                                : 0.38
 
-                                opacity:
-                                    root.profileInstalled(modelData.id)
-                                    ? 1.0
-                                    : 0.38
+                            color: selected
+                                ? "#26263a"
+                                : "transparent"
 
-                                color: selected
-                                    ? "#26263a"
-                                    : "transparent"
+                            border.width: selected ? 1 : 0
+                            border.color: "#8b5cf6"
 
-                                border.width: selected ? 1 : 0
-                                border.color: "#8b5cf6"
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 18
+                                anchors.rightMargin: 18
 
-                                RowLayout {
-                                    anchors.fill: parent
-                                    anchors.leftMargin: 18
-                                    anchors.rightMargin: 18
-
-                                    Text {
-                                        text: modelData.icon
-                                        color: selected
-                                            ? "#c4b5fd"
-                                            : "#a1a1aa"
-                                        font.family:
-                                            "JetBrainsMono Nerd Font"
-                                        font.pixelSize: 18
-                                    }
-
-                                    Text {
-                                        text: modelData.name
-                                        color: selected
-                                            ? "#fafafa"
-                                            : "#d4d4d8"
-                                        font.family:
-                                            "JetBrainsMono Nerd Font"
-                                        font.pixelSize: 16
-                                        font.bold: selected
-                                    }
-
-                                    Item {
-                                        Layout.fillWidth: true
-                                    }
-
-                                    Text {
-                                        visible:
-                                            modelData.id ===
-                                                root.activeProfile ||
-                                            !root.profileInstalled(
-                                                modelData.id
-                                            )
-
-                                        text:
-                                            modelData.id ===
-                                                root.activeProfile
-                                            ? "ACTIVE"
-                                            : "NOT INSTALLED"
-
-                                        color:
-                                            modelData.id ===
-                                                root.activeProfile
-                                            ? "#a78bfa"
-                                            : "#71717a"
-
-                                        font.family:
-                                            "JetBrainsMono Nerd Font"
-                                        font.pixelSize: 11
-                                        font.bold: true
-                                    }
+                                Text {
+                                    text: modelData.icon
+                                    color: selected
+                                        ? "#c4b5fd"
+                                        : "#a1a1aa"
+                                    font.family:
+                                        "JetBrainsMono Nerd Font"
+                                    font.pixelSize: 18
                                 }
 
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
+                                Text {
+                                    text: modelData.name
+                                    color: selected
+                                        ? "#fafafa"
+                                        : "#d4d4d8"
+                                    font.family:
+                                        "JetBrainsMono Nerd Font"
+                                    font.pixelSize: 16
+                                    font.bold: selected
+                                }
 
-                                    onClicked: {
-                                        root.riceIndex = index
-                                        root.activateSelection()
-                                    }
+                                Text {
+                                    visible: modelData.kind === "revo-shell"
+                                    text: "REVO"
+                                    color: "#71717a"
+                                    font.family:
+                                        "JetBrainsMono Nerd Font"
+                                    font.pixelSize: 10
+                                    font.bold: true
+                                }
+
+                                Item {
+                                    Layout.fillWidth: true
+                                }
+
+                                Text {
+                                    visible:
+                                        modelData.id ===
+                                            root.activeProfile ||
+                                        !root.profileInstalled(
+                                            modelData.id
+                                        )
+
+                                    text:
+                                        modelData.id ===
+                                            root.activeProfile
+                                        ? "ACTIVE"
+                                        : "NOT INSTALLED"
+
+                                    color:
+                                        modelData.id ===
+                                            root.activeProfile
+                                        ? "#a78bfa"
+                                        : "#71717a"
+
+                                    font.family:
+                                        "JetBrainsMono Nerd Font"
+                                    font.pixelSize: 11
+                                    font.bold: true
+                                }
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+
+                                onClicked: {
+                                    root.riceIndex = index
+                                    root.activateSelection()
                                 }
                             }
                         }
                     }
-                }
 
                 Rectangle {
                     Layout.fillWidth: true
