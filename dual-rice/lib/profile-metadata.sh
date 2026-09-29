@@ -52,27 +52,27 @@ profile_name() {
         clavis)              echo "Cipher" ;;
         nixri)               echo "Astra" ;;
 
-        revo-11)             echo "Revo 11" ;;
-        revo-q1)             echo "Revo Q1" ;;
-        revo-brain-shell)    echo "Revo Brain Shell" ;;
-        revo-cartoon-shell)  echo "Revo Cartoon" ;;
-        revo-end4-pc)        echo "Revo end4-pC" ;;
-        revo-eqsh)           echo "Revo EQSH" ;;
-        revo-ii)             echo "Revo ii" ;;
-        revo-clavis)         echo "Revo Clavis" ;;
-        revo-k4)             echo "Revo K4" ;;
-        revo-lotus)          echo "Revo Lotus" ;;
-        revo-lucid)          echo "Revo Lucid" ;;
-        revo-macduo)         echo "Revo MacDuo" ;;
-        revo-macos)          echo "Revo macOS" ;;
-        revo-nibrasshell)    echo "Revo Nibras" ;;
-        revo-persona)        echo "Revo Persona" ;;
-        revo-editorial)      echo "Revo Editorial" ;;
-        revo-ryoku)          echo "Revo Ryoku" ;;
-        revo-caelestia)      echo "Revo Caelestia" ;;
-        revo-synoptik)       echo "Revo Synoptik" ;;
-        revo-vast)           echo "Revo Vast" ;;
-        revo-zesis)          echo "Revo Zesis" ;;
+        revo-11)             echo "Eleven" ;;
+        revo-q1)             echo "Q1" ;;
+        revo-brain-shell)    echo "Brain" ;;
+        revo-cartoon-shell)  echo "Cartoon" ;;
+        revo-end4-pc)        echo "End4" ;;
+        revo-eqsh)           echo "EQSH" ;;
+        revo-ii)             echo "II" ;;
+        revo-clavis)         echo "Clavis" ;;
+        revo-k4)             echo "K4" ;;
+        revo-lotus)          echo "Lotus" ;;
+        revo-lucid)          echo "Lucid" ;;
+        revo-macduo)         echo "MacDuo" ;;
+        revo-macos)          echo "Mac" ;;
+        revo-nibrasshell)    echo "Nibras" ;;
+        revo-persona)        echo "Persona" ;;
+        revo-editorial)      echo "Editorial" ;;
+        revo-ryoku)          echo "Ryoku" ;;
+        revo-caelestia)      echo "Caelestia" ;;
+        revo-synoptik)       echo "Synoptik" ;;
+        revo-vast)           echo "Vast" ;;
+        revo-zesis)          echo "Zesis" ;;
         *)                    echo "$1" ;;
     esac
 }
