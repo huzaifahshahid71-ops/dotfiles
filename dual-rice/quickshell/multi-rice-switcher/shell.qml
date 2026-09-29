@@ -46,8 +46,149 @@ ShellRoot {
             property var visibleRices:
                 compositorIndex === 0 ? hyprRices : niriRices
 
+            property var visibleNativeRices:
+                visibleRices.filter(item => item.kind !== "revo-shell")
+
+            property var visibleRevoRices:
+                visibleRices.filter(item => item.kind === "revo-shell")
+
             function profileInstalled(id) {
                 return installedProfiles[id] === true
+            }
+
+            function indexForProfile(id) {
+                for (let i = 0; i < visibleRices.length; ++i) {
+                    if (visibleRices[i].id === id)
+                        return i
+                }
+                return -1
+            }
+
+            function selectLocalProfile(section, localIndex) {
+                const list = section === 0
+                    ? visibleNativeRices
+                    : visibleRevoRices
+
+                if (list.length === 0)
+                    return
+
+                const safeIndex = Math.max(
+                    0,
+                    Math.min(list.length - 1, localIndex)
+                )
+                const globalIndex =
+                    indexForProfile(list[safeIndex].id)
+
+                if (globalIndex >= 0)
+                    riceIndex = globalIndex
+            }
+
+            function moveRice(horizontal, vertical) {
+                if (visibleRices.length === 0)
+                    return
+
+                const current = visibleRices[riceIndex]
+                if (!current)
+                    return
+
+                const section =
+                    current.kind === "revo-shell" ? 1 : 0
+                const list = section === 0
+                    ? visibleNativeRices
+                    : visibleRevoRices
+
+                let localIndex = -1
+                for (let i = 0; i < list.length; ++i) {
+                    if (list[i].id === current.id) {
+                        localIndex = i
+                        break
+                    }
+                }
+
+                if (localIndex < 0)
+                    return
+
+                const columns = 4
+                const column = localIndex % columns
+
+                if (horizontal !== 0) {
+                    const candidate = localIndex + horizontal
+                    if (candidate >= 0 &&
+                        candidate < list.length &&
+                        Math.floor(candidate / columns) ===
+                        Math.floor(localIndex / columns)) {
+                        selectLocalProfile(section, candidate)
+                    }
+                    return
+                }
+
+                if (vertical > 0) {
+                    const candidate = localIndex + columns
+
+                    if (candidate < list.length) {
+                        selectLocalProfile(section, candidate)
+                    } else if (section === 0 &&
+                               visibleRevoRices.length > 0) {
+                        selectLocalProfile(
+                            1,
+                            Math.min(
+                                column,
+                                visibleRevoRices.length - 1
+                            )
+                        )
+                    }
+                    return
+                }
+
+                if (vertical < 0) {
+                    const candidate = localIndex - columns
+
+                    if (candidate >= 0) {
+                        selectLocalProfile(section, candidate)
+                    } else if (section === 1 &&
+                               visibleNativeRices.length > 0) {
+                        const lastRow =
+                            Math.floor(
+                                (visibleNativeRices.length - 1) /
+                                columns
+                            )
+                        let target =
+                            lastRow * columns + column
+
+                        while (target >=
+                               visibleNativeRices.length &&
+                               target >= columns) {
+                            target -= columns
+                        }
+
+                        selectLocalProfile(0, target)
+                    }
+                }
+            }
+
+            function revealCard(card) {
+                if (!card || root.page !== 1)
+                    return
+
+                const point = card.mapToItem(
+                    riceScroll.contentItem,
+                    0,
+                    0
+                )
+                const top = point.y - 10
+                const bottom =
+                    point.y + card.height + 10
+
+                if (top < riceScroll.contentY)
+                    riceScroll.contentY = Math.max(0, top)
+                else if (bottom >
+                         riceScroll.contentY +
+                         riceScroll.height)
+                    riceScroll.contentY = Math.min(
+                        riceScroll.contentHeight -
+                            riceScroll.height,
+                        bottom - riceScroll.height
+                    )
             }
 
             function applyStatus(text) {
@@ -253,33 +394,21 @@ ShellRoot {
                         event.accepted = true
                     }
                 } else {
-                    const columns =
-                        compositorIndex === 0 ? 5 : 3
-
                     if (event.key === Qt.Key_Left &&
                         visibleRices.length > 0) {
-                        riceIndex = Math.max(0, riceIndex - 1)
+                        moveRice(-1, 0)
                         event.accepted = true
                     } else if (event.key === Qt.Key_Right &&
                                visibleRices.length > 0) {
-                        riceIndex = Math.min(
-                            visibleRices.length - 1,
-                            riceIndex + 1
-                        )
+                        moveRice(1, 0)
                         event.accepted = true
                     } else if (event.key === Qt.Key_Up &&
                                visibleRices.length > 0) {
-                        riceIndex = Math.max(
-                            0,
-                            riceIndex - columns
-                        )
+                        moveRice(0, -1)
                         event.accepted = true
                     } else if (event.key === Qt.Key_Down &&
                                visibleRices.length > 0) {
-                        riceIndex = Math.min(
-                            visibleRices.length - 1,
-                            riceIndex + columns
-                        )
+                        moveRice(0, 1)
                         event.accepted = true
                     } else if (
                         event.key === Qt.Key_Return ||
@@ -476,142 +605,242 @@ ShellRoot {
                         }
                     }
 
-                    GridView {
-                        id: ricePage
+                    Flickable {
+                        id: riceScroll
                         anchors.fill: parent
-                        clip: true
                         visible: root.page === 1
-                        model: root.visibleRices
-                        currentIndex: root.riceIndex
+                        clip: true
+                        contentWidth: width
+                        contentHeight: riceContent.height
                         boundsBehavior: Flickable.StopAtBounds
-                        cellWidth: width /
-                            (root.compositorIndex === 0 ? 5 : 3)
-                        cellHeight: cellWidth
 
-                        delegate: Item {
-                            required property int index
-                            required property var modelData
+                        Column {
+                            id: riceContent
+                            width: riceScroll.width
+                            spacing: 18
 
-                            width: ricePage.cellWidth
-                            height: ricePage.cellHeight
+                            GridLayout {
+                                width: parent.width
+                                columns: 4
+                                columnSpacing: 12
+                                rowSpacing: 12
 
-                            Rectangle {
-                                anchors.fill: parent
-                                anchors.margins: 6
-                                radius: 18
-                                antialiasing: true
+                                Repeater {
+                                    model: root.visibleNativeRices
 
-                                property bool selected:
-                                    root.riceIndex === index
+                                    delegate: Rectangle {
+                                        id: nativeCard
 
-                                property bool active:
-                                    modelData.id === root.activeProfile
+                                        required property int index
+                                        required property var modelData
 
-                                opacity:
-                                    root.profileInstalled(modelData.id)
-                                    ? 1.0
-                                    : 0.38
+                                        Layout.preferredWidth:
+                                            (riceContent.width - 36) / 4
+                                        Layout.preferredHeight: 96
 
-                                color: selected
-                                    ? "#202033"
-                                    : "#17171f"
+                                        radius: 18
+                                        antialiasing: true
 
-                                border.width:
-                                    selected || active ? 2 : 1
-
-                                border.color:
-                                    selected
-                                    ? "#a78bfa"
-                                    : active
-                                        ? "#6d5bd0"
-                                        : "#34343f"
-
-                                scale: selected ? 1.025 : 1.0
-
-                                Behavior on scale {
-                                    NumberAnimation {
-                                        duration: 110
-                                    }
-                                }
-
-                                Column {
-                                    anchors.centerIn: parent
-                                    width: parent.width - 18
-                                    spacing: 7
-
-                                    Text {
-                                        width: parent.width
-                                        horizontalAlignment:
-                                            Text.AlignHCenter
-                                        text: modelData.icon
-                                        color: selected
-                                            ? "#c4b5fd"
-                                            : "#a1a1aa"
-                                        font.family:
-                                            "JetBrainsMono Nerd Font"
-                                        font.pixelSize: 28
-                                    }
-
-                                    Text {
-                                        width: parent.width
-                                        horizontalAlignment:
-                                            Text.AlignHCenter
-                                        text: modelData.name
-                                        elide: Text.ElideRight
-                                        color: "#fafafa"
-                                        font.family:
-                                            "JetBrainsMono Nerd Font"
-                                        font.pixelSize: 14
-                                        font.bold: selected || active
-                                    }
-
-                                    Text {
-                                        width: parent.width
-                                        horizontalAlignment:
-                                            Text.AlignHCenter
-                                        text:
-                                            modelData.kind === "revo-shell"
-                                            ? "REVO"
-                                            : "HUZAIFAH"
-                                        color:
-                                            modelData.kind === "revo-shell"
-                                            ? "#a78bfa"
-                                            : "#71717a"
-                                        font.family:
-                                            "JetBrainsMono Nerd Font"
-                                        font.pixelSize: 9
-                                        font.bold: true
-                                    }
-
-                                    Text {
-                                        width: parent.width
-                                        horizontalAlignment:
-                                            Text.AlignHCenter
-                                        visible:
-                                            active ||
-                                            !root.profileInstalled(
+                                        property int globalIndex:
+                                            root.indexForProfile(
                                                 modelData.id
                                             )
-                                        text: active
-                                            ? "ACTIVE"
-                                            : "NOT INSTALLED"
-                                        color: active
+
+                                        property bool selected:
+                                            root.riceIndex ===
+                                            globalIndex
+
+                                        property bool active:
+                                            modelData.id ===
+                                            root.activeProfile
+
+                                        opacity:
+                                            root.profileInstalled(
+                                                modelData.id
+                                            ) ? 1.0 : 0.38
+
+                                        color: nativeCard.selected
+                                            ? "#202033"
+                                            : "#17171f"
+
+                                        border.width:
+                                            nativeCard.selected ||
+                                            nativeCard.active
+                                            ? 2 : 1
+
+                                        border.color:
+                                            nativeCard.selected
                                             ? "#a78bfa"
-                                            : "#71717a"
-                                        font.family:
-                                            "JetBrainsMono Nerd Font"
-                                        font.pixelSize: 9
-                                        font.bold: true
+                                            : nativeCard.active
+                                                ? "#6d5bd0"
+                                                : "#34343f"
+
+                                        scale:
+                                            nativeCard.selected
+                                            ? 1.025 : 1.0
+
+                                        Behavior on scale {
+                                            NumberAnimation {
+                                                duration: 110
+                                            }
+                                        }
+
+                                        onSelectedChanged: {
+                                            if (nativeCard.selected)
+                                                Qt.callLater(
+                                                    () =>
+                                                    root.revealCard(
+                                                        nativeCard
+                                                    )
+                                                )
+                                        }
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            width: parent.width - 20
+                                            horizontalAlignment:
+                                                Text.AlignHCenter
+                                            text: modelData.name
+                                            elide: Text.ElideRight
+                                            color: "#fafafa"
+                                            font.family:
+                                                "JetBrainsMono Nerd Font"
+                                            font.pixelSize: 15
+                                            font.bold:
+                                                nativeCard.selected ||
+                                                nativeCard.active
+                                        }
+
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape:
+                                                Qt.PointingHandCursor
+
+                                            onClicked: {
+                                                root.riceIndex =
+                                                    nativeCard.globalIndex
+                                                root.activateSelection()
+                                            }
+                                        }
                                     }
                                 }
+                            }
 
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
+                            Rectangle {
+                                width: parent.width
+                                height:
+                                    root.visibleNativeRices.length > 0 &&
+                                    root.visibleRevoRices.length > 0
+                                    ? 1 : 0
+                                visible: height > 0
+                                color: "#2d2d38"
+                            }
 
-                                    onClicked: {
-                                        root.riceIndex = index
-                                        root.activateSelection()
+                            GridLayout {
+                                width: parent.width
+                                columns: 4
+                                columnSpacing: 12
+                                rowSpacing: 12
+                                visible:
+                                    root.visibleRevoRices.length > 0
+
+                                Repeater {
+                                    model: root.visibleRevoRices
+
+                                    delegate: Rectangle {
+                                        id: revoCard
+
+                                        required property int index
+                                        required property var modelData
+
+                                        Layout.preferredWidth:
+                                            (riceContent.width - 36) / 4
+                                        Layout.preferredHeight: 96
+
+                                        radius: 18
+                                        antialiasing: true
+
+                                        property int globalIndex:
+                                            root.indexForProfile(
+                                                modelData.id
+                                            )
+
+                                        property bool selected:
+                                            root.riceIndex ===
+                                            globalIndex
+
+                                        property bool active:
+                                            modelData.id ===
+                                            root.activeProfile
+
+                                        opacity:
+                                            root.profileInstalled(
+                                                modelData.id
+                                            ) ? 1.0 : 0.38
+
+                                        color: revoCard.selected
+                                            ? "#202033"
+                                            : "#17171f"
+
+                                        border.width:
+                                            revoCard.selected ||
+                                            revoCard.active
+                                            ? 2 : 1
+
+                                        border.color:
+                                            revoCard.selected
+                                            ? "#a78bfa"
+                                            : revoCard.active
+                                                ? "#6d5bd0"
+                                                : "#34343f"
+
+                                        scale:
+                                            revoCard.selected
+                                            ? 1.025 : 1.0
+
+                                        Behavior on scale {
+                                            NumberAnimation {
+                                                duration: 110
+                                            }
+                                        }
+
+                                        onSelectedChanged: {
+                                            if (revoCard.selected)
+                                                Qt.callLater(
+                                                    () =>
+                                                    root.revealCard(
+                                                        revoCard
+                                                    )
+                                                )
+                                        }
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            width: parent.width - 20
+                                            horizontalAlignment:
+                                                Text.AlignHCenter
+                                            text: modelData.name
+                                            elide: Text.ElideRight
+                                            color: "#fafafa"
+                                            font.family:
+                                                "JetBrainsMono Nerd Font"
+                                            font.pixelSize: 15
+                                            font.bold:
+                                                revoCard.selected ||
+                                                revoCard.active
+                                        }
+
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape:
+                                                Qt.PointingHandCursor
+
+                                            onClicked: {
+                                                root.riceIndex =
+                                                    revoCard.globalIndex
+                                                root.activateSelection()
+                                            }
+                                        }
                                     }
                                 }
                             }
