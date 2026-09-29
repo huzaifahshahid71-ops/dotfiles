@@ -16,31 +16,49 @@ log() {
 }
 
 ensure_revo_wallpaper() {
-    command -v awww >/dev/null 2>&1 || return 0
+    local wallpaper_dir="$HOME/Pictures/Wallpapers/Revo"
+    local wall=""
 
-    if ! pgrep -x awww-daemon >/dev/null 2>&1; then
-        setsid -f awww-daemon >"$LOG_DIR/awww.log" 2>&1
-        sleep 0.35
-    fi
+    [[ -d "$wallpaper_dir" ]] || return 0
 
-    # Preserve an already active wallpaper. Seed one only when the compositor
-    # has no awww image yet.
-    if awww query 2>/dev/null | grep -q 'image:'; then
+    if command -v awww >/dev/null 2>&1; then
+        pgrep -x awww-daemon >/dev/null 2>&1 || {
+            setsid -f awww-daemon >"$LOG_DIR/awww.log" 2>&1
+            sleep 0.35
+        }
+
+        if awww query 2>/dev/null | grep -q 'image:'; then
+            return 0
+        fi
+
+        wall="$(find "$wallpaper_dir" -type f \
+            \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) \
+            -print 2>/dev/null | shuf -n 1)"
+        [[ -n "$wall" && -f "$wall" ]] || return 0
+        awww img --transition-type none "$wall" >/dev/null 2>&1 || true
+        log "Seeded Revo wallpaper via awww: $wall"
         return 0
     fi
 
-    local wallpaper_dir="$HOME/Pictures/Wallpapers/Revo"
-    local wall=""
-    [[ -d "$wallpaper_dir" ]] || return 0
+    if command -v swww >/dev/null 2>&1; then
+        pgrep -x swww-daemon >/dev/null 2>&1 || {
+            setsid -f swww-daemon >"$LOG_DIR/swww.log" 2>&1
+            sleep 0.35
+        }
 
-    wall="$(find "$wallpaper_dir" -type f \
-        \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) \
-        -print 2>/dev/null | shuf -n 1)"
+        if swww query 2>/dev/null | grep -q 'image:'; then
+            return 0
+        fi
 
-    [[ -n "$wall" && -f "$wall" ]] || return 0
-    awww img --transition-type none "$wall" >/dev/null 2>&1 || true
-    log "Seeded Revo wallpaper: $wall"
+        wall="$(find "$wallpaper_dir" -type f \
+            \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) \
+            -print 2>/dev/null | shuf -n 1)"
+        [[ -n "$wall" && -f "$wall" ]] || return 0
+        swww img "$wall" --transition-type none >/dev/null 2>&1 || true
+        log "Seeded Revo wallpaper via swww: $wall"
+    fi
 }
+
 
 stop_all_quickshell() {
     pkill -9 -f "ryoku/shell/ipc/ryoku-shell" >/dev/null 2>&1 || true
