@@ -44,7 +44,7 @@ install_dependencies_arch() {
 
     local requested=(
         hyprland xdg-desktop-portal-hyprland hypridle hyprlock hyprpolkitagent hyprsunset polkit
-        qt6-base qt6-declarative qt6-5compat qt6-multimedia qt6-shadertools qt6-wayland qt6-svg qt6-tools qt6-imageformats qt6-location qt6-positioning qt6-lottie
+        qt6-base qt6-declarative qt6-5compat qt6-multimedia qt6-shadertools qt6-wayland qt6-svg qt6-tools qt6-imageformats qt6-location qt6-positioning qt6-lottie qtkeychain-qt6
         git curl wget jq python python-pip libnotify xdg-utils procps-ng psmisc util-linux coreutils findutils fd gawk sed grep zenity
         pipewire pipewire-pulse wireplumber libpulse playerctl cava mpv-mpris networkmanager bluez bluez-utils brightnessctl upower power-profiles-daemon lm_sensors rfkill ddcutil
         grim slurp wf-recorder hyprshot hyprpicker ffmpeg imagemagick wl-clipboard cliphist wtype swappy matugen swww hyprpaper swaybg mpvpaper swaync swayosd easyeffects
