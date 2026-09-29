@@ -6,8 +6,9 @@ REVO_URL="${REVO_URL:-https://github.com/vzbc/revo-shell.git}"
 REVO_REF="${REVO_REF:-a15d62c87aa992ab8e5d366575bb4074eada7d98}"
 REVO_ROOT="$HOME/.local/share/revo-shell"
 PROFILE_ROOT="$HOME/.local/share/desktop-profiles"
-QS_ROOT="$HOME/.config/quickshell"
-STATE_DIR="$HOME/.config/desktop-profile"
+CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+QS_ROOT="$CONFIG_HOME/quickshell"
+STATE_DIR="$CONFIG_HOME/desktop-profile"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 BACKUP="$HOME/.local/share/desktop-profile-backups/revo-v5.1-$STAMP"
 
@@ -39,25 +40,57 @@ install_dependencies_arch() {
         return 0
     }
 
-    log "Installing Revo dependency union"
-    sudo pacman -S --needed --noconfirm \
-        hyprland xdg-desktop-portal-hyprland hypridle hyprlock hyprpolkitagent hyprsunset polkit \
-        qt6-base qt6-declarative qt6-5compat qt6-multimedia qt6-shadertools qt6-wayland qt6-svg qt6-tools qt6-imageformats qt6-location qt6-positioning qt6-lottie \
-        git curl wget jq python python-pip libnotify xdg-utils procps-ng psmisc util-linux coreutils findutils fd gawk sed grep zenity \
-        pipewire pipewire-pulse wireplumber libpulse playerctl cava mpv-mpris networkmanager bluez bluez-utils brightnessctl upower power-profiles-daemon lm_sensors rfkill ddcutil \
-        grim slurp wf-recorder hyprshot hyprpicker ffmpeg imagemagick wl-clipboard cliphist wtype swappy matugen swww hyprpaper swaybg mpvpaper python-pywal swaync swayosd easyeffects \
-        kitty nautilus thunar rofi-wayland wofi fastfetch starship fish gnome-calculator papirus-icon-theme adwaita-cursors xdg-desktop-portal-gtk \
-        ttf-jetbrains-mono-nerd ttf-nerd-fonts-symbols-common noto-fonts noto-fonts-emoji base-devel cmake ninja pkgconf clang gcc || true
+    log "Installing missing Revo dependencies"
+
+    local requested=(
+        hyprland xdg-desktop-portal-hyprland hypridle hyprlock hyprpolkitagent hyprsunset polkit
+        qt6-base qt6-declarative qt6-5compat qt6-multimedia qt6-shadertools qt6-wayland qt6-svg qt6-tools qt6-imageformats qt6-location qt6-positioning qt6-lottie
+        git curl wget jq python python-pip libnotify xdg-utils procps-ng psmisc util-linux coreutils findutils fd gawk sed grep zenity
+        pipewire pipewire-pulse wireplumber libpulse playerctl cava mpv-mpris networkmanager bluez bluez-utils brightnessctl upower power-profiles-daemon lm_sensors rfkill ddcutil
+        grim slurp wf-recorder hyprshot hyprpicker ffmpeg imagemagick wl-clipboard cliphist wtype swappy matugen swww hyprpaper swaybg mpvpaper swaync swayosd easyeffects
+        kitty nautilus thunar rofi-wayland wofi fastfetch starship fish gnome-calculator papirus-icon-theme adwaita-cursors xdg-desktop-portal-gtk
+        ttf-jetbrains-mono-nerd ttf-nerd-fonts-symbols-common noto-fonts noto-fonts-emoji base-devel cmake ninja pkgconf clang gcc
+    )
+
+    local installable=()
+    local pkg
+
+    for pkg in "${requested[@]}"; do
+        if pacman -Qq "$pkg" >/dev/null 2>&1; then
+            continue
+        fi
+
+        if pacman -Si "$pkg" >/dev/null 2>&1; then
+            installable+=("$pkg")
+        else
+            warn "Skipping unavailable repo package: $pkg"
+        fi
+    done
+
+    if (( ${#installable[@]} > 0 )); then
+        sudo pacman -S --needed --noconfirm "${installable[@]}"
+    else
+        ok "All repo dependencies already installed"
+    fi
 
     local aur=""
     command -v paru >/dev/null 2>&1 && aur="paru"
     command -v yay  >/dev/null 2>&1 && aur="${aur:-yay}"
 
     if [[ -n "$aur" ]]; then
-        "$aur" -S --needed --noconfirm \
-            quickshell-git awww ttf-material-symbols-variable-git ttf-comicshannsmono-nerd ttf-meslo-nerd kde-material-you-colors hyprliquid || true
+        local aur_pkgs=(
+            quickshell-git
+            awww
+            ttf-material-symbols-variable-git
+            ttf-comicshannsmono-nerd
+            ttf-meslo-nerd
+            kde-material-you-colors
+            hyprliquid
+        )
+        "$aur" -S --needed --noconfirm "${aur_pkgs[@]}" || warn "Some optional AUR packages failed"
     else
-        warn "No paru/yay found; install quickshell-git and hyprliquid manually if missing"
+        command -v qs >/dev/null 2>&1 || command -v quickshell >/dev/null 2>&1 ||             warn "Quickshell is not installed and no AUR helper is available"
+        [[ -f /usr/lib/libhyprliquid.so || -f "$HOME/.local/lib/hyprliquid.so" ]] ||             warn "Hyprliquid is not installed and no AUR helper is available"
     fi
 
     mkdir -p "$HOME/.local/lib"
@@ -163,7 +196,7 @@ patch_revo_keybinds() {
         cat >> "$conf" <<'EOF'
 
 # HUZAIFAH_REVO_V51_SWITCHERS
-bind = SUPER SHIFT, D, exec, qs -c multi-rice-switcher
+bind = SUPER SHIFT, D, exec, ~/.local/bin/multi-rice-switcher
 bind = SUPER SHIFT, Q, exec, foot -e qs-list
 EOF
     done
@@ -173,7 +206,7 @@ EOF
         cat >> "$conf" <<'EOF'
 
 -- HUZAIFAH_REVO_V51_SWITCHERS
-hl.bind("SUPER + SHIFT + D", hl.dsp.exec_cmd("qs -c multi-rice-switcher"))
+hl.bind("SUPER + SHIFT + D", hl.dsp.exec_cmd("~/.local/bin/multi-rice-switcher"))
 hl.bind("SUPER + SHIFT + Q", hl.dsp.exec_cmd("foot -e qs-list"))
 EOF
     fi
@@ -204,6 +237,11 @@ install_revo_switch_helpers() {
 
 build_native_shells() {
     local qs="$QS_ROOT"
+
+    if ! command -v cmake >/dev/null 2>&1; then
+        warn "cmake is unavailable; skipping native shell builds"
+        return 0
+    fi
     if [[ -f "$qs/shell/CMakeLists.txt" ]]; then
         log "Building Revo Caelestia native shell"
         cmake -S "$qs/shell" -B "$qs/shell/build" -G Ninja -DCMAKE_BUILD_TYPE=Release -DVERSION=1.0.0 -DGIT_REVISION=v5.1 -DENABLE_MODULES='extras;plugin;shell' || true
@@ -259,10 +297,13 @@ rewrite_home_paths "$QS_ROOT"
 
 log "Restoring Huzaifah switcher after Revo overlay"
 rm -rf "$QS_ROOT/multi-rice-switcher"
+mkdir -p "$QS_ROOT/multi-rice-switcher"
 rsync -a "$REPO_ROOT/dual-rice/quickshell/multi-rice-switcher/" "$QS_ROOT/multi-rice-switcher/"
+[[ -f "$QS_ROOT/multi-rice-switcher/shell.qml" ]] || die "Huzaifah switcher deployment failed: $QS_ROOT/multi-rice-switcher/shell.qml missing"
 
 log "Installing unified switch backend and both switcher entry points"
 install -Dm755 "$REPO_ROOT/dual-rice/bin/multi-rice-control" "$HOME/.local/bin/multi-rice-control"
+install -Dm755 "$REPO_ROOT/dual-rice/bin/multi-rice-switcher" "$HOME/.local/bin/multi-rice-switcher"
 install -Dm755 "$REPO_ROOT/dual-rice/bin/revo-shell-launch" "$HOME/.local/bin/revo-shell-launch"
 install -Dm755 "$REPO_ROOT/v5.1/revo/qs-list" "$HOME/.local/bin/qs-list"
 install -Dm644 "$REPO_ROOT/dual-rice/lib/profile-metadata.sh" "$HOME/.local/share/desktop-switcher/profile-metadata.sh"
@@ -285,6 +326,6 @@ printf 'Revo shells: 21\n'
 printf 'Huzaifah profiles: 10\n'
 printf 'Unified total: 31\n'
 printf 'Revo GUI:     SUPER+B (DotsBrowser)\n'
-printf 'Huzaifah GUI: SUPER+SHIFT+D or qs -c multi-rice-switcher\n'
+printf 'Huzaifah GUI: SUPER+SHIFT+D or ~/.local/bin/multi-rice-switcher\n'
 printf 'Unified CLI:  SUPER+SHIFT+Q or qs-list\n'
 printf '\nNothing was activated automatically. Choose a profile from either switcher.\n'
