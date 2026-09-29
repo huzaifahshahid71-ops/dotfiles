@@ -10,6 +10,31 @@ QS_ROOT="$CONFIG_HOME/quickshell"
 log() { printf '==> %s\n' "$*"; }
 ok()  { printf '✓ %s\n' "$*"; }
 
+rewrite_revo_symlinks() {
+    local root="$1"
+    local link target new_target
+    local fixed=0
+
+    [[ -d "$root" ]] || return 0
+
+    while IFS= read -r -d '' link; do
+        target="$(readlink "$link" 2>/dev/null || true)"
+        [[ -n "$target" ]] || continue
+
+        case "$target" in
+            /home/revo/*)
+                new_target="$HOME/${target#/home/revo/}"
+                ln -sfn "$new_target" "$link"
+                fixed=$((fixed + 1))
+                ;;
+        esac
+    done < <(find "$root" -type l -print0 2>/dev/null)
+
+    if (( fixed > 0 )); then
+        ok "Rewrote $fixed absolute Revo symlink target(s)"
+    fi
+}
+
 log "Installing current v5.1 runtime helpers"
 install -Dm755 "$REPO_ROOT/dual-rice/bin/multi-rice-control" "$HOME/.local/bin/multi-rice-control"
 install -Dm755 "$REPO_ROOT/dual-rice/bin/revo-shell-launch" "$HOME/.local/bin/revo-shell-launch"
@@ -18,6 +43,10 @@ install -Dm644 "$REPO_ROOT/dual-rice/lib/profile-metadata.sh" "$HOME/.local/shar
 
 mkdir -p "$QS_ROOT/multi-rice-switcher"
 install -Dm644     "$REPO_ROOT/dual-rice/quickshell/multi-rice-switcher/shell.qml"     "$QS_ROOT/multi-rice-switcher/shell.qml"
+
+log "Repairing Revo absolute symlinks"
+rewrite_revo_symlinks "$QS_ROOT"
+rewrite_revo_symlinks "$PROFILE_ROOT/revo/hypr"
 
 wall_dir="$PROFILE_ROOT/revo/hypr/scripts/wallpapers"
 if [[ -d "$wall_dir" ]]; then
