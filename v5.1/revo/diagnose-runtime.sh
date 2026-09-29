@@ -32,7 +32,13 @@ echo
 
 echo "=== WALLPAPER ==="
 find "$HOME/Pictures/Wallpapers/Revo" -maxdepth 1 -type f 2>/dev/null | head -n 5
-awww query 2>&1 || true
+if command -v awww >/dev/null 2>&1; then
+    awww query 2>&1 || true
+elif command -v swww >/dev/null 2>&1; then
+    swww query 2>&1 || true
+else
+    echo "no supported wallpaper engine found"
+fi
 echo
 
 echo "=== LAUNCHER LOG ==="
