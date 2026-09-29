@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Huzaifah Multi-Rice v5.1 profile metadata
-# 10 Huzaifah desktop profiles + 21 Revo shell profiles.
+# 10 Huzaifah desktop profiles + 19 selectable Revo shell profiles.\n# Revo Eleven (HyprQuickFrame) and MacDuo remain installed as support utilities.
 
 profile_kind() {
     case "$1" in
@@ -198,7 +198,6 @@ profile_ids() {
         jaqc \
         clavis \
         nixri \
-        revo-11 \
         revo-q1 \
         revo-brain-shell \
         revo-cartoon-shell \
@@ -209,7 +208,6 @@ profile_ids() {
         revo-k4 \
         revo-lotus \
         revo-lucid \
-        revo-macduo \
         revo-macos \
         revo-nibrasshell \
         revo-persona \
