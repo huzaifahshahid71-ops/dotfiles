@@ -110,6 +110,13 @@ jobs:
 
           printf 'lucid\n' > "$HOME/.config/desktop-profile/revo-shell"
 
+          source "$HOME/.local/share/desktop-switcher/profile-metadata.sh"
+          printf 'kind=%s\n' "$(profile_kind revo-lucid)"
+          printf 'config=%s\n' "$(profile_config_path "$HOME/.local/share/desktop-profiles" revo-lucid || true)"
+          printf 'shell=%s\n' "$(profile_shell revo-lucid)"
+          ls -l "$HOME/.local/share/desktop-profiles/revo/hypr/hyprland.lua"
+          ls -l "$HOME/.config/quickshell/lucid/shell.qml"
+
           profile_out="$("$HOME/.local/bin/multi-rice-control" profile)"
           list_count="$("$HOME/.local/bin/multi-rice-control" list | wc -l)"
           installed_count="$("$HOME/.local/bin/multi-rice-control" list | awk -F'|' '$5=="true"{n++} END{print n+0}')"
