@@ -67,7 +67,8 @@ install_dependencies_arch() {
 }
 
 patch_revo_autostart() {
-    local conf tmp
+    local conf tmp lua
+
     for conf in \
         "$PROFILE_ROOT/revo/hypr/config/autostart.conf" \
         "$PROFILE_ROOT/revo/hypr/configs/autostart.conf"; do
@@ -77,7 +78,7 @@ patch_revo_autostart() {
             /# HUZAIFAH_REVO_V51_SHELL/ { next }
             /^[[:space:]]*exec-once/ && /revo-shell-launch/ { next }
             /^[[:space:]]*exec-once/ && /quickshell/ && (/Main\.qml/ || /TopBar\.qml/ || /Floating\.qml/) {
-                print "# " $0
+                print "# v5.1 disabled stock shell: " $0
                 next
             }
             { print }
@@ -85,6 +86,70 @@ patch_revo_autostart() {
         printf '\n# HUZAIFAH_REVO_V51_SHELL\nexec-once = ~/.local/bin/revo-shell-launch\n' >> "$tmp"
         mv "$tmp" "$conf"
     done
+
+    lua="$PROFILE_ROOT/revo/hypr/configs/autostart.lua"
+    if [[ -f "$lua" ]]; then
+        python - "$lua" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+marker = "-- HUZAIFAH_REVO_V51_SHELL"
+
+if marker not in text:
+    for command in (
+        '    hl.exec_cmd("quickshell -p ~/.config/hypr/scripts/quickshell/Main.qml")',
+        '    hl.exec_cmd("quickshell -p ~/.config/hypr/scripts/quickshell/TopBar.qml")',
+        '    hl.exec_cmd("quickshell -p ~/.config/hypr/scripts/quickshell/Floating.qml")',
+    ):
+        text = text.replace(command, "    -- v5.1 disabled stock shell: " + command.strip())
+
+    needle = 'hl.on("hyprland.start", function()\n'
+    if needle not in text:
+        raise SystemExit("Revo autostart.lua layout changed; refusing unsafe patch")
+
+    text = text.replace(
+        needle,
+        needle
+        + "    " + marker + "\n"
+        + '    hl.exec_cmd(os.getenv("HOME") .. "/.local/bin/revo-shell-launch")\n',
+        1,
+    )
+
+path.write_text(text, encoding="utf-8")
+PY
+    fi
+}
+
+patch_revo_lua_safety() {
+    local lua="$PROFILE_ROOT/revo/hypr/hyprland.lua"
+    [[ -f "$lua" ]] || return 0
+
+    python - "$lua" <<'PY'
+from pathlib import Path
+import re
+import sys
+
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+marker = "-- HUZAIFAH_REVO_V51_BRAIN_KEYS_GUARD"
+
+if marker not in text:
+    pattern = r'dofile\(".*?/\.config/Brain_Shell/Brain_ShellKeybinds\.lua"\)'
+    replacement = '''-- HUZAIFAH_REVO_V51_BRAIN_KEYS_GUARD
+local brain_keys = os.getenv("HOME") .. "/.config/Brain_Shell/Brain_ShellKeybinds.lua"
+local brain_keys_file = io.open(brain_keys, "r")
+if brain_keys_file then
+    brain_keys_file:close()
+    pcall(dofile, brain_keys)
+end'''
+    text, count = re.subn(pattern, replacement, text, count=1)
+    if count == 0:
+        raise SystemExit("Revo Brain_Shell keybind include changed; refusing unsafe patch")
+
+path.write_text(text, encoding="utf-8")
+PY
 }
 
 patch_revo_keybinds() {
@@ -183,6 +248,7 @@ mkdir -p "$PROFILE_ROOT/revo/hypr"
 rsync -a --exclude '.git' "$REVO_ROOT/hypr/" "$PROFILE_ROOT/revo/hypr/"
 rewrite_home_paths "$PROFILE_ROOT/revo/hypr"
 patch_revo_autostart
+patch_revo_lua_safety
 patch_revo_keybinds
 patch_revo_dots_browser
 
