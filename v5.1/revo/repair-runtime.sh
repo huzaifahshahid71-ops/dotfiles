@@ -145,11 +145,15 @@ if [[ -f "$autostart" ]]; then
     sed -i 's/h\.exec_once(/hl.exec_cmd(/g' "$autostart"
 fi
 
+log "Preparing Vast, Ryoku and Persona runtimes"
+bash "$REPO_ROOT/v5.1/revo/setup-special-shells.sh" --all || true
+
 ok "Runtime repair applied"
 printf 'backend: %s\n' "$HOME/.local/bin/multi-rice-control"
 printf 'launcher: %s\n' "$HOME/.local/bin/revo-shell-launch"
 printf 'wallpapers: %s\n' "$HOME/Pictures/Wallpapers/Revo"
 
-if [[ -x "$wall_dir/set-random.sh" ]] && command -v awww >/dev/null 2>&1; then
+if [[ -x "$wall_dir/set-random.sh" ]] &&
+   { command -v awww >/dev/null 2>&1 || command -v swww >/dev/null 2>&1; }; then
     "$wall_dir/set-random.sh" >/dev/null 2>&1 || true
 fi
