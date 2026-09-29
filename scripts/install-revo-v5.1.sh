@@ -88,15 +88,53 @@ patch_revo_autostart() {
 }
 
 patch_revo_keybinds() {
-    local conf="$PROFILE_ROOT/revo/hypr/config/keybindings.conf"
-    [[ -f "$conf" ]] || return 0
-    grep -q 'HUZAIFAH_REVO_V51_SWITCHERS' "$conf" && return 0
-    cat >> "$conf" <<'EOF'
+    local conf
+
+    for conf in \
+        "$PROFILE_ROOT/revo/hypr/config/keybindings.conf" \
+        "$PROFILE_ROOT/revo/hypr/configs/keybinds.conf"; do
+        [[ -f "$conf" ]] || continue
+        grep -q 'HUZAIFAH_REVO_V51_SWITCHERS' "$conf" && continue
+        cat >> "$conf" <<'EOF'
 
 # HUZAIFAH_REVO_V51_SWITCHERS
 bind = SUPER SHIFT, D, exec, qs -c multi-rice-switcher
 bind = SUPER SHIFT, Q, exec, foot -e qs-list
 EOF
+    done
+
+    conf="$PROFILE_ROOT/revo/hypr/configs/keybinds.lua"
+    if [[ -f "$conf" ]] && ! grep -q 'HUZAIFAH_REVO_V51_SWITCHERS' "$conf"; then
+        cat >> "$conf" <<'EOF'
+
+-- HUZAIFAH_REVO_V51_SWITCHERS
+hl.bind("SUPER + SHIFT + D", hl.dsp.exec_cmd("qs -c multi-rice-switcher"))
+hl.bind("SUPER + SHIFT + Q", hl.dsp.exec_cmd("foot -e qs-list"))
+EOF
+    fi
+}
+
+patch_revo_dots_browser() {
+    local dots="$PROFILE_ROOT/revo/hypr/scripts/quickshell/DotsBrowser.qml"
+    [[ -f "$dots" ]] || {
+        warn "Revo DotsBrowser.qml not found; Super+B integration skipped"
+        return 0
+    }
+
+    python "$REPO_ROOT/v5.1/revo/patch-revo-dots-browser.py" "$dots"
+    ok "Revo DotsBrowser now uses the unified 31-profile backend"
+}
+
+install_revo_switch_helpers() {
+    local toggle="$PROFILE_ROOT/revo/hypr/scripts/toggle_qs_dots.sh"
+
+    install -Dm755 \
+        "$REPO_ROOT/v5.1/revo/toggle_qs_dots-unified.sh" \
+        "$toggle"
+
+    install -Dm755 \
+        "$REPO_ROOT/v5.1/revo/qs-list" \
+        "$QS_ROOT/qs-list"
 }
 
 build_native_shells() {
@@ -146,6 +184,7 @@ rsync -a --exclude '.git' "$REVO_ROOT/hypr/" "$PROFILE_ROOT/revo/hypr/"
 rewrite_home_paths "$PROFILE_ROOT/revo/hypr"
 patch_revo_autostart
 patch_revo_keybinds
+patch_revo_dots_browser
 
 log "Deploying all Revo Quickshell configs"
 mkdir -p "$QS_ROOT"
@@ -161,6 +200,7 @@ install -Dm755 "$REPO_ROOT/dual-rice/bin/multi-rice-control" "$HOME/.local/bin/m
 install -Dm755 "$REPO_ROOT/dual-rice/bin/revo-shell-launch" "$HOME/.local/bin/revo-shell-launch"
 install -Dm755 "$REPO_ROOT/v5.1/revo/qs-list" "$HOME/.local/bin/qs-list"
 install -Dm644 "$REPO_ROOT/dual-rice/lib/profile-metadata.sh" "$HOME/.local/share/desktop-switcher/profile-metadata.sh"
+install_revo_switch_helpers
 
 mkdir -p "$STATE_DIR"
 if [[ ! -s "$STATE_DIR/revo-shell" ]]; then
@@ -178,6 +218,7 @@ printf '\n'
 printf 'Revo shells: 21\n'
 printf 'Huzaifah profiles: 10\n'
 printf 'Unified total: 31\n'
+printf 'Revo GUI:     SUPER+B (DotsBrowser)\n'
 printf 'Huzaifah GUI: SUPER+SHIFT+D or qs -c multi-rice-switcher\n'
-printf 'Revo CLI:     SUPER+SHIFT+Q or qs-list\n'
+printf 'Unified CLI:  SUPER+SHIFT+Q or qs-list\n'
 printf '\nNothing was activated automatically. Choose a profile from either switcher.\n'
