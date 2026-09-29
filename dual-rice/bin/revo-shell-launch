@@ -15,6 +15,33 @@ log() {
     printf '%s %s\n' "$(date '+%F %T')" "$*" >> "$LAUNCH_LOG"
 }
 
+ensure_revo_wallpaper() {
+    command -v awww >/dev/null 2>&1 || return 0
+
+    if ! pgrep -x awww-daemon >/dev/null 2>&1; then
+        setsid -f awww-daemon >"$LOG_DIR/awww.log" 2>&1
+        sleep 0.35
+    fi
+
+    # Preserve an already active wallpaper. Seed one only when the compositor
+    # has no awww image yet.
+    if awww query 2>/dev/null | grep -q 'image:'; then
+        return 0
+    fi
+
+    local wallpaper_dir="$HOME/Pictures/Wallpapers/Revo"
+    local wall=""
+    [[ -d "$wallpaper_dir" ]] || return 0
+
+    wall="$(find "$wallpaper_dir" -type f \
+        \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) \
+        -print 2>/dev/null | shuf -n 1)"
+
+    [[ -n "$wall" && -f "$wall" ]] || return 0
+    awww img --transition-type none "$wall" >/dev/null 2>&1 || true
+    log "Seeded Revo wallpaper: $wall"
+}
+
 stop_all_quickshell() {
     pkill -9 -f "ryoku/shell/ipc/ryoku-shell" >/dev/null 2>&1 || true
     pkill -9 -f "quickshell -p" >/dev/null 2>&1 || true
@@ -57,6 +84,8 @@ if (( replace )); then
     log "Replacing current shell with '$shell'"
     stop_all_quickshell
 fi
+
+ensure_revo_wallpaper
 
 runner=""
 if command -v quickshell >/dev/null 2>&1; then
