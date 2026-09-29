@@ -617,29 +617,27 @@ ShellRoot {
                         Column {
                             id: riceContent
                             width: riceScroll.width
-                            spacing: 18
+                            spacing: 12
 
-                            GridLayout {
+                            Grid {
+                                id: nativeGrid
                                 width: parent.width
                                 columns: 4
-                                columnSpacing: 12
-                                rowSpacing: 12
+                                columnSpacing: 4
+                                rowSpacing: 4
 
                                 Repeater {
                                     model: root.visibleNativeRices
 
-                                    delegate: Rectangle {
-                                        id: nativeCard
+                                    delegate: Item {
+                                        id: nativeCell
 
                                         required property int index
                                         required property var modelData
 
-                                        Layout.preferredWidth:
-                                            (riceContent.width - 36) / 4
-                                        Layout.preferredHeight: 96
-
-                                        radius: 18
-                                        antialiasing: true
+                                        width:
+                                            (nativeGrid.width - 12) / 4
+                                        height: 108
 
                                         property int globalIndex:
                                             root.indexForProfile(
@@ -654,62 +652,82 @@ ShellRoot {
                                             modelData.id ===
                                             root.activeProfile
 
-                                        opacity:
-                                            root.profileInstalled(
-                                                modelData.id
-                                            ) ? 1.0 : 0.38
-
-                                        color: nativeCard.selected
-                                            ? "#202033"
-                                            : "#17171f"
-
-                                        border.width:
-                                            nativeCard.selected ||
-                                            nativeCard.active
-                                            ? 2 : 1
-
-                                        border.color:
-                                            nativeCard.selected
-                                            ? "#a78bfa"
-                                            : nativeCard.active
-                                                ? "#6d5bd0"
-                                                : "#34343f"
-
                                         onSelectedChanged: {
-                                            if (nativeCard.selected)
+                                            if (nativeCell.selected)
                                                 Qt.callLater(
                                                     () =>
                                                     root.revealCard(
-                                                        nativeCard
+                                                        nativeCell
                                                     )
                                                 )
                                         }
 
-                                        Text {
-                                            anchors.centerIn: parent
-                                            width: parent.width - 20
-                                            horizontalAlignment:
-                                                Text.AlignHCenter
-                                            text: modelData.name
-                                            elide: Text.ElideRight
-                                            color: "#fafafa"
-                                            font.family:
-                                                "JetBrainsMono Nerd Font"
-                                            font.pixelSize: 15
-                                            font.bold:
-                                                nativeCard.selected ||
-                                                nativeCard.active
-                                        }
-
-                                        MouseArea {
+                                        Rectangle {
+                                            id: nativeCard
                                             anchors.fill: parent
-                                            cursorShape:
-                                                Qt.PointingHandCursor
+                                            anchors.margins: 5
+                                            radius: 18
+                                            antialiasing: true
 
-                                            onClicked: {
-                                                root.riceIndex =
-                                                    nativeCard.globalIndex
-                                                root.activateSelection()
+                                            opacity:
+                                                root.profileInstalled(
+                                                    modelData.id
+                                                ) ? 1.0 : 0.38
+
+                                            color:
+                                                nativeCell.selected
+                                                ? "#202033"
+                                                : "#17171f"
+
+                                            border.width:
+                                                nativeCell.selected ||
+                                                nativeCell.active
+                                                ? 2 : 1
+
+                                            border.color:
+                                                nativeCell.selected
+                                                ? "#a78bfa"
+                                                : nativeCell.active
+                                                    ? "#6d5bd0"
+                                                    : "#34343f"
+
+                                            scale:
+                                                nativeCell.selected
+                                                ? 1.035 : 1.0
+
+                                            Behavior on scale {
+                                                NumberAnimation {
+                                                    duration: 130
+                                                }
+                                            }
+
+                                            Text {
+                                                anchors.centerIn: parent
+                                                width:
+                                                    parent.width - 20
+                                                horizontalAlignment:
+                                                    Text.AlignHCenter
+                                                text: modelData.name
+                                                elide: Text.ElideRight
+                                                color: "#fafafa"
+                                                font.family:
+                                                    "JetBrainsMono Nerd Font"
+                                                font.pixelSize: 15
+                                                font.bold:
+                                                    nativeCell.selected ||
+                                                    nativeCell.active
+                                            }
+
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                cursorShape:
+                                                    Qt.PointingHandCursor
+
+                                                onClicked: {
+                                                    root.riceIndex =
+                                                        nativeCell.globalIndex
+                                                    root.activateSelection()
+                                                }
                                             }
                                         }
                                     }
@@ -726,29 +744,27 @@ ShellRoot {
                                 color: "#2d2d38"
                             }
 
-                            GridLayout {
+                            Grid {
+                                id: revoGrid
                                 width: parent.width
                                 columns: 4
-                                columnSpacing: 12
-                                rowSpacing: 12
+                                columnSpacing: 4
+                                rowSpacing: 4
                                 visible:
                                     root.visibleRevoRices.length > 0
 
                                 Repeater {
                                     model: root.visibleRevoRices
 
-                                    delegate: Rectangle {
-                                        id: revoCard
+                                    delegate: Item {
+                                        id: revoCell
 
                                         required property int index
                                         required property var modelData
 
-                                        Layout.preferredWidth:
-                                            (riceContent.width - 36) / 4
-                                        Layout.preferredHeight: 96
-
-                                        radius: 18
-                                        antialiasing: true
+                                        width:
+                                            (revoGrid.width - 12) / 4
+                                        height: 108
 
                                         property int globalIndex:
                                             root.indexForProfile(
@@ -763,62 +779,82 @@ ShellRoot {
                                             modelData.id ===
                                             root.activeProfile
 
-                                        opacity:
-                                            root.profileInstalled(
-                                                modelData.id
-                                            ) ? 1.0 : 0.38
-
-                                        color: revoCard.selected
-                                            ? "#202033"
-                                            : "#17171f"
-
-                                        border.width:
-                                            revoCard.selected ||
-                                            revoCard.active
-                                            ? 2 : 1
-
-                                        border.color:
-                                            revoCard.selected
-                                            ? "#a78bfa"
-                                            : revoCard.active
-                                                ? "#6d5bd0"
-                                                : "#34343f"
-
                                         onSelectedChanged: {
-                                            if (revoCard.selected)
+                                            if (revoCell.selected)
                                                 Qt.callLater(
                                                     () =>
                                                     root.revealCard(
-                                                        revoCard
+                                                        revoCell
                                                     )
                                                 )
                                         }
 
-                                        Text {
-                                            anchors.centerIn: parent
-                                            width: parent.width - 20
-                                            horizontalAlignment:
-                                                Text.AlignHCenter
-                                            text: modelData.name
-                                            elide: Text.ElideRight
-                                            color: "#fafafa"
-                                            font.family:
-                                                "JetBrainsMono Nerd Font"
-                                            font.pixelSize: 15
-                                            font.bold:
-                                                revoCard.selected ||
-                                                revoCard.active
-                                        }
-
-                                        MouseArea {
+                                        Rectangle {
+                                            id: revoCard
                                             anchors.fill: parent
-                                            cursorShape:
-                                                Qt.PointingHandCursor
+                                            anchors.margins: 5
+                                            radius: 18
+                                            antialiasing: true
 
-                                            onClicked: {
-                                                root.riceIndex =
-                                                    revoCard.globalIndex
-                                                root.activateSelection()
+                                            opacity:
+                                                root.profileInstalled(
+                                                    modelData.id
+                                                ) ? 1.0 : 0.38
+
+                                            color:
+                                                revoCell.selected
+                                                ? "#202033"
+                                                : "#17171f"
+
+                                            border.width:
+                                                revoCell.selected ||
+                                                revoCell.active
+                                                ? 2 : 1
+
+                                            border.color:
+                                                revoCell.selected
+                                                ? "#a78bfa"
+                                                : revoCell.active
+                                                    ? "#6d5bd0"
+                                                    : "#34343f"
+
+                                            scale:
+                                                revoCell.selected
+                                                ? 1.035 : 1.0
+
+                                            Behavior on scale {
+                                                NumberAnimation {
+                                                    duration: 130
+                                                }
+                                            }
+
+                                            Text {
+                                                anchors.centerIn: parent
+                                                width:
+                                                    parent.width - 20
+                                                horizontalAlignment:
+                                                    Text.AlignHCenter
+                                                text: modelData.name
+                                                elide: Text.ElideRight
+                                                color: "#fafafa"
+                                                font.family:
+                                                    "JetBrainsMono Nerd Font"
+                                                font.pixelSize: 15
+                                                font.bold:
+                                                    revoCell.selected ||
+                                                    revoCell.active
+                                            }
+
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                cursorShape:
+                                                    Qt.PointingHandCursor
+
+                                                onClicked: {
+                                                    root.riceIndex =
+                                                        revoCell.globalIndex
+                                                    root.activateSelection()
+                                                }
                                             }
                                         }
                                     }
