@@ -149,9 +149,10 @@ case "$shell" in
         # physical hosts keep their native renderer.
         if [[ -z "${QSG_RHI_BACKEND:-}" ]] &&
            command -v systemd-detect-virt >/dev/null 2>&1 &&
-           systemd-detect-virt --quiet; then
+           systemd-detect-virt --quiet &&
+           compgen -G '/usr/share/vulkan/icd.d/*.json' >/dev/null; then
             export QSG_RHI_BACKEND=vulkan
-            log "VM detected; Mac shell using QSG_RHI_BACKEND=vulkan"
+            log "VM + Vulkan ICD detected; Mac shell using QSG_RHI_BACKEND=vulkan"
         fi
 
         log "Launching macos -> $shell_log"
