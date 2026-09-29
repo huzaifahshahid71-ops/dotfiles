@@ -178,6 +178,37 @@ ensure_hyprliquid() {
     ok "Hyprliquid ready: $HOME/.local/lib/hyprliquid.so"
 }
 
+patch_revo_wallpapers() {
+    local random="$PROFILE_ROOT/revo/hypr/scripts/wallpapers/random.sh"
+    local set_random="$PROFILE_ROOT/revo/hypr/scripts/wallpapers/set-random.sh"
+
+    [[ -d "$(dirname "$random")" ]] || return 0
+
+    cat > "$random" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+WALLPAPERS_DIR="${REVO_WALLPAPERS_DIR:-$HOME/Pictures/Wallpapers/Revo}"
+[[ -d "$WALLPAPERS_DIR" ]] || exit 0
+
+find "$WALLPAPERS_DIR" -type f \
+    \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) \
+    -print 2>/dev/null | shuf -n 1
+EOF
+    chmod +x "$random"
+
+    cat > "$set_random" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+scripts="$HOME/.config/hypr/scripts/wallpapers"
+wall="$("$scripts/random.sh")"
+[[ -n "$wall" && -f "$wall" ]] || exit 0
+"$scripts/set.sh" "$wall"
+EOF
+    chmod +x "$set_random"
+}
+
 patch_revo_autostart() {
     local conf tmp lua
 
@@ -370,6 +401,7 @@ rm -rf "$PROFILE_ROOT/revo"
 mkdir -p "$PROFILE_ROOT/revo/hypr"
 rsync -a --exclude '.git' "$REVO_ROOT/hypr/" "$PROFILE_ROOT/revo/hypr/"
 rewrite_home_paths "$PROFILE_ROOT/revo/hypr"
+patch_revo_wallpapers
 patch_revo_autostart
 patch_revo_lua_safety
 patch_revo_keybinds
