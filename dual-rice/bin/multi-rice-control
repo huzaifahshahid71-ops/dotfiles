@@ -32,6 +32,17 @@ load_metadata() {
 
 load_metadata
 
+profile_is_selectable() {
+    local wanted="$1"
+    local profile
+
+    while IFS= read -r profile; do
+        [[ "$profile" == "$wanted" ]] && return 0
+    done < <(profile_ids)
+
+    return 1
+}
+
 is_installed() {
     local profile="$1"
     local kind shell dir
@@ -231,6 +242,11 @@ plan_switch() {
 
     if [ -z "$profile" ]; then
         echo "multi-rice-control: plan requires a profile id" >&2
+        return 2
+    fi
+
+    if ! profile_is_selectable "$profile"; then
+        echo "multi-rice-control: profile is not selectable in v5.1: $profile" >&2
         return 2
     fi
 
@@ -494,6 +510,11 @@ switch_profile() {
 
     if [ -z "$profile" ]; then
         echo "multi-rice-control: switch requires a profile id" >&2
+        return 2
+    fi
+
+    if ! profile_is_selectable "$profile"; then
+        echo "multi-rice-control: profile is not selectable in v5.1: $profile" >&2
         return 2
     fi
 
