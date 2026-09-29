@@ -6,12 +6,13 @@ STATE_DIR="$CONFIG_HOME/desktop-profile"
 STATE_FILE="$STATE_DIR/revo-shell"
 QS_ROOT="$CONFIG_HOME/quickshell"
 DEFAULT_SHELL="lucid"
-LOG_FILE="$STATE_DIR/revo-shell-launch.log"
+LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/revo-v5.1"
+LAUNCH_LOG="$LOG_DIR/launcher.log"
 
-mkdir -p "$STATE_DIR"
+mkdir -p "$STATE_DIR" "$LOG_DIR"
 
 log() {
-    printf '%s %s\n' "$(date '+%F %T')" "$*" >> "$LOG_FILE"
+    printf '%s %s\n' "$(date '+%F %T')" "$*" >> "$LAUNCH_LOG"
 }
 
 stop_all_quickshell() {
@@ -21,9 +22,13 @@ stop_all_quickshell() {
     pkill -9 -f "qs -p" >/dev/null 2>&1 || true
     pkill -9 -f "qs -c" >/dev/null 2>&1 || true
     pkill -9 -x quickshell >/dev/null 2>&1 || true
+    pkill -9 -x qs >/dev/null 2>&1 || true
 
-    for _ in $(seq 1 10); do
-        pgrep -x quickshell >/dev/null 2>&1 || break
+    for _ in $(seq 1 15); do
+        if ! pgrep -x quickshell >/dev/null 2>&1 &&
+           ! pgrep -x qs >/dev/null 2>&1; then
+            break
+        fi
         sleep 0.1
     done
 }
@@ -41,80 +46,84 @@ fi
 shell="${shell:-$DEFAULT_SHELL}"
 
 dir="$QS_ROOT/$shell"
+shell_log="$LOG_DIR/$shell.log"
+
 [[ -d "$dir" ]] || {
     log "ERROR shell '$shell' is not installed at $dir"
-    echo "revo-shell-launch: shell '$shell' is not installed at $dir" >&2
     exit 4
 }
 
 if (( replace )); then
-    log "Replacing current Quickshell with '$shell'"
+    log "Replacing current shell with '$shell'"
     stop_all_quickshell
 fi
 
 runner=""
 if command -v quickshell >/dev/null 2>&1; then
-    runner="quickshell"
+    runner="$(command -v quickshell)"
 elif command -v qs >/dev/null 2>&1; then
-    runner="qs"
+    runner="$(command -v qs)"
 else
     log "ERROR Quickshell is not installed"
-    echo "revo-shell-launch: Quickshell is not installed" >&2
     exit 4
 fi
 
+# Keep one log per shell so failed hot-switches are diagnosable.
+: > "$shell_log"
+
 case "$shell" in
     macos)
-        log "Launching macos"
-        setsid -f "$runner" -p "$dir/shell.qml" >"$HOME/macos.log" 2>&1
+        log "Launching macos -> $shell_log"
+        setsid -f "$runner" -p "$dir/shell.qml" >"$shell_log" 2>&1
 
+        # Revo intentionally pairs Mac with K4's Dynamic Island.
         if [[ -x "$QS_ROOT/k4/arrancar" ]]; then
-            setsid -f "$QS_ROOT/k4/arrancar" >/tmp/k4.log 2>&1
+            setsid -f "$QS_ROOT/k4/arrancar" >"$LOG_DIR/k4-macos.log" 2>&1
         fi
-        exit 0
         ;;
 
     ii)
-        log "Launching ii"
-        exec "$runner" -p "$dir"
+        log "Launching ii -> $shell_log"
+        setsid -f "$runner" -p "$dir" >"$shell_log" 2>&1
         ;;
 
     k4)
-        if [[ -x "$dir/arrancar" ]]; then
-            log "Launching k4 wrapper"
-            exec "$dir/arrancar"
-        fi
+        [[ -x "$dir/arrancar" ]] || exit 4
+        log "Launching k4 wrapper -> $shell_log"
+        setsid -f "$dir/arrancar" >"$shell_log" 2>&1
         ;;
 
     ryoku)
-        if [[ -x "$dir/launch.sh" ]]; then
-            log "Launching ryoku wrapper"
-            exec "$dir/launch.sh"
+        [[ -x "$dir/launch.sh" ]] || exit 4
+        log "Launching ryoku wrapper -> $shell_log"
+        setsid -f bash -c "$dir/launch.sh" >"$shell_log" 2>&1
+        ;;
+
+    *)
+        if [[ -f "$dir/shell.qml" ]]; then
+            if [[ -d "$dir/build/qml" ]]; then
+                export QML2_IMPORT_PATH="$dir/build/qml${QML2_IMPORT_PATH:+:$QML2_IMPORT_PATH}"
+            elif [[ -d "$dir/api" ]]; then
+                export QML2_IMPORT_PATH="$dir/api${QML2_IMPORT_PATH:+:$QML2_IMPORT_PATH}"
+            fi
+
+            log "Launching '$shell' -> $shell_log"
+            setsid -f "$runner" -p "$dir/shell.qml" >"$shell_log" 2>&1
+        elif [[ -x "$dir/launch.sh" ]]; then
+            log "Launching '$shell' through launch.sh -> $shell_log"
+            setsid -f "$dir/launch.sh" >"$shell_log" 2>&1
+        elif [[ -x "$dir/arrancar" ]]; then
+            log "Launching '$shell' through arrancar -> $shell_log"
+            setsid -f "$dir/arrancar" >"$shell_log" 2>&1
+        else
+            log "ERROR no launchable entry point for '$shell'"
+            exit 4
         fi
         ;;
 esac
 
-if [[ -f "$dir/shell.qml" ]]; then
-    if [[ -d "$dir/build/qml" ]]; then
-        export QML2_IMPORT_PATH="$dir/build/qml${QML2_IMPORT_PATH:+:$QML2_IMPORT_PATH}"
-    elif [[ -d "$dir/api" ]]; then
-        export QML2_IMPORT_PATH="$dir/api${QML2_IMPORT_PATH:+:$QML2_IMPORT_PATH}"
-    fi
-
-    log "Launching '$shell' from $dir/shell.qml"
-    exec "$runner" -p "$dir/shell.qml"
-fi
-
-if [[ -x "$dir/launch.sh" ]]; then
-    log "Launching '$shell' through launch.sh"
-    exec "$dir/launch.sh"
-fi
-
-if [[ -x "$dir/arrancar" ]]; then
-    log "Launching '$shell' through arrancar"
-    exec "$dir/arrancar"
-fi
-
-log "ERROR no launchable entry point for '$shell'"
-echo "revo-shell-launch: no launchable entry point for '$shell'" >&2
-exit 4
+# Give the detached client a moment to fail fast. This does not prove a shell
+# is healthy, but catches missing-QML/module failures in its persistent log.
+sleep 0.35
+log "Launch request for '$shell' completed"
+exit 0
