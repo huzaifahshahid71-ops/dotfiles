@@ -115,11 +115,45 @@ else
     exit 4
 fi
 
+# Native QML modules used by Persona, Vast, Ryoku and other imported
+# shells are installed user-locally by setup-special-shells.sh.
+USER_QML_ROOT="$HOME/.local/lib/qt6/qml"
+if [[ -d "$USER_QML_ROOT" ]]; then
+    export QML2_IMPORT_PATH="$USER_QML_ROOT${QML2_IMPORT_PATH:+:$QML2_IMPORT_PATH}"
+fi
+
 # Keep one log per shell so failed hot-switches are diagnosable.
 : > "$shell_log"
 
 case "$shell" in
+    vast-shell)
+        vast_src="$HOME/.local/src/vast-shell-v5.1"
+        vast_qml="$vast_src/Qml/shell.qml"
+        [[ -f "$vast_qml" ]] || {
+            log "ERROR Vast source runtime missing: $vast_qml"
+            echo "revo-shell-launch: run setup-special-shells.sh --vast" >&2
+            exit 4
+        }
+        export VAST_SHELL_DIRECTORY="$vast_src"
+        export QUICKSHELL_CONFIG_DIR="$vast_src/Qml"
+        export QT_MEDIA_BACKEND="ffmpeg"
+        export VDPAU_DRIVER="${VDPAU_DRIVER:-va_gl}"
+        log "Launching Vast from pinned source runtime -> $shell_log"
+        setsid -f "$runner" -p "$vast_qml" >"$shell_log" 2>&1
+        ;;
+
     macos)
+        # Revo's bundled eqsh glass shaders contain GLSL 4.40 variants. The
+        # virtio/virgl test VM exposes an older OpenGL profile, but the same
+        # baked shaders contain SPIR-V. Use Qt's Vulkan RHI only in a VM;
+        # physical hosts keep their native renderer.
+        if [[ -z "${QSG_RHI_BACKEND:-}" ]] &&
+           command -v systemd-detect-virt >/dev/null 2>&1 &&
+           systemd-detect-virt --quiet; then
+            export QSG_RHI_BACKEND=vulkan
+            log "VM detected; Mac shell using QSG_RHI_BACKEND=vulkan"
+        fi
+
         log "Launching macos -> $shell_log"
         setsid -f "$runner" -p "$dir/shell.qml" >"$shell_log" 2>&1
 
