@@ -305,6 +305,22 @@ write_revo_shell() {
     mv -f "$tmp" "$REVO_SHELL_FILE"
 }
 
+refresh_live_hypr_env() {
+    local pid=""
+    local entry=""
+
+    pid="$(pgrep -n Hyprland 2>/dev/null || pgrep -n hyprland 2>/dev/null || true)"
+    [[ -n "$pid" && -r "/proc/$pid/environ" ]] || return 0
+
+    while IFS= read -r -d '' entry; do
+        case "$entry" in
+            WAYLAND_DISPLAY=*|HYPRLAND_INSTANCE_SIGNATURE=*|XDG_CURRENT_DESKTOP=*|XDG_RUNTIME_DIR=*|DBUS_SESSION_BUS_ADDRESS=*)
+                export "$entry"
+                ;;
+        esac
+    done < "/proc/$pid/environ"
+}
+
 schedule_revo_shell_switch() {
     local profile="$1"
     local shell launcher cmd
@@ -316,6 +332,8 @@ schedule_revo_shell_switch() {
         echo "multi-rice-control: Revo launcher not installed: $launcher" >&2
         return 4
     }
+
+    refresh_live_hypr_env
 
     # Do not use a transient systemd service here. Quickshell children inherit
     # the service cgroup and get killed when the helper exits. A new session
