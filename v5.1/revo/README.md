@@ -7,11 +7,11 @@ v5.1 changes the hierarchy: Revo Shell becomes the Hyprland shell platform and t
 - Revo upstream is cloned in full at install time to `~/.local/share/revo-shell`.
 - The upstream snapshot is pinned to commit `a15d62c87aa992ab8e5d366575bb4074eada7d98`.
 - Revo's Hyprland configuration is installed as the shared `revo` desktop profile.
-- All 21 Revo Quickshell configs are deployed to `~/.config/quickshell`.
+- All 21 Revo Quickshell configs are deployed to `~/.config/quickshell`; **19 are selectable desktop shells**. `11` is HyprQuickFrame (a screenshot overlay) and `macduo` is the Mac lid-animation companion, so those two remain installed as utilities instead of rice cards.
 - The existing 10 Huzaifah profiles remain first-class profiles:
   - Hyprland: Aether, Obsidian, Crimson, Materia, Aurora, Nocturne, Lumina
   - Niri: Solstice, Cipher, Astra
-- Unified catalog: **31 profiles total** — **28 Hyprland + 3 Niri**.
+- Unified catalog: **29 selectable profiles total** — **26 Hyprland + 3 Niri**.
 - Every switcher calls the same `multi-rice-control` backend:
   - Revo graphical switcher: **Super+B** → patched `DotsBrowser.qml`
   - Huzaifah graphical switcher: **Super+Shift+D** → `qs -c multi-rice-switcher`
@@ -19,7 +19,7 @@ v5.1 changes the hierarchy: Revo Shell becomes the Hyprland shell platform and t
   - Revo's Rofi/cycle helper is also redirected through the same backend.
 - Revo-to-Revo changes are shell-only hot switches; Hyprland is not restarted.
 - Huzaifah-to-Revo, Revo-to-Huzaifah, and Hyprland-to-Niri changes keep the existing safe profile/session handoff.
-- Revo's shell-specific launch behavior is preserved, including macOS + K4 Dynamic Island and Ryoku's native process.
+- Revo's shell-specific launch behavior is preserved, including macOS + K4 Dynamic Island + MacDuo companion and Ryoku's native process.
 - The pinned Revo revision already contains its Hyprliquid configuration; the installer adds `hyprliquid` and provides Revo's expected `~/.local/lib/hyprliquid.so` path when the system library is available.
 
 ## Why Revo is cloned instead of vendored
