@@ -327,6 +327,39 @@ EOF
     fi
 }
 
+patch_revo_qs_manager() {
+    local manager="$PROFILE_ROOT/revo/hypr/scripts/qs_manager.sh"
+    [[ -f "$manager" ]] || return 0
+
+    python - "$manager" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+marker = "# HUZAIFAH_REVO_V51_ANY_SHELL_GUARD"
+
+if marker not in text:
+    needle = """waffle_active() {
+"""
+    if needle not in text:
+        raise SystemExit("Revo qs_manager.sh layout changed; refusing unsafe patch")
+
+    replacement = """waffle_active() {
+    # HUZAIFAH_REVO_V51_ANY_SHELL_GUARD
+    # Any selected Revo shell owns the desktop. Do not resurrect Revo's
+    # default Main.qml/TopBar.qml behind it.
+    active_file="$HOME/.config/desktop-profile/active"
+    if [[ -f "$active_file" ]] && grep -q '^revo-' "$active_file"; then
+        return 0
+    fi
+"""
+    text = text.replace(needle, replacement, 1)
+
+path.write_text(text, encoding="utf-8")
+PY
+}
+
 patch_revo_dots_browser() {
     local dots="$PROFILE_ROOT/revo/hypr/scripts/quickshell/DotsBrowser.qml"
     [[ -f "$dots" ]] || {
@@ -405,6 +438,7 @@ patch_revo_wallpapers
 patch_revo_autostart
 patch_revo_lua_safety
 patch_revo_keybinds
+patch_revo_qs_manager
 patch_revo_dots_browser
 
 log "Deploying all Revo Quickshell configs"
