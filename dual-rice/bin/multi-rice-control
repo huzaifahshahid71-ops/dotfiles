@@ -3,13 +3,14 @@
 set -euo pipefail
 
 ROOT="$HOME/.local/share/desktop-profiles"
-STATE_DIR="$HOME/.config/desktop-profile"
+CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+STATE_DIR="$CONFIG_HOME/desktop-profile"
 ACTIVE_FILE="$STATE_DIR/active"
 
-HYPR_LINK="$HOME/.config/hypr"
-NIRI_LINK="$HOME/.config/niri"
+HYPR_LINK="$CONFIG_HOME/hypr"
+NIRI_LINK="$CONFIG_HOME/niri"
 
-QS_ROOT="$HOME/.config/quickshell"
+QS_ROOT="$CONFIG_HOME/quickshell"
 REVO_SHELL_FILE="$STATE_DIR/revo-shell"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
