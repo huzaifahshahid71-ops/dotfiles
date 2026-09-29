@@ -53,6 +53,11 @@ sync_repo() {
     fi
 }
 
+is_virtual_machine() {
+    command -v systemd-detect-virt >/dev/null 2>&1 &&
+        systemd-detect-virt --quiet
+}
+
 find_qsb() {
     command -v qsb 2>/dev/null ||
         command -v qsb6 2>/dev/null ||
@@ -117,6 +122,113 @@ path.write_text(text, encoding="utf-8")
 PY
 
     ok "Persona audio visualizer disabled as a compatibility fallback"
+}
+
+compile_qsb_compat() {
+    local qsb="$1"
+    local source="$2"
+    local output="$3"
+    local tmp="${output}.v51-tmp"
+
+    [[ -f "$source" ]] || return 0
+    rm -f "$tmp"
+
+    if "$qsb" --glsl "430,330,300 es" --hlsl 50 --msl 12 \
+        -o "$tmp" "$source" >/dev/null 2>&1; then
+        mv -f "$tmp" "$output"
+        ok "Baked VM-compatible shader: ${output#$QS_ROOT/}"
+    else
+        rm -f "$tmp"
+        warn "Could not bake compatibility shader: $source"
+    fi
+}
+
+setup_vm_graphics_compat() {
+    local qsb=""
+    local mac="$QS_ROOT/macos/modules/common"
+    local eq="$QS_ROOT/eqsh"
+    local src
+
+    is_virtual_machine || return 0
+
+    log "Applying virtual-GPU OpenGL compatibility"
+    qsb="$(find_qsb)"
+
+    if [[ -f "$eq/shell.qml" ]]; then
+        python - "$eq/shell.qml" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+if "HUZAIFAH_V51_VM_OPENGL" not in text:
+    text = text.replace(
+        "//@ pragma Env QSG_RHI_BACKEND=vulkan",
+        "// HUZAIFAH_V51_VM_OPENGL\n//@ pragma Env QSG_RHI_BACKEND=opengl",
+        1,
+    )
+path.write_text(text, encoding="utf-8")
+PY
+        ok "EQSH renderer changed from Vulkan to OpenGL for this VM only"
+    fi
+
+    if [[ -f "$mac/LiquidGlassShader.qml" ]]; then
+        python - "$mac/LiquidGlassShader.qml" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+text = text.replace(
+    'fragmentShader: "shaders/glass.frag"',
+    'fragmentShader: Qt.resolvedUrl("shaders/glass.frag.qsb")',
+)
+text = text.replace(
+    'vertexShader: "shaders/glass.vert"',
+    'vertexShader: Qt.resolvedUrl("shaders/glass.vert.qsb")',
+)
+path.write_text(text, encoding="utf-8")
+PY
+    fi
+
+    if [[ -n "$qsb" ]]; then
+        compile_qsb_compat "$qsb" "$mac/shaders/glass.frag" "$mac/shaders/glass.frag.qsb"
+        compile_qsb_compat "$qsb" "$mac/shaders/glass.vert" "$mac/shaders/glass.vert.qsb"
+
+        # EQSH hard-codes Vulkan upstream. Re-bake every shader whose GLSL
+        # source ships with Revo so virgl can consume OpenGL 4.3/3.3 variants.
+        if [[ -d "$eq/media/shaders" ]]; then
+            while IFS= read -r -d '' src; do
+                compile_qsb_compat "$qsb" "$src" "$src.qsb"
+            done < <(find "$eq/media/shaders" -maxdepth 1 -type f \
+                \( -name '*.frag' -o -name '*.vert' \) -print0)
+        fi
+    else
+        warn "qsb is unavailable; VM renderer was patched but shaders could not be re-baked"
+    fi
+}
+
+bootstrap_k4_state() {
+    local state="${XDG_STATE_HOME:-$HOME/.local/state}/k4"
+    local config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
+    local hypr_theme="$config_home/hypr/config/k4-theme.lua"
+
+    mkdir -p \
+        "$state/plugins/pantallas" \
+        "$state/plugins/agentes"
+
+    [[ -s "$state/ajustes.json" ]] || printf '{}\n' > "$state/ajustes.json"
+    [[ -s "$state/tokens.json" ]] || printf '{}\n' > "$state/tokens.json"
+    [[ -s "$state/plugins.json" ]] || printf '{"habilitados":{}}\n' > "$state/plugins.json"
+    [[ -s "$state/hyprtheme.json" ]] || printf '{}\n' > "$state/hyprtheme.json"
+    [[ -s "$state/plugins/pantallas/estado.json" ]] || printf '{}\n' > "$state/plugins/pantallas/estado.json"
+    [[ -s "$state/plugins/agentes/estado.json" ]] || printf '{}\n' > "$state/plugins/agentes/estado.json"
+
+    if [[ -d "$(dirname "$hypr_theme")" && ! -e "$hypr_theme" ]]; then
+        printf '%s\n' '-- Huzaifah v5.1: K4 writes its saved Hyprland theme here.' > "$hypr_theme"
+    fi
+
+    ok "K4 first-run state initialized"
 }
 
 setup_persona_cava() {
@@ -290,6 +402,8 @@ setup_vast() {
 
 case "${1:---all}" in
     --all)
+        bootstrap_k4_state || true
+        setup_vm_graphics_compat || true
         setup_persona_cava || true
         setup_ryoku || true
         setup_vast || true
@@ -303,8 +417,14 @@ case "${1:---all}" in
     --vast)
         setup_vast
         ;;
+    --graphics)
+        setup_vm_graphics_compat
+        ;;
+    --k4)
+        bootstrap_k4_state
+        ;;
     *)
-        printf 'usage: %s [--all|--persona|--ryoku|--vast]\n' "$0" >&2
+        printf 'usage: %s [--all|--persona|--ryoku|--vast|--graphics|--k4]\n' "$0" >&2
         exit 2
         ;;
 esac
