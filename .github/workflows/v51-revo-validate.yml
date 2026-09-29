@@ -79,6 +79,7 @@ jobs:
         run: |
           TEST_HOME="$(mktemp -d)"
           export HOME="$TEST_HOME"
+          export XDG_CONFIG_HOME="$HOME/.config"
           export XDG_CURRENT_DESKTOP=Hyprland
 
           mkdir -p \
