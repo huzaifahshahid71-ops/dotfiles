@@ -128,8 +128,10 @@ jobs:
 
       - name: Check graphical switcher integration markers
         run: |
-          grep -q 'ListView {' dual-rice/quickshell/multi-rice-switcher/shell.qml
-          grep -q 'modelData.kind === "revo-shell"' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -q 'Flickable {' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -q 'visibleNativeRices' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -q 'visibleRevoRices' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -q 'columns: 4' dual-rice/quickshell/multi-rice-switcher/shell.qml
           grep -q 'multi-rice-control' dual-rice/quickshell/multi-rice-switcher/shell.qml
           grep -q 'text.trim().split("\\n")' dual-rice/quickshell/multi-rice-switcher/shell.qml
           grep -q 'SHELL_QML=' dual-rice/bin/multi-rice-switcher
