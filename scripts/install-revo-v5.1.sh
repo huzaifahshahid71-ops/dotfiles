@@ -4,6 +4,8 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REVO_URL="${REVO_URL:-https://github.com/vzbc/revo-shell.git}"
 REVO_REF="${REVO_REF:-a15d62c87aa992ab8e5d366575bb4074eada7d98}"
+HYPRLIQUID_URL="${HYPRLIQUID_URL:-https://github.com/zaregototsukai/hyprliquid.git}"
+HYPRLIQUID_REF="${HYPRLIQUID_REF:-ff9a32d738951014c5418ee71962fb119b007f3e}"
 REVO_ROOT="$HOME/.local/share/revo-shell"
 PROFILE_ROOT="$HOME/.local/share/desktop-profiles"
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
@@ -49,7 +51,7 @@ install_dependencies_arch() {
         pipewire pipewire-pulse wireplumber libpulse playerctl cava mpv-mpris networkmanager bluez bluez-utils brightnessctl upower power-profiles-daemon lm_sensors rfkill ddcutil
         grim slurp wf-recorder hyprshot hyprpicker ffmpeg imagemagick wl-clipboard cliphist wtype swappy matugen swww hyprpaper swaybg mpvpaper swaync swayosd easyeffects
         kitty nautilus thunar rofi-wayland wofi fastfetch starship fish gnome-calculator papirus-icon-theme adwaita-cursors xdg-desktop-portal-gtk
-        ttf-jetbrains-mono-nerd ttf-nerd-fonts-symbols-common noto-fonts noto-fonts-emoji base-devel cmake ninja pkgconf clang gcc
+        ttf-jetbrains-mono-nerd ttf-nerd-fonts-symbols-common noto-fonts noto-fonts-emoji base-devel cmake ninja pkgconf clang gcc stb
     )
 
     local installable=()
@@ -105,6 +107,77 @@ install_dependencies_arch() {
     fi
 }
 
+ensure_hyprliquid() {
+    local installed=""
+    local tmp build
+
+    mkdir -p "$HOME/.local/lib"
+
+    if [[ -f /usr/lib/libhyprliquid.so ]]; then
+        installed="/usr/lib/libhyprliquid.so"
+    elif [[ -f "$HOME/.local/lib/libhyprliquid.so" ]]; then
+        installed="$HOME/.local/lib/libhyprliquid.so"
+    fi
+
+    if [[ -z "$installed" ]]; then
+        command -v cmake >/dev/null 2>&1 || {
+            warn "cmake is unavailable; Hyprliquid cannot be built"
+            return 1
+        }
+        command -v git >/dev/null 2>&1 || {
+            warn "git is unavailable; Hyprliquid cannot be built"
+            return 1
+        }
+
+        log "Building pinned Hyprliquid for the installed Hyprland"
+        tmp="$(mktemp -d)"
+        build="$tmp/build"
+
+        if ! git clone "$HYPRLIQUID_URL" "$tmp/hyprliquid"; then
+            rm -rf "$tmp"
+            warn "Hyprliquid clone failed"
+            return 1
+        fi
+
+        if ! git -C "$tmp/hyprliquid" checkout --detach "$HYPRLIQUID_REF"; then
+            rm -rf "$tmp"
+            warn "Hyprliquid pinned revision checkout failed"
+            return 1
+        fi
+
+        if ! cmake -S "$tmp/hyprliquid" -B "$build" -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$HOME/.local"; then
+            rm -rf "$tmp"
+            warn "Hyprliquid configure failed"
+            return 1
+        fi
+
+        if ! cmake --build "$build" -j"$(nproc)"; then
+            rm -rf "$tmp"
+            warn "Hyprliquid build failed"
+            return 1
+        fi
+
+        if ! cmake --install "$build"; then
+            rm -rf "$tmp"
+            warn "Hyprliquid install failed"
+            return 1
+        fi
+
+        rm -rf "$tmp"
+        installed="$HOME/.local/lib/libhyprliquid.so"
+    fi
+
+    if [[ ! -f "$installed" ]]; then
+        warn "Hyprliquid library still missing after installation"
+        return 1
+    fi
+
+    ln -sfn "$installed" "$HOME/.local/lib/hyprliquid.so"
+    ok "Hyprliquid ready: $HOME/.local/lib/hyprliquid.so"
+}
+
 patch_revo_autostart() {
     local conf tmp lua
 
@@ -135,6 +208,11 @@ import sys
 path = Path(sys.argv[1])
 text = path.read_text(encoding="utf-8")
 marker = "-- HUZAIFAH_REVO_V51_SHELL"
+
+# Upstream pinned Revo currently contains a typo: h.exec_once(...) even
+# though the Lua API object is named hl. The callback already runs once at
+# Hyprland startup, so exec_cmd preserves the intended behaviour.
+text = text.replace("h.exec_once(", "hl.exec_cmd(")
 
 if marker not in text:
     for command in (
@@ -267,6 +345,7 @@ command -v git >/dev/null 2>&1 || die "git is required"
 command -v rsync >/dev/null 2>&1 || die "rsync is required"
 
 install_dependencies_arch
+ensure_hyprliquid || warn "Hyprliquid is unavailable; liquid-glass effects will be disabled"
 
 log "Backing up current switch/runtime integration"
 backup_path "$REVO_ROOT" "revo-shell-runtime"
