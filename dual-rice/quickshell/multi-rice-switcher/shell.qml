@@ -251,16 +251,25 @@ ShellRoot {
                 if (forceThemePicker)
                     return
 
+                const home = Quickshell.env("HOME")
                 const deckPath =
-                    Quickshell.env("HOME") +
+                    home +
                     "/.local/share/desktop-switcher/themes/sumi-deck/DotsBrowser.qml"
+                const logDir =
+                    home + "/.local/state/huzaifah-switcher"
+                const logPath =
+                    logDir + "/sumi-deck.log"
 
                 Quickshell.execDetached([
                     "bash",
                     "-lc",
-                    "test -r " + JSON.stringify(deckPath) +
-                        " && exec quickshell -p " + JSON.stringify(deckPath) +
-                        " || { notify-send 'Huzaifah Switcher' 'Sumi Deck is missing; reinstall switcher themes.' 2>/dev/null || true; exit 1; }"
+                    "mkdir -p " + JSON.stringify(logDir) + "; " +
+                        "if test -r " + JSON.stringify(deckPath) + "; then " +
+                        "exec quickshell -p " + JSON.stringify(deckPath) +
+                        " >>" + JSON.stringify(logPath) + " 2>&1; " +
+                        "else notify-send 'Huzaifah Switcher' " +
+                        "'Sumi Deck is missing; reinstall switcher themes.' " +
+                        "2>/dev/null || true; exit 1; fi"
                 ])
 
                 Qt.callLater(Qt.quit)
