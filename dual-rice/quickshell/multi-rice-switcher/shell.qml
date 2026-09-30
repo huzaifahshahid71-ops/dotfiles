@@ -8,8 +8,8 @@ ShellRoot {
         id: window
 
         visible: true
-        implicitWidth: 820
-        implicitHeight: 540
+        implicitWidth: 860
+        implicitHeight: 560
         color: "transparent"
         surfaceFormat.opaque: false
         focusable: true
@@ -21,24 +21,31 @@ ShellRoot {
         Rectangle {
             id: root
             anchors.fill: parent
-            radius: 24
+            radius: root.activeTheme === "revo" ? 18 : 24
             antialiasing: true
             clip: true
-            color: "#101016"
-            border.width: 2
-            border.color: "#8b5cf6"
+            color: root.bg
+            border.width: root.activeTheme === "revo" ? 1 : 2
+            border.color: root.accent
 
             focus: true
 
+            // 0 = hub, 1 = compositor picker, 2 = rice picker, 3 = theme picker.
             property int page: 0
+            property int hubIndex: 0
             property int compositorIndex: 0
             property int riceIndex: 0
+            property int themeIndex: 0
 
             property string activeProfile: "unknown"
             property string activeCompositor: "unknown"
             property int hyprInstalled: 0
             property int niriInstalled: 0
             property var installedProfiles: ({})
+
+            property string activeTheme: "original"
+            property string pendingTheme: ""
+            property string actionMessage: ""
 
             property var hyprRices: [
                 { id: "caelestia",   icon: "✦", name: "Aether" },
@@ -56,8 +63,40 @@ ShellRoot {
                 { id: "nixri",  icon: "✧", name: "Astra" }
             ]
 
+            property var themes: [
+                {
+                    id: "original",
+                    name: "Original",
+                    subtitle: "CLASSIC",
+                    description: "Purple Multi-Rice interface",
+                    accent: "#8b5cf6"
+                },
+                {
+                    id: "revo",
+                    name: "Revo-inspired",
+                    subtitle: "DARK GLASS",
+                    description: "Sharper panels and cyan-blue accents",
+                    accent: "#38bdf8"
+                }
+            ]
+
             property var visibleRices:
                 compositorIndex === 0 ? hyprRices : niriRices
+
+            // Theme palette. This changes only this switcher.
+            property bool revo: activeTheme === "revo"
+            property color bg: revo ? "#090c12" : "#101016"
+            property color panel: revo ? "#111722" : "#17171f"
+            property color panelSelected: revo ? "#162433" : "#202033"
+            property color rowSelected: revo ? "#132838" : "#26263a"
+            property color accent: revo ? "#38bdf8" : "#8b5cf6"
+            property color accentText: revo ? "#7dd3fc" : "#c4b5fd"
+            property color titleText: revo ? "#f8fafc" : "#f4f4f5"
+            property color bodyText: revo ? "#d6e2ef" : "#d4d4d8"
+            property color mutedText: revo ? "#718398" : "#71717a"
+            property color borderIdle: revo ? "#243244" : "#34343f"
+            property color chip: revo ? "#0d1520" : "#1d1d28"
+            property color separator: revo ? "#1f2d3b" : "#2d2d38"
 
             function profileInstalled(id) {
                 return installedProfiles[id] === true
@@ -65,47 +104,44 @@ ShellRoot {
 
             function applyStatus(text) {
                 const values = {}
-                const lines = text.trim().split("
-")
+                const lines = text.trim().split("\n")
 
                 for (let i = 0; i < lines.length; ++i) {
                     const pos = lines[i].indexOf("=")
                     if (pos <= 0)
                         continue
-
-                    values[lines[i].slice(0, pos)] =
-                        lines[i].slice(pos + 1)
+                    values[lines[i].slice(0, pos)] = lines[i].slice(pos + 1)
                 }
 
-                activeCompositor =
-                    values.compositor || "unknown"
+                activeCompositor = values.compositor || "unknown"
+                activeProfile = values.profile || "unknown"
+                hyprInstalled = parseInt(values.hyprland_installed || "0")
+                niriInstalled = parseInt(values.niri_installed || "0")
 
-                activeProfile =
-                    values.profile || "unknown"
-
-                hyprInstalled =
-                    parseInt(values.hyprland_installed || "0")
-
-                niriInstalled =
-                    parseInt(values.niri_installed || "0")
+                const savedTheme = values.switcher_theme || "original"
+                activeTheme = savedTheme === "revo" ? "revo" : "original"
 
                 if (activeCompositor === "niri")
                     compositorIndex = 1
                 else if (activeCompositor === "hyprland")
                     compositorIndex = 0
+
+                for (let i = 0; i < themes.length; ++i) {
+                    if (themes[i].id === activeTheme) {
+                        themeIndex = i
+                        break
+                    }
+                }
             }
 
             function applyList(text) {
                 const next = {}
-                const lines = text.trim().split("
-")
+                const lines = text.trim().split("\n")
 
                 for (let i = 0; i < lines.length; ++i) {
                     if (lines[i].length === 0)
                         continue
-
                     const parts = lines[i].split("|")
-
                     if (parts.length >= 6)
                         next[parts[0]] = parts[4] === "true"
                 }
@@ -113,53 +149,81 @@ ShellRoot {
                 installedProfiles = next
             }
 
-            function openCompositor() {
-                page = 1
+            function openHubSelection() {
+                actionMessage = ""
+                if (hubIndex === 0) {
+                    page = 1
+                } else {
+                    page = 3
+                    for (let i = 0; i < themes.length; ++i) {
+                        if (themes[i].id === activeTheme) {
+                            themeIndex = i
+                            break
+                        }
+                    }
+                }
+            }
+
+            function openRiceList() {
+                page = 2
                 riceIndex = 0
+                actionMessage = ""
             }
 
             function goBack() {
-                if (page === 1) {
-                    page = 0
-                    riceIndex = 0
-                } else {
-                    Qt.quit()
-                }
-            }
+                actionMessage = ""
 
-            property string actionMessage: ""
-
-            function activateSelection() {
-                if (page === 0) {
-                    openCompositor()
+                if (page === 2) {
+                    page = 1
                     return
                 }
 
+                if (page === 1 || page === 3) {
+                    page = 0
+                    return
+                }
+
+                Qt.quit()
+            }
+
+            function activateRice() {
                 const profile = visibleRices[riceIndex]
 
                 if (!profileInstalled(profile.id)) {
-                    actionMessage =
-                        profile.name + " is not installed yet"
+                    actionMessage = profile.name + " is not installed yet"
                     return
                 }
 
                 if (profile.id === activeProfile) {
-                    actionMessage =
-                        profile.name + " is already active"
+                    actionMessage = profile.name + " is already active"
                     return
                 }
 
-                actionMessage =
-                    "Switching to " + profile.name + "…"
-
+                actionMessage = "Switching to " + profile.name + "…"
                 switchProc.command = [
-                    Quickshell.env("HOME") +
-                        "/.local/bin/multi-rice-control",
+                    Quickshell.env("HOME") + "/.local/bin/multi-rice-control",
                     "switch",
                     profile.id
                 ]
-
                 switchProc.running = true
+            }
+
+            function activateTheme() {
+                const theme = themes[themeIndex]
+
+                if (theme.id === activeTheme) {
+                    actionMessage = theme.name + " is already active"
+                    return
+                }
+
+                pendingTheme = theme.id
+                actionMessage = "Applying " + theme.name + "…"
+                themeProc.command = [
+                    Quickshell.env("HOME") + "/.local/bin/multi-rice-control",
+                    "set-theme",
+                    theme.id
+                ]
+                themeProc.running = true
             }
 
             Process {
@@ -180,11 +244,37 @@ ShellRoot {
                 }
 
                 onExited: (exitCode, exitStatus) => {
-                    if (exitCode !== 0 &&
-                        root.actionMessage.length === 0) {
-                        root.actionMessage =
-                            "Switch failed • exit " + exitCode
+                    if (exitCode !== 0 && root.actionMessage.length === 0)
+                        root.actionMessage = "Switch failed • exit " + exitCode
+                }
+            }
+
+            Process {
+                id: themeProc
+
+                stdout: StdioCollector {
+                    onStreamFinished: {
+                        if (text.trim().length > 0)
+                            console.log(text.trim())
                     }
+                }
+
+                stderr: StdioCollector {
+                    onStreamFinished: {
+                        if (text.trim().length > 0)
+                            root.actionMessage = text.trim()
+                    }
+                }
+
+                onExited: (exitCode, exitStatus) => {
+                    if (exitCode === 0 && root.pendingTheme.length > 0) {
+                        root.activeTheme = root.pendingTheme
+                        root.actionMessage = "Switcher theme • " +
+                            root.themes[root.themeIndex].name
+                    } else if (exitCode !== 0 && root.actionMessage.length === 0) {
+                        root.actionMessage = "Theme change failed • exit " + exitCode
+                    }
+                    root.pendingTheme = ""
                 }
             }
 
@@ -192,14 +282,12 @@ ShellRoot {
                 id: statusProc
                 running: true
                 command: [
-                    Quickshell.env("HOME") +
-                        "/.local/bin/multi-rice-control",
+                    Quickshell.env("HOME") + "/.local/bin/multi-rice-control",
                     "status"
                 ]
 
                 stdout: StdioCollector {
-                    onStreamFinished:
-                        root.applyStatus(text)
+                    onStreamFinished: root.applyStatus(text)
                 }
             }
 
@@ -207,56 +295,69 @@ ShellRoot {
                 id: listProc
                 running: true
                 command: [
-                    Quickshell.env("HOME") +
-                        "/.local/bin/multi-rice-control",
+                    Quickshell.env("HOME") + "/.local/bin/multi-rice-control",
                     "list"
                 ]
 
                 stdout: StdioCollector {
-                    onStreamFinished:
-                        root.applyList(text)
+                    onStreamFinished: root.applyList(text)
                 }
             }
 
             Keys.onPressed: event => {
                 if (page === 0) {
+                    if (event.key === Qt.Key_Left || event.key === Qt.Key_Up) {
+                        hubIndex = (hubIndex - 1 + 2) % 2
+                        event.accepted = true
+                    } else if (event.key === Qt.Key_Right || event.key === Qt.Key_Down) {
+                        hubIndex = (hubIndex + 1) % 2
+                        event.accepted = true
+                    } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                        openHubSelection()
+                        event.accepted = true
+                    } else if (event.key === Qt.Key_Escape) {
+                        Qt.quit()
+                        event.accepted = true
+                    }
+                } else if (page === 1) {
                     if (event.key === Qt.Key_Left) {
                         compositorIndex = 0
                         event.accepted = true
                     } else if (event.key === Qt.Key_Right) {
                         compositorIndex = 1
                         event.accepted = true
-                    } else if (
-                        event.key === Qt.Key_Return ||
-                        event.key === Qt.Key_Enter
-                    ) {
-                        openCompositor()
+                    } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                        openRiceList()
                         event.accepted = true
                     } else if (event.key === Qt.Key_Escape) {
-                        Qt.quit()
+                        goBack()
                         event.accepted = true
                     }
-                } else {
+                } else if (page === 2) {
                     if (event.key === Qt.Key_Up) {
-                        riceIndex =
-                            (riceIndex - 1 + visibleRices.length)
-                            % visibleRices.length
+                        riceIndex = (riceIndex - 1 + visibleRices.length) % visibleRices.length
                         event.accepted = true
                     } else if (event.key === Qt.Key_Down) {
-                        riceIndex =
-                            (riceIndex + 1)
-                            % visibleRices.length
+                        riceIndex = (riceIndex + 1) % visibleRices.length
                         event.accepted = true
-                    } else if (
-                        event.key === Qt.Key_Return ||
-                        event.key === Qt.Key_Enter
-                    ) {
-                        activateSelection()
+                    } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                        activateRice()
                         event.accepted = true
-                    } else if (
-                        event.key === Qt.Key_Escape ||
-                        event.key === Qt.Key_Left
-                    ) {
+                    } else if (event.key === Qt.Key_Escape || event.key === Qt.Key_Left) {
+                        goBack()
+                        event.accepted = true
+                    }
+                } else if (page === 3) {
+                    if (event.key === Qt.Key_Up || event.key === Qt.Key_Left) {
+                        themeIndex = (themeIndex - 1 + themes.length) % themes.length
+                        event.accepted = true
+                    } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Right) {
+                        themeIndex = (themeIndex + 1) % themes.length
+                        event.accepted = true
+                    } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                        activateTheme()
+                        event.accepted = true
+                    } else if (event.key === Qt.Key_Escape) {
                         goBack()
                         event.accepted = true
                     }
@@ -264,6 +365,17 @@ ShellRoot {
             }
 
             Component.onCompleted: forceActiveFocus()
+
+            // Subtle Revo-only highlight. It is deliberately visual only.
+            Rectangle {
+                visible: root.revo
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: 3
+                color: root.accent
+                opacity: 0.85
+            }
 
             ColumnLayout {
                 anchors.fill: parent
@@ -277,47 +389,52 @@ ShellRoot {
                         spacing: 3
 
                         Text {
-                            text: "HUZAIFAH"
-                            color: "#a78bfa"
+                            text: root.revo ? "ZEPHYRUS / SWITCHER" : "HUZAIFAH"
+                            color: root.accentText
                             font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 14
+                            font.pixelSize: root.revo ? 12 : 14
                             font.bold: true
+                            font.letterSpacing: root.revo ? 1.2 : 0
                         }
 
                         Text {
                             text: root.page === 0
                                 ? "Multi-Rice"
-                                : root.compositorIndex === 0
-                                    ? "Hyprland Rices"
-                                    : "Niri Rices"
-
-                            color: "#f4f4f5"
+                                : root.page === 1
+                                    ? "Choose Engine"
+                                    : root.page === 2
+                                        ? (root.compositorIndex === 0 ? "Hyprland Rices" : "Niri Rices")
+                                        : "Switcher Themes"
+                            color: root.titleText
                             font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 29
+                            font.pixelSize: root.revo ? 27 : 29
                             font.bold: true
                         }
                     }
 
-                    Item {
-                        Layout.fillWidth: true
-                    }
+                    Item { Layout.fillWidth: true }
 
                     Rectangle {
-                        width: 150
+                        width: root.page === 3 ? 180 : 150
                         height: 38
-                        radius: 19
-                        color: "#1d1d28"
+                        radius: root.revo ? 8 : 19
+                        color: root.chip
+                        border.width: root.revo ? 1 : 0
+                        border.color: root.borderIdle
 
                         Text {
                             anchors.centerIn: parent
                             text: root.page === 0
-                                ? "SELECT ENGINE"
-                                : root.compositorIndex === 0
-                                    ? "HYPRLAND"
-                                    : "NIRI"
-                            color: "#a1a1aa"
+                                ? "RICES  •  THEMES"
+                                : root.page === 1
+                                    ? "SELECT ENGINE"
+                                    : root.page === 2
+                                        ? (root.compositorIndex === 0 ? "HYPRLAND" : "NIRI")
+                                        : (root.activeTheme === "revo" ? "REVO-INSPIRED" : "ORIGINAL")
+                            color: root.mutedText
                             font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 12
+                            font.pixelSize: 11
+                            font.bold: root.revo
                         }
                     }
                 }
@@ -326,8 +443,9 @@ ShellRoot {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
 
+                    // Hub: Rices / Themes
                     Row {
-                        id: compositorPage
+                        id: hubPage
                         anchors.centerIn: parent
                         spacing: 28
                         visible: root.page === 0
@@ -335,15 +453,101 @@ ShellRoot {
                         Repeater {
                             model: [
                                 {
-                                    name: "HYPRLAND",
-                                    subtitle: "7 RICES",
-                                    detail: "Currently Active"
+                                    glyph: "◫",
+                                    name: "RICES",
+                                    subtitle: "Switch desktop profile",
+                                    detail: "Hyprland + Niri"
                                 },
                                 {
-                                    name: "NIRI",
-                                    subtitle: "3 RICES",
-                                    detail: "Switch Session"
+                                    glyph: "◐",
+                                    name: "THEMES",
+                                    subtitle: "Switcher appearance",
+                                    detail: "Does not change your rice"
                                 }
+                            ]
+
+                            delegate: Rectangle {
+                                required property int index
+                                required property var modelData
+
+                                width: 350
+                                height: 250
+                                radius: root.revo ? 14 : 20
+                                antialiasing: true
+
+                                property bool selected: root.hubIndex === index
+
+                                color: selected ? root.panelSelected : root.panel
+                                border.width: selected ? 2 : 1
+                                border.color: selected ? root.accent : root.borderIdle
+                                scale: selected ? 1.025 : 1.0
+
+                                Behavior on scale {
+                                    NumberAnimation { duration: 120 }
+                                }
+
+                                Column {
+                                    anchors.centerIn: parent
+                                    spacing: 14
+
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: modelData.glyph
+                                        color: selected ? root.accentText : root.mutedText
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 48
+                                        font.bold: true
+                                    }
+
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: modelData.name
+                                        color: root.titleText
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 24
+                                        font.bold: true
+                                    }
+
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: modelData.subtitle
+                                        color: root.bodyText
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 13
+                                    }
+
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: modelData.detail
+                                        color: root.mutedText
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 11
+                                    }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        root.hubIndex = index
+                                        root.openHubSelection()
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Rices -> compositor selection
+                    Row {
+                        id: compositorPage
+                        anchors.centerIn: parent
+                        spacing: 28
+                        visible: root.page === 1
+
+                        Repeater {
+                            model: [
+                                { name: "HYPRLAND", glyph: "H" },
+                                { name: "NIRI", glyph: "N" }
                             ]
 
                             delegate: Rectangle {
@@ -352,27 +556,18 @@ ShellRoot {
 
                                 width: 330
                                 height: 250
-                                radius: 20
+                                radius: root.revo ? 14 : 20
                                 antialiasing: true
 
-                                property bool selected:
-                                    root.compositorIndex === index
+                                property bool selected: root.compositorIndex === index
 
-                                color: selected
-                                    ? "#202033"
-                                    : "#17171f"
-
-                                border.width: selected ? 3 : 1
-                                border.color: selected
-                                    ? "#a78bfa"
-                                    : "#34343f"
-
-                                scale: selected ? 1.035 : 1.0
+                                color: selected ? root.panelSelected : root.panel
+                                border.width: selected ? 2 : 1
+                                border.color: selected ? root.accent : root.borderIdle
+                                scale: selected ? 1.025 : 1.0
 
                                 Behavior on scale {
-                                    NumberAnimation {
-                                        duration: 130
-                                    }
+                                    NumberAnimation { duration: 120 }
                                 }
 
                                 Column {
@@ -380,54 +575,40 @@ ShellRoot {
                                     spacing: 14
 
                                     Text {
-                                        anchors.horizontalCenter:
-                                            parent.horizontalCenter
-                                        text: index === 0 ? "H" : "N"
-                                        color: selected
-                                            ? "#c4b5fd"
-                                            : "#71717a"
-                                        font.family:
-                                            "JetBrainsMono Nerd Font"
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: modelData.glyph
+                                        color: selected ? root.accentText : root.mutedText
+                                        font.family: "JetBrainsMono Nerd Font"
                                         font.pixelSize: 46
                                         font.bold: true
                                     }
 
                                     Text {
-                                        anchors.horizontalCenter:
-                                            parent.horizontalCenter
+                                        anchors.horizontalCenter: parent.horizontalCenter
                                         text: modelData.name
-                                        color: "#fafafa"
-                                        font.family:
-                                            "JetBrainsMono Nerd Font"
+                                        color: root.titleText
+                                        font.family: "JetBrainsMono Nerd Font"
                                         font.pixelSize: 24
                                         font.bold: true
                                     }
 
                                     Text {
-                                        anchors.horizontalCenter:
-                                            parent.horizontalCenter
+                                        anchors.horizontalCenter: parent.horizontalCenter
                                         text: index === 0
                                             ? root.hyprInstalled + " / " + root.hyprRices.length + " INSTALLED"
                                             : root.niriInstalled + " / " + root.niriRices.length + " INSTALLED"
-                                        color: "#a78bfa"
-                                        font.family:
-                                            "JetBrainsMono Nerd Font"
+                                        color: root.accentText
+                                        font.family: "JetBrainsMono Nerd Font"
                                         font.pixelSize: 13
                                     }
 
                                     Text {
-                                        anchors.horizontalCenter:
-                                            parent.horizontalCenter
-                                        text:
-                                            root.activeCompositor ===
-                                            (index === 0
-                                                ? "hyprland"
-                                                : "niri")
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: root.activeCompositor === (index === 0 ? "hyprland" : "niri")
                                             ? "Currently Active"
                                             : "Switch Session"
-                                        color: "#71717a"
-                                        font.family:
-                                            "JetBrainsMono Nerd Font"
+                                        color: root.mutedText
+                                        font.family: "JetBrainsMono Nerd Font"
                                         font.pixelSize: 12
                                     }
                                 }
@@ -435,21 +616,21 @@ ShellRoot {
                                 MouseArea {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
-
                                     onClicked: {
                                         root.compositorIndex = index
-                                        root.openCompositor()
+                                        root.openRiceList()
                                     }
                                 }
                             }
                         }
                     }
 
+                    // Rice list
                     Column {
                         id: ricePage
                         anchors.fill: parent
                         spacing: 6
-                        visible: root.page === 1
+                        visible: root.page === 2
 
                         Repeater {
                             model: root.visibleRices
@@ -460,23 +641,15 @@ ShellRoot {
 
                                 width: ricePage.width
                                 height: 38
-                                radius: 12
-
+                                radius: root.revo ? 8 : 12
                                 antialiasing: true
-                                property bool selected:
-                                    root.riceIndex === index
 
-                                opacity:
-                                    root.profileInstalled(modelData.id)
-                                    ? 1.0
-                                    : 0.38
+                                property bool selected: root.riceIndex === index
 
-                                color: selected
-                                    ? "#26263a"
-                                    : "transparent"
-
+                                opacity: root.profileInstalled(modelData.id) ? 1.0 : 0.38
+                                color: selected ? root.rowSelected : "transparent"
                                 border.width: selected ? 1 : 0
-                                border.color: "#8b5cf6"
+                                border.color: root.accent
 
                                 RowLayout {
                                     anchors.fill: parent
@@ -485,51 +658,31 @@ ShellRoot {
 
                                     Text {
                                         text: modelData.icon
-                                        color: selected
-                                            ? "#c4b5fd"
-                                            : "#a1a1aa"
-                                        font.family:
-                                            "JetBrainsMono Nerd Font"
+                                        color: selected ? root.accentText : root.mutedText
+                                        font.family: "JetBrainsMono Nerd Font"
                                         font.pixelSize: 18
                                     }
 
                                     Text {
                                         text: modelData.name
-                                        color: selected
-                                            ? "#fafafa"
-                                            : "#d4d4d8"
-                                        font.family:
-                                            "JetBrainsMono Nerd Font"
+                                        color: selected ? root.titleText : root.bodyText
+                                        font.family: "JetBrainsMono Nerd Font"
                                         font.pixelSize: 16
                                         font.bold: selected
                                     }
 
-                                    Item {
-                                        Layout.fillWidth: true
-                                    }
+                                    Item { Layout.fillWidth: true }
 
                                     Text {
-                                        visible:
-                                            modelData.id ===
-                                                root.activeProfile ||
-                                            !root.profileInstalled(
-                                                modelData.id
-                                            )
-
-                                        text:
-                                            modelData.id ===
-                                                root.activeProfile
+                                        visible: modelData.id === root.activeProfile ||
+                                            !root.profileInstalled(modelData.id)
+                                        text: modelData.id === root.activeProfile
                                             ? "ACTIVE"
                                             : "NOT INSTALLED"
-
-                                        color:
-                                            modelData.id ===
-                                                root.activeProfile
-                                            ? "#a78bfa"
-                                            : "#71717a"
-
-                                        font.family:
-                                            "JetBrainsMono Nerd Font"
+                                        color: modelData.id === root.activeProfile
+                                            ? root.accentText
+                                            : root.mutedText
+                                        font.family: "JetBrainsMono Nerd Font"
                                         font.pixelSize: 11
                                         font.bold: true
                                     }
@@ -538,10 +691,144 @@ ShellRoot {
                                 MouseArea {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
-
                                     onClicked: {
                                         root.riceIndex = index
-                                        root.activateSelection()
+                                        root.activateRice()
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Theme picker. This never invokes profile switching.
+                    Row {
+                        id: themePage
+                        anchors.centerIn: parent
+                        spacing: 26
+                        visible: root.page === 3
+
+                        Repeater {
+                            model: root.themes
+
+                            delegate: Rectangle {
+                                required property int index
+                                required property var modelData
+
+                                width: 350
+                                height: 255
+                                radius: root.revo ? 14 : 20
+                                color: root.themeIndex === index
+                                    ? root.panelSelected
+                                    : root.panel
+                                border.width: root.themeIndex === index ? 2 : 1
+                                border.color: root.themeIndex === index
+                                    ? modelData.accent
+                                    : root.borderIdle
+
+                                Column {
+                                    anchors.fill: parent
+                                    anchors.margins: 22
+                                    spacing: 12
+
+                                    Row {
+                                        width: parent.width
+                                        spacing: 10
+
+                                        Rectangle {
+                                            width: 12
+                                            height: 12
+                                            radius: 6
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            color: modelData.accent
+                                        }
+
+                                        Text {
+                                            text: modelData.subtitle
+                                            color: root.mutedText
+                                            font.family: "JetBrainsMono Nerd Font"
+                                            font.pixelSize: 10
+                                            font.bold: true
+                                            font.letterSpacing: 1
+                                        }
+                                    }
+
+                                    Text {
+                                        text: modelData.name
+                                        color: root.titleText
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 22
+                                        font.bold: true
+                                    }
+
+                                    Text {
+                                        width: parent.width
+                                        text: modelData.description
+                                        wrapMode: Text.WordWrap
+                                        color: root.bodyText
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 12
+                                    }
+
+                                    Item { width: 1; height: 5 }
+
+                                    // Tiny visual preview of the selected skin.
+                                    Rectangle {
+                                        width: parent.width
+                                        height: 72
+                                        radius: modelData.id === "revo" ? 8 : 14
+                                        color: modelData.id === "revo" ? "#090c12" : "#101016"
+                                        border.width: 1
+                                        border.color: modelData.accent
+
+                                        Rectangle {
+                                            anchors.left: parent.left
+                                            anchors.right: parent.right
+                                            anchors.top: parent.top
+                                            height: 18
+                                            radius: parent.radius
+                                            color: modelData.id === "revo" ? "#111722" : "#1d1d28"
+                                        }
+
+                                        Row {
+                                            anchors.centerIn: parent
+                                            spacing: 8
+
+                                            Repeater {
+                                                model: 4
+
+                                                delegate: Rectangle {
+                                                    required property int index
+                                                    width: index === 1 ? 58 : 36
+                                                    height: 26
+                                                    radius: modelData.id === "revo" ? 5 : 9
+                                                    color: index === 1
+                                                        ? modelData.accent
+                                                        : (modelData.id === "revo" ? "#162433" : "#26263a")
+                                                    opacity: index === 1 ? 0.85 : 1
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    Item { Layout.fillHeight: true; height: 1 }
+
+                                    Text {
+                                        text: modelData.id === root.activeTheme ? "ACTIVE THEME" : "ENTER TO APPLY"
+                                        color: modelData.id === root.activeTheme
+                                            ? modelData.accent
+                                            : root.mutedText
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 11
+                                        font.bold: true
+                                    }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        root.themeIndex = index
+                                        root.activateTheme()
                                     }
                                 }
                             }
@@ -552,7 +839,7 @@ ShellRoot {
                 Rectangle {
                     Layout.fillWidth: true
                     height: 1
-                    color: "#2d2d38"
+                    color: root.separator
                 }
 
                 RowLayout {
@@ -562,22 +849,28 @@ ShellRoot {
                         text: root.actionMessage.length > 0
                             ? root.actionMessage
                             : root.page === 0
-                                ? "← →  Select compositor"
-                                : "↑ ↓  Select rice"
-                        color: "#71717a"
+                                ? "← →  Rices / Themes"
+                                : root.page === 1
+                                    ? "← →  Select compositor"
+                                    : root.page === 2
+                                        ? "↑ ↓  Select rice"
+                                        : "← →  Select switcher theme"
+                        color: root.mutedText
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 12
                     }
 
-                    Item {
-                        Layout.fillWidth: true
-                    }
+                    Item { Layout.fillWidth: true }
 
                     Text {
                         text: root.page === 0
                             ? "ENTER  Open     ESC  Close"
-                            : "ENTER  Select     ESC  Back"
-                        color: "#71717a"
+                            : root.page === 1
+                                ? "ENTER  Open     ESC  Back"
+                                : root.page === 2
+                                    ? "ENTER  Select     ESC  Back"
+                                    : "ENTER  Apply     ESC  Back"
+                        color: root.mutedText
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 12
                     }
