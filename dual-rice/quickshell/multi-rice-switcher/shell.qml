@@ -21,11 +21,11 @@ ShellRoot {
         Rectangle {
             id: root
             anchors.fill: parent
-            radius: root.activeTheme === "revo" ? 18 : 24
+            radius: root.activeTheme === "midnight" ? 18 : 24
             antialiasing: true
             clip: true
             color: root.bg
-            border.width: root.activeTheme === "revo" ? 1 : 2
+            border.width: root.activeTheme === "midnight" ? 1 : 2
             border.color: root.accent
 
             focus: true
@@ -387,9 +387,9 @@ ShellRoot {
 
             Component.onCompleted: forceActiveFocus()
 
-            // Subtle Revo-only highlight. It is deliberately visual only.
+            // Subtle Midnight Cyan highlight. It is deliberately visual only.
             Rectangle {
-                visible: root.revo
+                visible: root.midnight
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
