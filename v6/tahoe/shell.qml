@@ -19,7 +19,7 @@ ShellRoot {
     property color accent: "#2477f3"
 
     property var pinned: [
-        {label: "Finder", icon: "system-file-manager", desktop: "org.gnome.Nautilus", fallback: ["sh", "-c", "xdg-open \\"$HOME\\""]},
+        {label: "Finder", icon: "system-file-manager", desktop: "org.gnome.Nautilus", fallback: ["sh", "-c", "xdg-open ~"]},
         {label: "Terminal", icon: "utilities-terminal", desktop: "foot", fallback: ["foot"]},
         {label: "Browser", icon: "internet-web-browser", desktop: "firefox", fallback: ["xdg-open", "https://example.org"]},
         {label: "Launchpad", icon: "view-app-grid", desktop: "", fallback: ["sh", "-c", "if command -v fuzzel >/dev/null; then exec fuzzel; elif command -v rofi >/dev/null; then exec rofi -show drun; else exec foot; fi"]},
