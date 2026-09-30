@@ -39,12 +39,7 @@ if command -v readelf >/dev/null 2>&1; then
     readelf -h "$PLUGIN" | grep -E 'Class:|Machine:|Type:' || true
 fi
 
-if [[ "$1" == "--check" ]]; then
-    log "PASS: files + host session ready. No plugin loaded."
-    exit 0
-fi
-
-log "Creating isolated nested-only Lua config and a transparent test terminal"
+log "Preparing temporary configuration for validation"
 sandbox="$(mktemp -d "${TMPDIR:-/tmp}/zephyrus-glass.XXXXXXXX")"
 cleanup() { rm -rf -- "$sandbox"; }
 trap cleanup EXIT
@@ -53,11 +48,22 @@ cat > "$sandbox/foot.ini" <<'INI'
 [main]
 font=monospace:size=12
 
-[colors]
+[colors-dark]
 background=223049
 foreground=e9f2ff
 alpha=0.50
 INI
+
+# Parse Foot's configuration BEFORE attempting a nested plugin load.
+# Modern Foot uses [colors-dark]/[colors-light], not legacy [colors].
+# A non-zero exit halts the test without touching either compositor.
+foot --check-config --config="$sandbox/foot.ini" ||
+    die "Foot rejected the temporary config. Nested compositor not launched."
+
+if [[ "$1" == "--check" ]]; then
+    log "PASS: host, plugin file, and Foot config validated. No plugin loaded."
+    exit 0
+fi
 
 # This file belongs to a temporary nested compositor only. Never feed it
 # to hyprctl reload on the parent. The GL plugin is *loaded only here*.
