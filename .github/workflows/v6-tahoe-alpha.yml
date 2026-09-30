@@ -26,11 +26,13 @@ jobs:
         run: |
           bash -n v6/tahoe/preview.sh
           bash -n dual-rice/bin/multi-rice-control
+          bash -n v6/tools/install-switcher-themes.sh
           bash -n v6/tahoe/build-glass.sh
           bash -n v6/tahoe/nested-probe.sh
           bash -n v6/tahoe/nested-glass.sh
           shellcheck -S error v6/tahoe/preview.sh
           shellcheck -S error dual-rice/bin/multi-rice-control
+          shellcheck -S error v6/tools/install-switcher-themes.sh
           shellcheck -S error v6/tahoe/build-glass.sh
           shellcheck -S error v6/tahoe/nested-probe.sh
           shellcheck -S error v6/tahoe/nested-glass.sh
