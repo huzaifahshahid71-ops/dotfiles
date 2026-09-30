@@ -141,8 +141,11 @@ env -u HYPRLAND_INSTANCE_SIGNATURE -u AQ_DRM_DEVICES \
     HYPRLAND_NO_SD_NOTIFY=1 \
     HYPRLAND_NO_SD_TARGET=1 \
     HYPRLAND_NO_RT=1 \
-    Hyprland --config "$sandbox/hyprland.lua" 2>&1 | tee "$sandbox/nested-hyprland.log"
-result=${PIPESTATUS[0]}
+    if Hyprland --config "$sandbox/hyprland.lua" 2>&1 | tee "$sandbox/nested-hyprland.log"; then
+    result=0
+else
+    result=${PIPESTATUS[0]}
+fi
 
 printf '\n=== NESTED GLASS TEST DIAGNOSTICS ===\n'
 printf 'Nested Hyprland exit status: %s\n' "$result"
