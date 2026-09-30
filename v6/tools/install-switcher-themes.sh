@@ -49,8 +49,8 @@ preflight() {
     die "Downloaded QML is missing Huzaifah branding"
   grep -Fq 'id: compositorPage' "$tmp/shell.qml" ||
     die "Downloaded QML is missing the compositor home screen"
-  grep -Fq 'Revo-inspired' "$tmp/shell.qml" ||
-    die "Downloaded QML is missing the Revo theme entry"
+  grep -Fq 'Midnight Cyan' "$tmp/shell.qml" ||
+    die "Downloaded QML is missing the Midnight Cyan theme entry"
 
   if command -v qmlformat >/dev/null 2>&1; then
     cp "$tmp/shell.qml" "$tmp/qml-check.qml"
