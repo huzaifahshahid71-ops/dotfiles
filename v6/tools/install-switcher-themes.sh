@@ -10,8 +10,10 @@ case "$MODE" in
 esac
 
 RAW="https://raw.githubusercontent.com/huzaifahshahid71-ops/dotfiles/v6.0-tahoe-dev"
+REVO_DOTS_URL="https://raw.githubusercontent.com/vzbc/revo-shell/a15d62c87aa992ab8e5d366575bb4074eada7d98/hypr/scripts/quickshell/DotsBrowser.qml"
 QML_TARGET="$HOME/.config/quickshell/multi-rice-switcher/shell.qml"
 BACKEND_TARGET="$HOME/.local/bin/multi-rice-control"
+DECK_TARGET="$HOME/.local/share/desktop-switcher/themes/sumi-deck/DotsBrowser.qml"
 STATE_ROOT="${XDG_STATE_HOME:-$HOME/.local/state}/zephyrus-v6/switcher-theme-backups"
 
 tmp=""
@@ -28,8 +30,15 @@ fetch_sources() {
   command -v curl >/dev/null 2>&1 || die "curl is required"
   tmp="$(mktemp -d "${TMPDIR:-/tmp}/z6-switcher-themes.XXXXXXXX")"
 
-  curl -fsSLo "$tmp/shell.qml"     "$RAW/dual-rice/quickshell/multi-rice-switcher/shell.qml"
-  curl -fsSLo "$tmp/multi-rice-control"     "$RAW/dual-rice/bin/multi-rice-control"
+  curl -fsSLo "$tmp/shell.qml" \
+    "$RAW/dual-rice/quickshell/multi-rice-switcher/shell.qml"
+  curl -fsSLo "$tmp/multi-rice-control" \
+    "$RAW/dual-rice/bin/multi-rice-control"
+  curl -fsSLo "$tmp/patch-sumi-deck.py" \
+    "$RAW/v6/tools/patch-sumi-deck.py"
+  curl -fsSLo "$tmp/DotsBrowser.qml" "$REVO_DOTS_URL"
+
+  python "$tmp/patch-sumi-deck.py" "$tmp/DotsBrowser.qml"
 }
 
 preflight() {
@@ -37,6 +46,8 @@ preflight() {
   [[ -r "$QML_TARGET" ]] || die "Missing installed switcher QML: $QML_TARGET"
   [[ -x "$BACKEND_TARGET" ]] || die "Missing executable switcher backend: $BACKEND_TARGET"
   command -v qs >/dev/null 2>&1 || die "Quickshell 'qs' is unavailable"
+  command -v quickshell >/dev/null 2>&1 || die "Quickshell executable is unavailable"
+  command -v python >/dev/null 2>&1 || die "python is required to patch Sumi Deck locally"
 
   fetch_sources
 
@@ -51,6 +62,10 @@ preflight() {
     die "Downloaded QML is missing the compositor home screen"
   grep -Fq 'Midnight Cyan' "$tmp/shell.qml" ||
     die "Downloaded QML is missing the Midnight Cyan theme entry"
+  grep -Fq 'Sumi Deck' "$tmp/shell.qml" ||
+    die "Downloaded QML is missing the Sumi Deck theme entry"
+  grep -Fq 'HUZAIFAH · SUMI DECK' "$tmp/DotsBrowser.qml" ||
+    die "Pinned Revo DotsBrowser patch did not produce Sumi Deck"
 
   if command -v qmlformat >/dev/null 2>&1; then
     cp "$tmp/shell.qml" "$tmp/qml-check.qml"
@@ -61,7 +76,9 @@ preflight() {
   fi
 
   ok "Theme-selector sources validate"
-  printf 'Will update only:\n  %s\n  %s\n' "$QML_TARGET" "$BACKEND_TARGET"
+  printf 'Will update only:\n  %s\n  %s\n  %s\n' \
+    "$QML_TARGET" "$BACKEND_TARGET" "$DECK_TARGET"
+  printf '%s\n' "Sumi Deck is fetched from pinned upstream Revo and patched locally; upstream QML is not vendored in this repository."
   printf '%s\n' "Theme choice will live at ~/.config/desktop-switcher/theme."
   printf '%s\n' "No rice, Hyprland, Niri, SDDM, systemd or keybind files are modified."
 }
@@ -80,11 +97,23 @@ install_update() {
 
   cp -a -- "$QML_TARGET" "$backup/shell.qml"
   cp -a -- "$BACKEND_TARGET" "$backup/multi-rice-control"
+
+  if [[ -e "$DECK_TARGET" ]]; then
+    cp -a -- "$DECK_TARGET" "$backup/DotsBrowser.qml"
+    printf 'present\n' > "$backup/sumi-deck.state"
+  else
+    printf 'absent\n' > "$backup/sumi-deck.state"
+  fi
+
   printf '%s\n' "$backup" > "$STATE_ROOT/latest"
 
-  install -d -m 0755 "$(dirname "$QML_TARGET")" "$(dirname "$BACKEND_TARGET")"
+  install -d -m 0755 \
+    "$(dirname "$QML_TARGET")" \
+    "$(dirname "$BACKEND_TARGET")" \
+    "$(dirname "$DECK_TARGET")"
   install -m 0644 "$tmp/shell.qml" "$QML_TARGET"
   install -m 0755 "$tmp/multi-rice-control" "$BACKEND_TARGET"
+  install -m 0644 "$tmp/DotsBrowser.qml" "$DECK_TARGET"
 
   ok "Rices / Themes switcher update installed"
   printf 'Rollback snapshot: %s\n' "$backup"
@@ -99,6 +128,7 @@ rollback_update() {
   backup="$(cat "$latest")"
   [[ -r "$backup/shell.qml" ]] || die "Backup QML missing: $backup"
   [[ -r "$backup/multi-rice-control" ]] || die "Backup backend missing: $backup"
+  [[ -r "$backup/sumi-deck.state" ]] || die "Sumi Deck backup state missing: $backup"
 
   printf 'Restore switcher snapshot %s? Type exactly ROLLBACK SWITCHER THEMES: ' "$backup"
   IFS= read -r answer
@@ -106,6 +136,14 @@ rollback_update() {
 
   install -m 0644 "$backup/shell.qml" "$QML_TARGET"
   install -m 0755 "$backup/multi-rice-control" "$BACKEND_TARGET"
+
+  if grep -qx 'present' "$backup/sumi-deck.state"; then
+    install -d -m 0755 "$(dirname "$DECK_TARGET")"
+    install -m 0644 "$backup/DotsBrowser.qml" "$DECK_TARGET"
+  else
+    rm -f -- "$DECK_TARGET"
+  fi
+
   ok "Previous Multi-Rice switcher restored"
 }
 
