@@ -1,0 +1,41 @@
+name: v6 Tahoe alpha checks
+on:
+  push:
+    branches: [v6.0-tahoe-dev]
+  pull_request:
+    branches: [main]
+    paths:
+      - "v6/tahoe/**"
+      - ".github/workflows/v6-tahoe-alpha.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Bash and Qt syntax tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y shellcheck qt6-declarative-dev-tools
+      - name: Check preview script without running it
+        run: |
+          bash -n v6/tahoe/preview.sh
+          shellcheck -S error v6/tahoe/preview.sh
+          test -f v6/tahoe/shell.qml
+          grep -q 'ExclusionMode.Ignore' v6/tahoe/shell.qml
+          grep -q 'Hyprland.toplevels' v6/tahoe/shell.qml
+          grep -q 'Qt.quit()' v6/tahoe/shell.qml
+          ! grep -Eq '\bsudo\b|pacman -S|hyprctl dispatch|pkill' v6/tahoe/preview.sh
+      - name: Parse QML with Qt qmlformat
+        run: |
+          tool="$(command -v qmlformat || true)"
+          if [[ -z "$tool" && -x /usr/lib/qt6/bin/qmlformat ]]; then
+            tool=/usr/lib/qt6/bin/qmlformat
+          fi
+          test -x "$tool" || { echo "qmlformat unavailable"; exit 1; }
+          cp v6/tahoe/shell.qml /tmp/tahoe-qml-alpha.qml
+          "$tool" -i /tmp/tahoe-qml-alpha.qml
+          test -s /tmp/tahoe-qml-alpha.qml
