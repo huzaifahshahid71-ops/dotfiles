@@ -75,6 +75,15 @@ hl.monitor({
     scale = 1.0,
 })
 
+-- Nested debug only. The ordinary desktop keeps its existing log settings.
+hl.config({
+    debug = {
+        disable_logs = false,
+        enable_stdout_logs = true,
+        colored_stdout_logs = false
+    }
+})
+
 -- Load the locally-built ABI-pinned plugin in this NEW compositor process.
 hl.plugin.load([[$PLUGIN]])
 
@@ -132,4 +141,11 @@ env -u HYPRLAND_INSTANCE_SIGNATURE -u AQ_DRM_DEVICES \
     HYPRLAND_NO_SD_NOTIFY=1 \
     HYPRLAND_NO_SD_TARGET=1 \
     HYPRLAND_NO_RT=1 \
-    Hyprland --config "$sandbox/hyprland.lua"
+    Hyprland --config "$sandbox/hyprland.lua" 2>&1 | tee "$sandbox/nested-hyprland.log"
+result=${PIPESTATUS[0]}
+
+printf '\n=== NESTED GLASS TEST DIAGNOSTICS ===\n'
+printf 'Nested Hyprland exit status: %s\n' "$result"
+grep -Ein 'hyprliquid|plugin|shader|failed|error|Wayland Backend|loading lua|window_rule|Config' "$sandbox/nested-hyprland.log" | tail -n 85 || true
+printf '%s\n' "DRM/libseat failures alone are expected during nesting; look for plugin or Wayland failures."
+exit "$result"
