@@ -24,8 +24,10 @@ jobs:
         run: |
           bash -n v6/tahoe/preview.sh
           bash -n v6/tahoe/build-glass.sh
+          bash -n v6/tahoe/nested-probe.sh
           shellcheck -S error v6/tahoe/preview.sh
           shellcheck -S error v6/tahoe/build-glass.sh
+          shellcheck -S error v6/tahoe/nested-probe.sh
           test -f v6/tahoe/shell.qml
           grep -q 'ExclusionMode.Ignore' v6/tahoe/shell.qml
           grep -q 'Hyprland.toplevels' v6/tahoe/shell.qml
@@ -33,6 +35,9 @@ jobs:
           ! grep -Eq '^[[:space:]]*(sudo|pacman|hyprctl|pkill)([[:space:]]|$)' v6/tahoe/preview.sh
           ! grep -Eq '^[[:space:]]*(sudo|pacman|hyprctl|hyprpm|pkill|systemctl)([[:space:]]|$)' v6/tahoe/build-glass.sh
           grep -q 'c5442379542dc5e5c91cc385e3168172dd9d5ff9' v6/tahoe/build-glass.sh
+          grep -q 'HYPRLAND_NO_SD_VARS=1' v6/tahoe/nested-probe.sh
+          grep -q 'Hyprland --verify-config' v6/tahoe/nested-probe.sh
+          ! grep -Eq '^[[:space:]]*(sudo|pacman|hyprctl plugin|hyprpm|pkill|systemctl)([[:space:]]|$)' v6/tahoe/nested-probe.sh
       - name: Parse QML with Qt qmlformat
         run: |
           tool="$(command -v qmlformat || true)"
