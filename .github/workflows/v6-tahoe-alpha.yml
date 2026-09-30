@@ -8,6 +8,7 @@ on:
       - "v6/tahoe/**"
       - "dual-rice/bin/multi-rice-control"
       - "dual-rice/quickshell/multi-rice-switcher/**"
+      - "v6/tools/**"
       - ".github/workflows/v6-tahoe-alpha.yml"
 
 permissions:
@@ -27,12 +28,19 @@ jobs:
           bash -n v6/tahoe/preview.sh
           bash -n dual-rice/bin/multi-rice-control
           bash -n v6/tools/install-switcher-themes.sh
+          python -m py_compile v6/tools/patch-sumi-deck.py
           bash -n v6/tahoe/build-glass.sh
           bash -n v6/tahoe/nested-probe.sh
           bash -n v6/tahoe/nested-glass.sh
           shellcheck -S error v6/tahoe/preview.sh
           shellcheck -S error dual-rice/bin/multi-rice-control
           shellcheck -S error v6/tools/install-switcher-themes.sh
+          curl -fsSLo /tmp/revo-DotsBrowser.qml \
+            https://raw.githubusercontent.com/vzbc/revo-shell/a15d62c87aa992ab8e5d366575bb4074eada7d98/hypr/scripts/quickshell/DotsBrowser.qml
+          python v6/tools/patch-sumi-deck.py /tmp/revo-DotsBrowser.qml
+          grep -Fq 'HUZAIFAH · SUMI DECK' /tmp/revo-DotsBrowser.qml
+          grep -Fq 'multi-rice-control' /tmp/revo-DotsBrowser.qml
+          grep -Fq 'HUZAIFAH_SWITCHER_FORCE_PICKER=1' /tmp/revo-DotsBrowser.qml
           shellcheck -S error v6/tahoe/build-glass.sh
           shellcheck -S error v6/tahoe/nested-probe.sh
           shellcheck -S error v6/tahoe/nested-glass.sh
@@ -44,6 +52,9 @@ jobs:
           grep -Fq 'text: "HUZAIFAH"' dual-rice/quickshell/multi-rice-switcher/shell.qml
           grep -Fq 'id: compositorPage' dual-rice/quickshell/multi-rice-switcher/shell.qml
           grep -Fq 'Midnight Cyan' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -Fq 'Sumi Deck' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -Fq 'sumi-deck' dual-rice/bin/multi-rice-control
+          grep -Fq 'HUZAIFAH · SUMI DECK' v6/tools/patch-sumi-deck.py
           test -s v6/tahoe/session/hyprland.lua
           bash -n v6/tahoe/session/zephyrus-tahoe-session
           bash -n v6/tahoe/session/install-tahoe-session.sh
