@@ -1,10 +1,10 @@
 # ZEPHYRUS G16 — v6.0 Project TAHOE (design stage)
 
-Status: **Tahoe-on-Hyprland selected; implementation not yet installed on host**.
+Status: **Tahoe-on-Hyprland selected; build-only Hyprliquid verified; implementation not yet installed as a host profile**.
 
 ## Why this branch exists
 
-Build **one** new, high-fidelity macOS Tahoe-inspired desktop on **Niri**,
+Build **one** new, high-fidelity macOS Tahoe-inspired desktop on **Hyprland**,
 instead of shipping the experimental full Revo shell collection.
 Begin from v5.0 `main`, not the draft `v5.1.0-revo-dev` branch.
 
@@ -76,8 +76,8 @@ bars or watchers. Subsystems:
 ```
 Multi-Rice switcher
   ├── Rices
-  │   ├── Hyprland: 8 installed (host verified)
-  │   └── Niri: 4 installed (includes Tahoe)
+  │   ├── Hyprland: 9 planned (8 verified + Tahoe)
+  │   └── Niri: 3 installed (unchanged)
   └── Themes
       ├── Original skin
       └── Revo-inspired visual skin (original implementation)
@@ -105,3 +105,12 @@ support safe revert for any keyboard conflict.
    with checksums and optional split distribution.
 
 No installer should issue `pacman -Syu` blindly on the G16.
+
+## September 30, 2026: rendering evidence and safe session direction
+
+- G16 host: Hyprland v0.56.2, commit `efb50993780079460b0cbed1363e2166a2de1d9f`, **Aquamarine 0.15.0-2.1** confirmed with `pacman -Q aquamarine`.
+- Hyprliquid v0.2.1 built at pinned upstream commit `c5442379542dc5e5c91cc385e3168172dd9d5ff9`, loads in a nested Hyprland, and its shaders initialized.
+- The nested Wayland *display* froze or dropped its real output even though Foot mapped internally. **Live visual refraction NOT yet demonstrated**.
+- Open upstream [Aquamarine #348](https://github.com/hyprwm/aquamarine/issues/348) reports a similar nested presentation stall, but describes **Aquamarine 0.14.0**, not the host's **0.15.0**. A match is a hypothesis, not a verified root cause.
+- Stop repeating nested-glass runs. Stage a clean **real login Tahoe profile**, disabled plugin initially. No host files, display-manager entries, package installs, service changes, compositor reloads or profile switch until the user reviews the recovery route and explicitly chooses to install.
+- Keep a separate original rice or KDE login, physical tty fallback, existing config untouched. Test output/input/Foot reliability in standalone session **before** optionally enabling any native rendering plugin.
