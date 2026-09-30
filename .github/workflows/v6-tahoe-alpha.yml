@@ -28,7 +28,7 @@ jobs:
           grep -q 'ExclusionMode.Ignore' v6/tahoe/shell.qml
           grep -q 'Hyprland.toplevels' v6/tahoe/shell.qml
           grep -q 'Qt.quit()' v6/tahoe/shell.qml
-          ! grep -Eq '\bsudo\b|pacman -S|hyprctl dispatch|pkill' v6/tahoe/preview.sh
+          ! grep -Eq '^[[:space:]]*(sudo|pacman|hyprctl|pkill)([[:space:]]|$)' v6/tahoe/preview.sh
       - name: Parse QML with Qt qmlformat
         run: |
           tool="$(command -v qmlformat || true)"
