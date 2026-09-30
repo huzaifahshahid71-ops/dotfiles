@@ -32,6 +32,13 @@ jobs:
           shellcheck -S error v6/tahoe/nested-glass.sh
           test -f v6/tahoe/shell.qml
           test -s v6/tahoe/session/hyprland.lua
+          bash -n v6/tahoe/session/zephyrus-tahoe-session
+          shellcheck -S error v6/tahoe/session/zephyrus-tahoe-session
+          test -s v6/tahoe/session/zephyrus-tahoe.desktop
+          grep -Fq 'Name=ZEPHYRUS Tahoe (Experimental)' v6/tahoe/session/zephyrus-tahoe.desktop
+          grep -Fq 'Exec=/usr/local/bin/zephyrus-tahoe-session' v6/tahoe/session/zephyrus-tahoe.desktop
+          grep -Fq 'exec start-hyprland -- --config "$config"' v6/tahoe/session/zephyrus-tahoe-session
+          ! grep -Eq '^[[:space:]]*(sudo|pacman|hyprctl|hyprpm|pkill|systemctl)([[:space:]]|$)' v6/tahoe/session/zephyrus-tahoe-session
           grep -Fq 'hl.bind("SUPER + SHIFT + E", hl.dsp.exit())' v6/tahoe/session/hyprland.lua
           grep -Fq 'hl.exec_cmd("foot")' v6/tahoe/session/hyprland.lua
           ! grep -Eq 'hl[.]plugin[.]load|hyprpm|systemctl|sudo|pacman' v6/tahoe/session/hyprland.lua
