@@ -43,10 +43,14 @@ preflight() {
   bash -n "$tmp/multi-rice-control"
   grep -Fq 'set-theme)' "$tmp/multi-rice-control" ||
     die "Downloaded backend is missing theme support"
-  grep -Fq 'RICES  •  THEMES' "$tmp/shell.qml" ||
-    die "Downloaded QML is missing the Rices / Themes hub"
+  grep -Fq 'id: themesButton' "$tmp/shell.qml" ||
+    die "Downloaded QML is missing the top-right Themes control"
+  grep -Fq 'text: "HUZAIFAH"' "$tmp/shell.qml" ||
+    die "Downloaded QML is missing Huzaifah branding"
+  grep -Fq 'id: compositorPage' "$tmp/shell.qml" ||
+    die "Downloaded QML is missing the compositor home screen"
   grep -Fq 'Revo-inspired' "$tmp/shell.qml" ||
-    die "Downloaded QML is missing the Revo-inspired skin"
+    die "Downloaded QML is missing the Revo theme entry"
 
   if command -v qmlformat >/dev/null 2>&1; then
     cp "$tmp/shell.qml" "$tmp/qml-check.qml"
