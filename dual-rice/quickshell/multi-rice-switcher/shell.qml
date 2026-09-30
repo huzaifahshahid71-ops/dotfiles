@@ -780,7 +780,7 @@ ShellRoot {
                     Row {
                         id: themePage
                         anchors.centerIn: parent
-                        spacing: 26
+                        spacing: 18
                         visible: root.page === 3
 
                         Repeater {
@@ -791,7 +791,7 @@ ShellRoot {
                                 required property int index
                                 required property var modelData
 
-                                width: 350
+                                width: 242
                                 height: 255
                                 radius: root.midnight ? 14 : 20
                                 color: root.themeIndex === index
@@ -804,7 +804,7 @@ ShellRoot {
 
                                 Column {
                                     anchors.fill: parent
-                                    anchors.margins: 22
+                                    anchors.margins: 18
                                     spacing: 12
 
                                     Row {
@@ -833,7 +833,7 @@ ShellRoot {
                                         text: modelData.name
                                         color: root.titleText
                                         font.family: "JetBrainsMono Nerd Font"
-                                        font.pixelSize: 22
+                                        font.pixelSize: 20
                                         font.bold: true
                                     }
 
@@ -851,7 +851,7 @@ ShellRoot {
                                     // Tiny visual preview of the selected skin.
                                     Rectangle {
                                         width: parent.width
-                                        height: 72
+                                        height: 66
                                         radius: modelData.id === "midnight" ? 8 : 14
                                         color: modelData.id === "midnight" ? "#090c12" : "#101016"
                                         border.width: 1
