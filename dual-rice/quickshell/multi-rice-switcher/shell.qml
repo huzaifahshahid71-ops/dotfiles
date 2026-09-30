@@ -138,17 +138,42 @@ ShellRoot {
 
             function applyList(text) {
                 const next = {}
+                const hypr = []
+                const niri = []
                 const lines = text.trim().split("\n")
 
                 for (let i = 0; i < lines.length; ++i) {
                     if (lines[i].length === 0)
                         continue
+
                     const parts = lines[i].split("|")
-                    if (parts.length >= 6)
-                        next[parts[0]] = parts[4] === "true"
+                    if (parts.length < 6)
+                        continue
+
+                    const item = {
+                        id: parts[0],
+                        name: parts[1],
+                        icon: parts[2],
+                        compositor: parts[3]
+                    }
+
+                    next[item.id] = parts[4] === "true"
+
+                    if (item.compositor === "hyprland")
+                        hypr.push(item)
+                    else if (item.compositor === "niri")
+                        niri.push(item)
                 }
 
                 installedProfiles = next
+
+                if (hypr.length > 0)
+                    hyprRices = hypr
+                if (niri.length > 0)
+                    niriRices = niri
+
+                if (riceIndex >= visibleRices.length)
+                    riceIndex = Math.max(0, visibleRices.length - 1)
             }
 
             function openHubSelection() {
