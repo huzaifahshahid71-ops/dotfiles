@@ -6,6 +6,9 @@ ROOT="$HOME/.local/share/desktop-profiles"
 STATE_DIR="$HOME/.config/desktop-profile"
 ACTIVE_FILE="$STATE_DIR/active"
 
+SWITCHER_STATE_DIR="$HOME/.config/desktop-switcher"
+SWITCHER_THEME_FILE="$SWITCHER_STATE_DIR/theme"
+
 HYPR_LINK="$HOME/.config/hypr"
 NIRI_LINK="$HOME/.config/niri"
 
@@ -27,6 +30,92 @@ load_metadata() {
 }
 
 load_metadata
+
+theme_ids() {
+    printf '%s\n' original revo
+}
+
+theme_name() {
+    case "${1:-}" in
+        original) printf '%s\n' "Original" ;;
+        revo)     printf '%s\n' "Revo-inspired" ;;
+        *) return 1 ;;
+    esac
+}
+
+theme_description() {
+    case "${1:-}" in
+        original) printf '%s\n' "Classic Multi-Rice purple interface" ;;
+        revo)     printf '%s\n' "Sharper dark glass with cyan-blue accents" ;;
+        *) return 1 ;;
+    esac
+}
+
+valid_theme() {
+    case "${1:-}" in
+        original|revo) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+current_theme() {
+    local selected="original"
+
+    if [ -r "$SWITCHER_THEME_FILE" ]; then
+        selected="$(tr -d '[:space:]' < "$SWITCHER_THEME_FILE")"
+    fi
+
+    if ! valid_theme "$selected"; then
+        selected="original"
+    fi
+
+    printf '%s\n' "$selected"
+}
+
+show_theme_status() {
+    local selected
+    selected="$(current_theme)"
+    printf 'theme=%s\n' "$selected"
+    printf 'name=%s\n' "$(theme_name "$selected")"
+}
+
+show_theme_list() {
+    local selected theme active
+    selected="$(current_theme)"
+
+    while IFS= read -r theme; do
+        if [ "$theme" = "$selected" ]; then
+            active="true"
+        else
+            active="false"
+        fi
+
+        printf '%s|%s|%s|%s\n' \
+            "$theme" \
+            "$(theme_name "$theme")" \
+            "$(theme_description "$theme")" \
+            "$active"
+    done < <(theme_ids)
+}
+
+set_theme() {
+    local theme="${1:-}"
+    local tmp
+
+    if ! valid_theme "$theme"; then
+        echo "multi-rice-control: unknown switcher theme: $theme" >&2
+        return 2
+    fi
+
+    mkdir -p "$SWITCHER_STATE_DIR"
+    tmp="$SWITCHER_STATE_DIR/.theme.$"
+    printf '%s\n' "$theme" > "$tmp"
+    mv -f "$tmp" "$SWITCHER_THEME_FILE"
+
+    printf 'action=theme-set\n'
+    printf 'theme=%s\n' "$theme"
+    printf 'name=%s\n' "$(theme_name "$theme")"
+}
 
 is_installed() {
     profile_config_path "$ROOT" "$1" >/dev/null 2>&1
@@ -153,6 +242,8 @@ show_status() {
 " "$(count_installed hyprland)"
     printf "niri_installed=%s
 " "$(count_installed niri)"
+    printf "switcher_theme=%s
+" "$(current_theme)"
 }
 
 show_list() {
@@ -460,6 +551,18 @@ case "${1:-status}" in
         show_list
         ;;
 
+    theme-status)
+        show_theme_status
+        ;;
+
+    theme-list)
+        show_theme_list
+        ;;
+
+    set-theme)
+        set_theme "${2:-}"
+        ;;
+
     plan)
         plan_switch "${2:-}"
         ;;
@@ -469,7 +572,7 @@ case "${1:-status}" in
         ;;
 
     *)
-        echo "Usage: multi-rice-control {status|list|profile|compositor|plan PROFILE|switch PROFILE}" >&2
+        echo "Usage: multi-rice-control {status|list|profile|compositor|theme-status|theme-list|set-theme THEME|plan PROFILE|switch PROFILE}" >&2
         exit 2
         ;;
 esac
