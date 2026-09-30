@@ -32,28 +32,30 @@ load_metadata() {
 load_metadata
 
 theme_ids() {
-    printf '%s\n' original midnight
+    printf '%s\n' original midnight sumi-deck
 }
 
 theme_name() {
     case "${1:-}" in
-        original) printf '%s\n' "Original" ;;
-        midnight) printf '%s\n' "Midnight Cyan" ;;
+        original)  printf '%s\n' "Original" ;;
+        midnight)  printf '%s\n' "Midnight Cyan" ;;
+        sumi-deck) printf '%s\n' "Sumi Deck" ;;
         *) return 1 ;;
     esac
 }
 
 theme_description() {
     case "${1:-}" in
-        original) printf '%s\n' "Classic Multi-Rice purple interface" ;;
-        midnight) printf '%s\n' "Dark Huzaifah layout with cyan-blue accents" ;;
+        original)  printf '%s\n' "Classic Multi-Rice purple interface" ;;
+        midnight)  printf '%s\n' "Dark Huzaifah layout with cyan-blue accents" ;;
+        sumi-deck) printf '%s\n' "Revo-style full-screen fanned card carousel" ;;
         *) return 1 ;;
     esac
 }
 
 valid_theme() {
     case "${1:-}" in
-        original|midnight) return 0 ;;
+        original|midnight|sumi-deck) return 0 ;;
         *) return 1 ;;
     esac
 }
