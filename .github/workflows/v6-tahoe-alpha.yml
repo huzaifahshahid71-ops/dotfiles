@@ -41,6 +41,9 @@ jobs:
           grep -q 'Hyprland --verify-config' v6/tahoe/nested-probe.sh
           grep -q 'HYPRLAND_NO_SD_VARS=1' v6/tahoe/nested-glass.sh
           grep -Fq 'hl.plugin.load([[$PLUGIN]])' v6/tahoe/nested-glass.sh
+          grep -Fq '[colors-dark]' v6/tahoe/nested-glass.sh
+          grep -Fq 'foot --check-config --config=' v6/tahoe/nested-glass.sh
+          ! grep -qx '\[colors\]' v6/tahoe/nested-glass.sh
           ! grep -Eq '^[[:space:]]*(sudo|pacman|hyprctl plugin|hyprpm|pkill|systemctl)([[:space:]]|$)' v6/tahoe/nested-glass.sh
           ! grep -Eq '^[[:space:]]*(sudo|pacman|hyprctl plugin|hyprpm|pkill|systemctl)([[:space:]]|$)' v6/tahoe/nested-probe.sh
       - name: Parse QML with Qt qmlformat
