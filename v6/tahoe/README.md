@@ -216,3 +216,22 @@ was unnecessarily noisy and gave the impression of hanging. New
 `nested-glass.sh` runs foreground as before but writes detailed logs to
 `~/.local/state/zephyrus-v6/nested-glass-*.log` and emits a concise
 summary at exit. Neither the parent's plugin registry nor its config changes.
+
+## September 30 usability correction — stop indefinite tests
+
+The latest G16 test again logged a successful nested Hyprliquid plugin load
+and Foot window mapping, but the foreground launcher waited for the user
+to close the nested compositor. This looked like a hang after three minutes;
+it was a **test-harness UX failure**, not evidence of a shader crash. There
+was no direct observation of refraction in the report.
+
+`nested-glass.sh --run` now automatically terminates the temporary
+nested compositor after **30 seconds**, with a five-second forced-stop
+fallback, retaining diagnostics and printing only concise lines. The log
+filename previously ended in a literal dollar sign due to a mistaken shell
+interpolation; it now uses `BASHPID`. No host profile changes.
+
+**Gate before any further rerun:** ask user whether the nested GUI and a
+semi-transparent Foot terminal appeared. Do not repeatedly request the
+same runtime test if the GUI was never visible; inspect parent Wayland
+surface focus/placement and nested process environment first.
