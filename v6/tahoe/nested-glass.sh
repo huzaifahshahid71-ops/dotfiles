@@ -15,7 +15,7 @@ die() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
     die "Usage: bash $0 --check|--run"
 [[ "${EUID:-$(id -u)}" -ne 0 ]] || die "Run as your ordinary user, not root."
 
-for cmd in Hyprland hyprctl foot; do
+for cmd in Hyprland hyprctl foot timeout; do
     command -v "$cmd" >/dev/null 2>&1 || die "Required command absent: $cmd"
 done
 
@@ -47,9 +47,9 @@ cleanup() {
     trap - EXIT
     if [[ -n "$report_file" && -f "$report_file" ]]; then
         printf '\n=== NESTED GLASS TEST SUMMARY ===\n'
-        printf 'Nested Hyprland exit status: %s\n' "$code"
+        printf 'Test script exit status: %s\n' "$code"
         printf 'Persistent diagnostic log: %s\n' "$report_file"
-        grep -Ei 'Plugin hyprliquid loaded|Loading plugin .*hyprliquid|Hyprland is ready|Running on WAYLAND_DISPLAY|Shaders initialized successfully|Window .*set class to foot|Map request dispatched|Plugin .*error|shader.*(error|failed)|FATAL|CRIT' "$report_file" | tail -n 30 || true
+        grep -Ei 'Plugin hyprliquid loaded|Loading plugin .*hyprliquid|Hyprland is ready|Running on WAYLAND_DISPLAY:|Shaders initialized successfully|Window [^ ]+ set class to foot|Map request dispatched|ERR.*(hyprliquid|plugin|shader)' "$report_file" | cut -c1-240 | tail -n 20 || true
         printf '%s\n' 'Loading and mapping do not prove visible refraction; inspect the nested window.'
     fi
     rm -rf -- "$sandbox"
@@ -140,26 +140,35 @@ end)
 LUA
 
 log "Starting visual Liquid Glass check in the nested compositor"
-printf '%s\n' "Expect a separate Hyprland window containing a transparent Foot terminal."
+printf '%s\n' "A separate Hyprland window should appear; watch that GUI window, not this terminal."
 printf '%s\n' "Drag Foot over the blue triangles with Super + left mouse drag."
 printf '%s\n' "Observe whether the wallpaper BENDS at the glass edges, not just whether it blurs."
-printf '%s\n' "Exit with Super+Shift+Q inside the nested window (or Ctrl+C outside)."
+printf '%s\n' "THIS FOREGROUND COMMAND IS SUPPOSED TO WAIT while the compositor runs."\nprintf '%s\n' "AUTOMATIC STOP after 30 seconds; you can also exit sooner with Super+Shift+Q or Ctrl+C."
 printf '%s\n' "The diagnostic log is saved separately; no debug spam will flood this terminal."
 printf '%s\n' "Do not load the plugin into your ordinary Hyprland session."
 
 state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/zephyrus-v6"
 mkdir -p -- "$state_dir"
-report_file="$state_dir/nested-glass-$(date +%Y%m%d-%H%M%S)-$.log"
+report_file="$state_dir/nested-glass-$(date +%Y%m%d-%H%M%S)-${BASHPID}.log"
 
 # Capture verbose compositor diagnostics to a persistent user-only file.
 # This does not alter the parent compositor or any graphical session profile.
-if env -u HYPRLAND_INSTANCE_SIGNATURE -u AQ_DRM_DEVICES \
+# Bounded experiment: never leave the user watching an indefinite test.
+# timeout sends SIGINT after 30 s; SIGKILL after another 5 s if needed.
+set +e
+timeout --signal=INT --kill-after=5s 30s \
+    env -u HYPRLAND_INSTANCE_SIGNATURE -u AQ_DRM_DEVICES \
     HYPRLAND_NO_SD_VARS=1 \
     HYPRLAND_NO_SD_NOTIFY=1 \
     HYPRLAND_NO_SD_TARGET=1 \
     HYPRLAND_NO_RT=1 \
-    Hyprland --config "$sandbox/hyprland.lua" >"$report_file" 2>&1; then
+    Hyprland --config "$sandbox/hyprland.lua" >"$report_file" 2>&1
+result=$?
+set -e
+
+if [[ "$result" -eq 124 || "$result" -eq 137 ]]; then
+    printf '%s\n' 'Automatic 30-second test limit reached; this is expected.'
     exit 0
-else
-    exit "$?"
 fi
+printf 'Nested compositor returned status %s\n' "$result"
+exit "$result"
