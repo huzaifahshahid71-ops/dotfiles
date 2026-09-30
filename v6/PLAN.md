@@ -1,6 +1,6 @@
 # ZEPHYRUS G16 — v6.0 Project TAHOE (design stage)
 
-Status: **proposal / no host configuration changes made yet**.
+Status: **Tahoe-on-Hyprland selected; implementation not yet installed on host**.
 
 ## Why this branch exists
 
@@ -14,9 +14,9 @@ Begin from v5.0 `main`, not the draft `v5.1.0-revo-dev` branch.
   The Git repository's current baseline contains 7; discover the 8th from
   the host. Do not invent its name or include an unverified directory.
 - Preserve the 3 existing Niri rices: Solstice/jaqc, Cipher/clavis,
-  Astra/nixri. Add **Tahoe** as the fourth Niri rice.
-- Target release: **12 desktop rices: 8 Hyprland + 4 Niri**, contingent on
-  actual host inventory and successful smoke tests.
+  Astra/nixri. Add **Tahoe** as the **ninth Hyprland rice**.
+- Target release: **12 desktop rices: 9 Hyprland + 3 Niri**, contingent on
+  successful native plugin and host validation.
 - Preserve Lumina's current music player, media integrations, and existing
   user systemd backend services; audit actual filenames/units before shipping.
 - Keep the original graphical rice switcher and its backend, with an optional
@@ -28,7 +28,7 @@ Begin from v5.0 `main`, not the draft `v5.1.0-revo-dev` branch.
 
 ## Mac-like Tahoe shell
 
-One Quickshell application for Niri; never stack multiple independent shell
+One Quickshell application for Hyprland; never stack multiple independent shell
 bars or watchers. Subsystems:
 
 1. Full-width top menu bar with active app/title, clock, tray, status.
@@ -41,35 +41,25 @@ bars or watchers. Subsystems:
    macOS Finder application features.
 6. Wallpapers, light/dark mode, lock screen, animation/performance profiles.
 
-### Liquid Glass approach
+### Liquid Glass + actual window behavior
 
-- **Niri 26.04+** supports `background-effect` on windows/layer surfaces:
-  native blur, noise, saturation and xray.
-- Start with fast **xray wallpaper blur** for bar, dock, and popovers.
-- Evaluate **non-xray blur** selectively. It is more expensive and niri
-  currently documents animation/drag limitations.
-- Implement *custom visual* glass highlights, specular borders, and
-  restrained pseudo-refraction via QML/Qt shader effects. The compositor
-  protocol does not itself reproduce Apple's proprietary Liquid Glass
-  material; test capabilities before promising live scene refraction.
-- Use shaped blur via `ext-background-effect` only where supported;
-  niri layer rules alone do not guarantee correct arbitrary silhouettes.
-- Require verified Niri, Qt/Quickshell, GPU and driver versions, with
-  non-glass fallback. Test 60/240 Hz, display scaling, NVIDIA path,
-  motion and performance.
-
-Reference rule (not installed automatically):
-```kdl
-layer-rule {
-    match namespace="^tahoe-dock$"
-
-    background-effect {
-        blur true
-        xray true
-    }
-}
-```
-The actual app namespace/surface shape and transparency need to match.
+- Use `hyprliquid` only within the isolated Tahoe Hyprland 0.56.2
+  profile; require exact-build compatibility, snapshot and fallback.
+- Native refraction and rim highlights are a different task from window
+  animation deformation.
+- Build a floating-first window manager with a **real minimize/restore
+  backend** (selected-window move into hidden special workspace, restore to
+  original placement); stable Dock entries and multiple windows per app.
+- **True Genie** is a separate experimental Hyprland compositor-plugin
+  milestone, *not* an advertised built-in feature. Begin with safe
+  Dock-directed scaling fallback, then prototype a real window-texture
+  funnel/mesh warp if compatibility and performance allow.
+- Evaluate HyprExpo for macOS-style Mission Control; it advertises support
+  for Hyprland 0.56.2 but must be tested alongside Hyprliquid.
+- Preserve window-specific CSD differences; full cross-toolkit Apple
+  menu integration is not guaranteed.
+- See [TAHOE-WINDOW-MANAGEMENT.md](TAHOE-WINDOW-MANAGEMENT.md) for
+  minimize state model, Genie geometry and acceptance gates.
 
 ## MacTahoe resources
 
