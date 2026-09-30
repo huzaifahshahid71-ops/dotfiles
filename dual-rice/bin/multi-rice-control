@@ -32,13 +32,13 @@ load_metadata() {
 load_metadata
 
 theme_ids() {
-    printf '%s\n' original revo
+    printf '%s\n' original midnight
 }
 
 theme_name() {
     case "${1:-}" in
         original) printf '%s\n' "Original" ;;
-        revo)     printf '%s\n' "Revo-inspired" ;;
+        midnight) printf '%s\n' "Midnight Cyan" ;;
         *) return 1 ;;
     esac
 }
@@ -46,14 +46,14 @@ theme_name() {
 theme_description() {
     case "${1:-}" in
         original) printf '%s\n' "Classic Multi-Rice purple interface" ;;
-        revo)     printf '%s\n' "Sharper dark glass with cyan-blue accents" ;;
+        midnight) printf '%s\n' "Dark Huzaifah layout with cyan-blue accents" ;;
         *) return 1 ;;
     esac
 }
 
 valid_theme() {
     case "${1:-}" in
-        original|revo) return 0 ;;
+        original|midnight) return 0 ;;
         *) return 1 ;;
     esac
 }
@@ -63,6 +63,12 @@ current_theme() {
 
     if [ -r "$SWITCHER_THEME_FILE" ]; then
         selected="$(tr -d '[:space:]' < "$SWITCHER_THEME_FILE")"
+    fi
+
+    # v6 alpha migration: the old "revo" id was only a cyan skin.
+    # Reserve "revo" for the real DotsBrowser-style theme later.
+    if [ "$selected" = "revo" ]; then
+        selected="midnight"
     fi
 
     if ! valid_theme "$selected"; then
