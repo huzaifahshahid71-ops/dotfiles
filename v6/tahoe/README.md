@@ -184,3 +184,35 @@ Success criterion: while dragging the Foot window, background shapes
 actually **bend/refract** near its rounded edges. A static translucent
 background, a black surface, or merely startup without a crash does
 not count as demonstrated refraction. Send screenshot and logs.
+
+## Plugin runtime milestone: actual host log (September 30)
+
+Nested glass test on the real G16 **loaded hyprliquid v0.2.1** from the
+pinned locally-built library:
+
+```text
+[PluginSystem] Plugin hyprliquid loaded. ... version: "0.2.1"
+Running on WAYLAND_DISPLAY: wayland-2
+[executor] Executing foot --config=.../foot.ini
+Window ... set class to foot
+Map request dispatched, monitor WAYLAND-1
+Shaders initialized successfully.
+```
+
+Aquamarine tried DRM, could not acquire the parent's physical seat, and
+then successfully selected **Wayland backend**, connected to the running
+Hyprland parent. The `wayland-1.lock` collision was handled by selecting
+`wayland-2`. The monitor initially reported no preferred mode at size 0x0,
+then successfully configured to 2028x1260. The last output disconnects the
+nested monitor and enters headless fallback during shutdown/interruption.
+
+**Status:** Plugin loading, compositor initialization and Foot window
+mapping are confirmed. **Actual visible refraction is NOT confirmed** by
+these logs; need a visual result with the glass window moving over a
+contrasting background.
+
+The prior test printed ~1300 compositor debug lines to the terminal, which
+was unnecessarily noisy and gave the impression of hanging. New
+`nested-glass.sh` runs foreground as before but writes detailed logs to
+`~/.local/state/zephyrus-v6/nested-glass-*.log` and emits a concise
+summary at exit. Neither the parent's plugin registry nor its config changes.
