@@ -40,7 +40,9 @@ jobs:
           test -f dual-rice/quickshell/multi-rice-switcher/shell.qml
           grep -Fq 'set-theme' dual-rice/bin/multi-rice-control
           grep -Fq 'switcher_theme=' dual-rice/bin/multi-rice-control
-          grep -Fq 'RICES  •  THEMES' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -Fq 'id: themesButton' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -Fq 'text: "HUZAIFAH"' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -Fq 'id: compositorPage' dual-rice/quickshell/multi-rice-switcher/shell.qml
           grep -Fq 'Revo-inspired' dual-rice/quickshell/multi-rice-switcher/shell.qml
           test -s v6/tahoe/session/hyprland.lua
           bash -n v6/tahoe/session/zephyrus-tahoe-session
