@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=ZEPHYRUS Tahoe (Experimental)
+Comment=Standalone plugin-free ZEPHYRUS Tahoe baseline; existing rice sessions remain available
+Exec=/usr/local/bin/zephyrus-tahoe-session
+TryExec=/usr/local/bin/zephyrus-tahoe-session
+Type=Application
+DesktopNames=Hyprland
+Keywords=Hyprland;Tahoe;ZEPHYRUS;experimental;
