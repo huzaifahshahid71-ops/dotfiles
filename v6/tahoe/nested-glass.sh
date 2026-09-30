@@ -41,7 +41,19 @@ fi
 
 log "Preparing temporary configuration for validation"
 sandbox="$(mktemp -d "${TMPDIR:-/tmp}/zephyrus-glass.XXXXXXXX")"
-cleanup() { rm -rf -- "$sandbox"; }
+report_file=""
+cleanup() {
+    local code=$?
+    trap - EXIT
+    if [[ -n "$report_file" && -f "$report_file" ]]; then
+        printf '\n=== NESTED GLASS TEST SUMMARY ===\n'
+        printf 'Nested Hyprland exit status: %s\n' "$code"
+        printf 'Persistent diagnostic log: %s\n' "$report_file"
+        grep -Ei 'Plugin hyprliquid loaded|Loading plugin .*hyprliquid|Hyprland is ready|Running on WAYLAND_DISPLAY|Shaders initialized successfully|Window .*set class to foot|Map request dispatched|Plugin .*error|shader.*(error|failed)|FATAL|CRIT' "$report_file" | tail -n 30 || true
+        printf '%s\n' 'Loading and mapping do not prove visible refraction; inspect the nested window.'
+    fi
+    rm -rf -- "$sandbox"
+}
 trap cleanup EXIT
 
 cat > "$sandbox/foot.ini" <<'INI'
@@ -127,28 +139,27 @@ hl.on("hyprland.start", function()
 end)
 LUA
 
-log "Preparing for FIRST actual shader test"
-printf '%s\n' "This may crash the *nested* Hyprland process if the plugin fails."
-printf '%s\n' "Move the transparent Foot window over the default triangles and watch for bending/edge highlights."
-printf '%s\n' "Inside nested window: Super+Enter new Foot; Super+Shift+Q exits."
-printf '%s\n' "Outside: Ctrl+C in this parent terminal stops the test."
-printf '%s\n' "If nested crashes, do NOT run a plugin load on your ordinary Hyprland session."
+log "Starting visual Liquid Glass check in the nested compositor"
+printf '%s\n' "Expect a separate Hyprland window containing a transparent Foot terminal."
+printf '%s\n' "Drag Foot over the blue triangles with Super + left mouse drag."
+printf '%s\n' "Observe whether the wallpaper BENDS at the glass edges, not just whether it blurs."
+printf '%s\n' "Exit with Super+Shift+Q inside the nested window (or Ctrl+C outside)."
+printf '%s\n' "The diagnostic log is saved separately; no debug spam will flood this terminal."
+printf '%s\n' "Do not load the plugin into your ordinary Hyprland session."
 
-# Stop config and environment cross-talk: no host session-wide dbus/systemd
-# updates; no direct DRM preference copied from the parent.
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/zephyrus-v6"
+mkdir -p -- "$state_dir"
+report_file="$state_dir/nested-glass-$(date +%Y%m%d-%H%M%S)-$.log"
+
+# Capture verbose compositor diagnostics to a persistent user-only file.
+# This does not alter the parent compositor or any graphical session profile.
 if env -u HYPRLAND_INSTANCE_SIGNATURE -u AQ_DRM_DEVICES \
     HYPRLAND_NO_SD_VARS=1 \
     HYPRLAND_NO_SD_NOTIFY=1 \
     HYPRLAND_NO_SD_TARGET=1 \
     HYPRLAND_NO_RT=1 \
-    Hyprland --config "$sandbox/hyprland.lua" 2>&1 | tee "$sandbox/nested-hyprland.log"; then
-    result=0
+    Hyprland --config "$sandbox/hyprland.lua" >"$report_file" 2>&1; then
+    exit 0
 else
-    result=${PIPESTATUS[0]}
+    exit "$?"
 fi
-
-printf '\n=== NESTED GLASS TEST DIAGNOSTICS ===\n'
-printf 'Nested Hyprland exit status: %s\n' "$result"
-grep -Ein 'hyprliquid|plugin|shader|failed|error|Wayland Backend|loading lua|window_rule|Config' "$sandbox/nested-hyprland.log" | tail -n 85 || true
-printf '%s\n' "DRM/libseat failures alone are expected during nesting; look for plugin or Wayland failures."
-exit "$result"
