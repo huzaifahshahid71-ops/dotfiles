@@ -51,3 +51,54 @@ clone, without starting Hyprland; doing so is optional.
    **opt-in** Hyprliquid config with ABI check for later real refraction.
 4. A visible screenshot and interaction over a high-contrast background
    are required before calling Liquid Glass operational.
+
+## SDDM discovery on the G16 (September 30, 20:14 KSA)
+
+The user ran the following read-only commands:
+
+```text
+readlink -f /etc/systemd/system/display-manager.service
+/usr/lib/systemd/system/sddm.service
+
+ls /usr/share/wayland-sessions/
+huzaifah-multi-rice.desktop
+hyprland-uwsm.desktop
+hyprland.desktop
+niri.desktop
+```
+
+Therefore this machine's display manager is **SDDM**. An opt-in fifth
+session can be registered under a **unique** name and file, retaining all
+four originals. It must **NOT** overwrite `huzaifah-multi-rice.desktop`
+or modify `/var/lib/sddm/state.conf`.
+
+Two **staged source templates, not installed**:
+
+* `zephyrus-tahoe.desktop`: uniquely named SDDM desktop-entry;
+  potential target `/usr/share/wayland-sessions/zephyrus-tahoe.desktop`.
+* `zephyrus-tahoe-session`: watchdog launcher using
+  `start-hyprland -- --config "$config"`; potential target
+  `/usr/local/bin/zephyrus-tahoe-session`, executable permissions.
+  At runtime it expects the separately installed, plugin-free Lua
+  config in `${XDG_DATA_HOME:-$HOME/.local/share}/zephyrus-v6/tahoe-session/hyprland.lua`.
+
+Hyprland v0.56.2 `start-hyprland` documentation explicitly states that
+arguments after `--` are forwarded to Hyprland. The existing
+`hyprland.desktop` in upstream uses the watchdog for primary logins.
+
+**Next preflight, read-only in fish, BEFORE creating an installer:**
+
+```fish
+for f in /usr/share/wayland-sessions/huzaifah-multi-rice.desktop /usr/share/wayland-sessions/hyprland.desktop /usr/share/wayland-sessions/hyprland-uwsm.desktop
+    echo "--- $f"
+    grep -E '^(Name|Exec|TryExec|DesktopNames|Type)=' "$f"
+end
+command -v start-hyprland
+command -v foot
+```
+
+After confirming existing launch conventions and the availability of both
+programs, draft a user-reviewed installer with an explicit opt-in, exact
+file list, backups/rollback and a no-write `--check` mode. No one should
+register an entry without permission. All other sessions remain selectable
+in SDDM for recovery.
