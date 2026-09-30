@@ -711,6 +711,7 @@ ShellRoot {
                             model: root.themes
 
                             delegate: Rectangle {
+                                id: themeCard
                                 required property int index
                                 required property var modelData
 
@@ -800,10 +801,10 @@ ShellRoot {
                                                     required property int index
                                                     width: index === 1 ? 58 : 36
                                                     height: 26
-                                                    radius: modelData.id === "revo" ? 5 : 9
+                                                    radius: themeCard.modelData.id === "revo" ? 5 : 9
                                                     color: index === 1
                                                         ? modelData.accent
-                                                        : (modelData.id === "revo" ? "#162433" : "#26263a")
+                                                        : (themeCard.modelData.id === "revo" ? "#162433" : "#26263a")
                                                     opacity: index === 1 ? 0.85 : 1
                                                 }
                                             }
