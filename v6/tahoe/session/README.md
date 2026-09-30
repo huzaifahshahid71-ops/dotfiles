@@ -102,3 +102,27 @@ programs, draft a user-reviewed installer with an explicit opt-in, exact
 file list, backups/rollback and a no-write `--check` mode. No one should
 register an entry without permission. All other sessions remain selectable
 in SDDM for recovery.
+
+
+## BLOCKER — physical plugin-free Tahoe baseline also unusable
+
+On the first real SDDM login test after the guarded install, the user
+reported that `ZEPHYRUS Tahoe (Experimental)` again remained at the
+Hyprland default/welcome triangle screen and did **not** become a usable
+Tahoe desktop.
+
+This test was intentionally **plugin-free**, therefore this symptom cannot
+be attributed to Hyprliquid. It also occurred outside the nested Wayland
+test, so the earlier Aquamarine nested-output issue is insufficient as the
+sole explanation.
+
+**Status: standalone baseline FAIL.** Do not enable hyprliquid, Quickshell
+Tahoe shell, floating-first rules, or any other v6 feature in this login
+entry. Do not repeat the same physical test unchanged.
+
+Next work must be read-only diagnosis from a known-good existing rice:
+compare the working rice's monitor/output/input/session environment with
+the staged minimal Lua session, inspect any available startup logs, and
+verify whether Foot and the keybind dispatchers ever start. The installed
+experimental entry should be rolled back until a corrected baseline is
+ready.
