@@ -74,10 +74,10 @@ ShellRoot {
                     accent: "#8b5cf6"
                 },
                 {
-                    id: "revo",
-                    name: "Revo-inspired",
-                    subtitle: "DARK GLASS",
-                    description: "Sharper panels and cyan-blue accents",
+                    id: "midnight",
+                    name: "Midnight Cyan",
+                    subtitle: "DARK CYAN",
+                    description: "Huzaifah layout with a dark cyan skin",
                     accent: "#38bdf8"
                 }
             ]
@@ -86,19 +86,19 @@ ShellRoot {
                 compositorIndex === 0 ? hyprRices : niriRices
 
             // Theme palette. This changes only this switcher.
-            property bool revo: activeTheme === "revo"
-            property color bg: revo ? "#090c12" : "#101016"
-            property color panel: revo ? "#111722" : "#17171f"
-            property color panelSelected: revo ? "#162433" : "#202033"
-            property color rowSelected: revo ? "#132838" : "#26263a"
-            property color accent: revo ? "#38bdf8" : "#8b5cf6"
-            property color accentText: revo ? "#7dd3fc" : "#c4b5fd"
-            property color titleText: revo ? "#f8fafc" : "#f4f4f5"
-            property color bodyText: revo ? "#d6e2ef" : "#d4d4d8"
-            property color mutedText: revo ? "#718398" : "#71717a"
-            property color borderIdle: revo ? "#243244" : "#34343f"
-            property color chip: revo ? "#0d1520" : "#1d1d28"
-            property color separator: revo ? "#1f2d3b" : "#2d2d38"
+            property bool midnight: activeTheme === "midnight"
+            property color bg: midnight ? "#090c12" : "#101016"
+            property color panel: midnight ? "#111722" : "#17171f"
+            property color panelSelected: midnight ? "#162433" : "#202033"
+            property color rowSelected: midnight ? "#132838" : "#26263a"
+            property color accent: midnight ? "#38bdf8" : "#8b5cf6"
+            property color accentText: midnight ? "#7dd3fc" : "#c4b5fd"
+            property color titleText: midnight ? "#f8fafc" : "#f4f4f5"
+            property color bodyText: midnight ? "#d6e2ef" : "#d4d4d8"
+            property color mutedText: midnight ? "#718398" : "#71717a"
+            property color borderIdle: midnight ? "#243244" : "#34343f"
+            property color chip: midnight ? "#0d1520" : "#1d1d28"
+            property color separator: midnight ? "#1f2d3b" : "#2d2d38"
 
             function profileInstalled(id) {
                 return installedProfiles[id] === true
@@ -120,8 +120,12 @@ ShellRoot {
                 hyprInstalled = parseInt(values.hyprland_installed || "0")
                 niriInstalled = parseInt(values.niri_installed || "0")
 
-                const savedTheme = values.switcher_theme || "original"
-                activeTheme = savedTheme === "revo" ? "revo" : "original"
+                let savedTheme = values.switcher_theme || "original"
+                if (savedTheme === "revo")
+                    savedTheme = "midnight"
+                activeTheme = savedTheme === "midnight"
+                    ? "midnight"
+                    : "original"
 
                 if (activeCompositor === "niri")
                     compositorIndex = 1
@@ -409,9 +413,9 @@ ShellRoot {
                             text: "HUZAIFAH"
                             color: root.accentText
                             font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: root.revo ? 12 : 14
+                            font.pixelSize: root.midnight ? 12 : 14
                             font.bold: true
-                            font.letterSpacing: root.revo ? 1.2 : 0
+                            font.letterSpacing: root.midnight ? 1.2 : 0
                         }
 
                         Text {
@@ -422,7 +426,7 @@ ShellRoot {
                                     : "Switcher Themes"
                             color: root.titleText
                             font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: root.revo ? 27 : 29
+                            font.pixelSize: root.midnight ? 27 : 29
                             font.bold: true
                         }
                     }
@@ -433,11 +437,11 @@ ShellRoot {
                         id: themesButton
                         width: 150
                         height: 38
-                        radius: root.revo ? 8 : 19
+                        radius: root.midnight ? 8 : 19
                         color: themesMouse.containsMouse
                             ? root.panelSelected
                             : root.chip
-                        border.width: root.revo ? 1 : 0
+                        border.width: root.midnight ? 1 : 0
                         border.color: root.page === 3
                             ? root.accent
                             : root.borderIdle
@@ -511,7 +515,7 @@ ShellRoot {
 
                                 width: 350
                                 height: 250
-                                radius: root.revo ? 14 : 20
+                                radius: root.midnight ? 14 : 20
                                 antialiasing: true
 
                                 property bool selected: root.hubIndex === index
@@ -595,7 +599,7 @@ ShellRoot {
 
                                 width: 330
                                 height: 250
-                                radius: root.revo ? 14 : 20
+                                radius: root.midnight ? 14 : 20
                                 antialiasing: true
 
                                 property bool selected: root.compositorIndex === index
@@ -680,7 +684,7 @@ ShellRoot {
 
                                 width: ricePage.width
                                 height: 38
-                                radius: root.revo ? 8 : 12
+                                radius: root.midnight ? 8 : 12
                                 antialiasing: true
 
                                 property bool selected: root.riceIndex === index
@@ -756,7 +760,7 @@ ShellRoot {
 
                                 width: 350
                                 height: 255
-                                radius: root.revo ? 14 : 20
+                                radius: root.midnight ? 14 : 20
                                 color: root.themeIndex === index
                                     ? root.panelSelected
                                     : root.panel
@@ -815,8 +819,8 @@ ShellRoot {
                                     Rectangle {
                                         width: parent.width
                                         height: 72
-                                        radius: modelData.id === "revo" ? 8 : 14
-                                        color: modelData.id === "revo" ? "#090c12" : "#101016"
+                                        radius: modelData.id === "midnight" ? 8 : 14
+                                        color: modelData.id === "midnight" ? "#090c12" : "#101016"
                                         border.width: 1
                                         border.color: modelData.accent
 
@@ -826,7 +830,7 @@ ShellRoot {
                                             anchors.top: parent.top
                                             height: 18
                                             radius: parent.radius
-                                            color: modelData.id === "revo" ? "#111722" : "#1d1d28"
+                                            color: modelData.id === "midnight" ? "#111722" : "#1d1d28"
                                         }
 
                                         Row {
@@ -840,10 +844,10 @@ ShellRoot {
                                                     required property int index
                                                     width: index === 1 ? 58 : 36
                                                     height: 26
-                                                    radius: themeCard.modelData.id === "revo" ? 5 : 9
+                                                    radius: themeCard.modelData.id === "midnight" ? 5 : 9
                                                     color: index === 1
                                                         ? modelData.accent
-                                                        : (themeCard.modelData.id === "revo" ? "#162433" : "#26263a")
+                                                        : (themeCard.modelData.id === "midnight" ? "#162433" : "#26263a")
                                                     opacity: index === 1 ? 0.85 : 1
                                                 }
                                             }
