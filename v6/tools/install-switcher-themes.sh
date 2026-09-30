@@ -36,9 +36,12 @@ fetch_sources() {
     "$RAW/dual-rice/bin/multi-rice-control"
   curl -fsSLo "$tmp/patch-sumi-deck.py" \
     "$RAW/v6/tools/patch-sumi-deck.py"
+  curl -fsSLo "$tmp/patch-sumi-previews.py" \
+    "$RAW/v6/tools/patch-sumi-previews.py"
   curl -fsSLo "$tmp/DotsBrowser.qml" "$REVO_DOTS_URL"
 
   python "$tmp/patch-sumi-deck.py" "$tmp/DotsBrowser.qml"
+  python "$tmp/patch-sumi-previews.py" "$tmp/DotsBrowser.qml"
 }
 
 preflight() {
