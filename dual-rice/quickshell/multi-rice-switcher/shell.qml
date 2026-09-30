@@ -48,6 +48,8 @@ ShellRoot {
             property string activeTheme: "original"
             property string pendingTheme: ""
             property string actionMessage: ""
+            property bool forceThemePicker:
+                Quickshell.env("HUZAIFAH_SWITCHER_FORCE_PICKER") === "1"
 
             property var hyprRices: [
                 { id: "caelestia",   icon: "✦", name: "Aether" },
@@ -79,6 +81,13 @@ ShellRoot {
                     subtitle: "DARK CYAN",
                     description: "Huzaifah layout with a dark cyan skin",
                     accent: "#38bdf8"
+                },
+                {
+                    id: "sumi-deck",
+                    name: "Sumi Deck",
+                    subtitle: "CARD CAROUSEL",
+                    description: "Full-screen fanned profile cards",
+                    accent: "#b4d088"
                 }
             ]
 
@@ -123,9 +132,13 @@ ShellRoot {
                 let savedTheme = values.switcher_theme || "original"
                 if (savedTheme === "revo")
                     savedTheme = "midnight"
-                activeTheme = savedTheme === "midnight"
-                    ? "midnight"
-                    : "original"
+
+                if (savedTheme === "sumi-deck")
+                    activeTheme = "sumi-deck"
+                else if (savedTheme === "midnight")
+                    activeTheme = "midnight"
+                else
+                    activeTheme = "original"
 
                 if (activeCompositor === "niri")
                     compositorIndex = 1
@@ -234,6 +247,20 @@ ShellRoot {
                 switchProc.running = true
             }
 
+            function openSumiDeck() {
+                if (forceThemePicker)
+                    return
+
+                deckProc.command = [
+                    "quickshell",
+                    "-p",
+                    Quickshell.env("HOME") +
+                        "/.local/share/desktop-switcher/themes/sumi-deck/DotsBrowser.qml"
+                ]
+                deckProc.running = true
+                Qt.callLater(Qt.quit)
+            }
+
             function activateTheme() {
                 const theme = themes[themeIndex]
 
@@ -297,10 +324,25 @@ ShellRoot {
                         root.activeTheme = root.pendingTheme
                         root.actionMessage = "Switcher theme • " +
                             root.themes[root.themeIndex].name
+
+                        if (root.pendingTheme === "sumi-deck")
+                            Qt.callLater(root.openSumiDeck)
                     } else if (exitCode !== 0 && root.actionMessage.length === 0) {
                         root.actionMessage = "Theme change failed • exit " + exitCode
                     }
                     root.pendingTheme = ""
+                }
+            }
+
+            Process {
+                id: deckProc
+
+                onExited: (exitCode, exitStatus) => {
+                    if (exitCode !== 0) {
+                        console.log(
+                            "Sumi Deck launch failed • exit " + exitCode
+                        )
+                    }
                 }
             }
 
@@ -313,7 +355,16 @@ ShellRoot {
                 ]
 
                 stdout: StdioCollector {
-                    onStreamFinished: root.applyStatus(text)
+                    onStreamFinished: {
+                        root.applyStatus(text)
+
+                        if (root.forceThemePicker) {
+                            root.page = 3
+                            root.forceActiveFocus()
+                        } else if (root.activeTheme === "sumi-deck") {
+                            Qt.callLater(root.openSumiDeck)
+                        }
+                    }
                 }
             }
 
