@@ -1,4 +1,4 @@
-# Project Tahoe — Alpha 0.1 (preview only)
+# Project Tahoe — Alpha 0.2 (preview only)
 
 This is the first **running UI prototype**, not a whole Hyprland profile and
 **not yet actual refractive Liquid Glass**. It is designed for the *existing*
@@ -28,8 +28,9 @@ You can also run `bash v6/tahoe/preview.sh` from a local branch checkout.
 
 ## What currently works in source (requires testing on the real host)
 
-- Light translucent/gradient menu bar with live active-app label and clock.
-- Centered glass-styled Dock with hover magnification.
+- Compact macOS-style translucent menu bar with live active-app label and clock.
+- A functional top-left preview menu with app launching and preview-only exit.
+- More generously sized centered translucent Dock, unboxed app icons, hover magnification and labels.
 - Files, Terminal, Browser, and Apps launchers with desktop-entry lookup
   where available and safe fallback commands.
 - Direct tracking of Hyprland's real toplevel list, active indicators, and
@@ -68,3 +69,17 @@ before enabling any actual Hyprliquid or window-management experiments.
 Phase 2 after alpha: standalone Tahoe Hyprland profile with reliable
 minimize/restore. Phase 3: sandboxed hyprliquid exact-ABI proof and GPU
 stability. Phase 4: experimental real Genie shape deformation.
+
+## First visual feedback (September 30, 2026)
+
+Alpha 0.1 **launched and loaded on the G16**, but the user correctly rejected
+its tiny generic Dock and decorative, cramped bar as insufficiently macOS.
+Quickshell printed nonfatal GTK CSS parser warnings (`transform`,
+`filter`, `-gtk-icon-size`) from the currently loaded GTK theme and an
+app-ID portal association warning; **there was no demonstrated QML startup
+failure**. Alpha 0.2 changes visual proportions and makes menu actions real.
+Do not modify host GTK files to suppress those warnings as part of alpha.
+
+This remains a translucent preview rather than refractive Liquid Glass.
+A separate, isolated Hyprliquid proof is the next milestone, before a
+complete Tahoe profile or claims of genuine material parity.
