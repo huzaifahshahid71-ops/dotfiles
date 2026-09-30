@@ -31,6 +31,11 @@ jobs:
           shellcheck -S error v6/tahoe/nested-probe.sh
           shellcheck -S error v6/tahoe/nested-glass.sh
           test -f v6/tahoe/shell.qml
+          test -s v6/tahoe/session/hyprland.lua
+          grep -Fq 'hl.bind("SUPER + SHIFT + E", hl.dsp.exit())' v6/tahoe/session/hyprland.lua
+          grep -Fq 'hl.exec_cmd("foot")' v6/tahoe/session/hyprland.lua
+          ! grep -Eq 'hl[.]plugin[.]load|hyprpm|systemctl|sudo|pacman' v6/tahoe/session/hyprland.lua
+          ! grep -Eq 'require[(]|loadfile[(]|dofile[(]' v6/tahoe/session/hyprland.lua
           grep -q 'ExclusionMode.Ignore' v6/tahoe/shell.qml
           grep -q 'Hyprland.toplevels' v6/tahoe/shell.qml
           grep -q 'Qt.quit()' v6/tahoe/shell.qml
