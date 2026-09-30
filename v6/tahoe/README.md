@@ -83,3 +83,38 @@ Do not modify host GTK files to suppress those warnings as part of alpha.
 This remains a translucent preview rather than refractive Liquid Glass.
 A separate, isolated Hyprliquid proof is the next milestone, before a
 complete Tahoe profile or claims of genuine material parity.
+
+## Glass build preflight (September 30, 2026)
+
+Host read-only results: Hyprland exactly
+`efb50993780079460b0cbed1363e2166a2de1d9f`, no loaded plugins,
+no packaged hyprliquid; Intel Mesa OpenGL 4.6 is the active renderer, and
+`qsb` exists at `/usr/lib/qt6/bin/qsb`. **Do not upgrade or switch GPU
+modes for this work.**
+
+The upstream `hyprpm.toml` on September 30 explicitly pins that
+Hyprland commit to hyprliquid commit
+`c5442379542dc5e5c91cc385e3168172dd9d5ff9` (including a
+plugin-unload crash fix from that date). The pin does not guarantee a
+crash-free plugin; exact build headers and runtime interactions still
+need verification.
+
+Build **without loading any native plugin**:
+
+```fish
+curl -fsSLo /tmp/z6-build-glass.sh https://raw.githubusercontent.com/huzaifahshahid71-ops/dotfiles/v6.0-tahoe-dev/v6/tahoe/build-glass.sh
+bash /tmp/z6-build-glass.sh --check
+# Only after preflight passes:
+bash /tmp/z6-build-glass.sh --build
+```
+
+The helper verifies the exact binary commit and hyprland pkg-config
+version, checks build tools and `stb_image.h`, pins the source revision,
+compiles with limited parallelism and copies the result **only** to
+`~/.local/share/zephyrus-v6/plugins/hyprliquid-v0562/libhyprliquid.so`.
+
+It does NOT run sudo, package transactions, hyprpm, hyprctl plugin load,
+Hyprland reload, alter `~/.config`, or change existing rices.
+A successful build is **not** permission to load it into the current
+desktop: next step is a tested independent Tahoe session with a rescue
+login and guaranteed fallback.
