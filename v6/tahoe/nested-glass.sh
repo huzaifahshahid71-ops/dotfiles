@@ -136,12 +136,12 @@ printf '%s\n' "If nested crashes, do NOT run a plugin load on your ordinary Hypr
 
 # Stop config and environment cross-talk: no host session-wide dbus/systemd
 # updates; no direct DRM preference copied from the parent.
-env -u HYPRLAND_INSTANCE_SIGNATURE -u AQ_DRM_DEVICES \
+if env -u HYPRLAND_INSTANCE_SIGNATURE -u AQ_DRM_DEVICES \
     HYPRLAND_NO_SD_VARS=1 \
     HYPRLAND_NO_SD_NOTIFY=1 \
     HYPRLAND_NO_SD_TARGET=1 \
     HYPRLAND_NO_RT=1 \
-    if Hyprland --config "$sandbox/hyprland.lua" 2>&1 | tee "$sandbox/nested-hyprland.log"; then
+    Hyprland --config "$sandbox/hyprland.lua" 2>&1 | tee "$sandbox/nested-hyprland.log"; then
     result=0
 else
     result=${PIPESTATUS[0]}
