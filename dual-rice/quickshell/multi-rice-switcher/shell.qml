@@ -30,7 +30,9 @@ ShellRoot {
 
             focus: true
 
-            // 0 = hub, 1 = compositor picker, 2 = rice picker, 3 = theme picker.
+            // 0 = compositor picker, 2 = rice picker, 3 = theme picker.
+            // Page 1 is intentionally unused to preserve a small diff from
+            // the previous switcher implementation.
             property int page: 0
             property int hubIndex: 0
             property int compositorIndex: 0
@@ -173,12 +175,7 @@ ShellRoot {
             function goBack() {
                 actionMessage = ""
 
-                if (page === 2) {
-                    page = 1
-                    return
-                }
-
-                if (page === 1 || page === 3) {
+                if (page === 2 || page === 3) {
                     page = 0
                     return
                 }
@@ -306,20 +303,6 @@ ShellRoot {
 
             Keys.onPressed: event => {
                 if (page === 0) {
-                    if (event.key === Qt.Key_Left || event.key === Qt.Key_Up) {
-                        hubIndex = (hubIndex - 1 + 2) % 2
-                        event.accepted = true
-                    } else if (event.key === Qt.Key_Right || event.key === Qt.Key_Down) {
-                        hubIndex = (hubIndex + 1) % 2
-                        event.accepted = true
-                    } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                        openHubSelection()
-                        event.accepted = true
-                    } else if (event.key === Qt.Key_Escape) {
-                        Qt.quit()
-                        event.accepted = true
-                    }
-                } else if (page === 1) {
                     if (event.key === Qt.Key_Left) {
                         compositorIndex = 0
                         event.accepted = true
@@ -329,8 +312,17 @@ ShellRoot {
                     } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                         openRiceList()
                         event.accepted = true
+                    } else if (event.key === Qt.Key_T) {
+                        for (let i = 0; i < themes.length; ++i) {
+                            if (themes[i].id === activeTheme) {
+                                themeIndex = i
+                                break
+                            }
+                        }
+                        page = 3
+                        event.accepted = true
                     } else if (event.key === Qt.Key_Escape) {
-                        goBack()
+                        Qt.quit()
                         event.accepted = true
                     }
                 } else if (page === 2) {
@@ -389,7 +381,7 @@ ShellRoot {
                         spacing: 3
 
                         Text {
-                            text: root.revo ? "ZEPHYRUS / SWITCHER" : "HUZAIFAH"
+                            text: "HUZAIFAH"
                             color: root.accentText
                             font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: root.revo ? 12 : 14
@@ -400,11 +392,9 @@ ShellRoot {
                         Text {
                             text: root.page === 0
                                 ? "Multi-Rice"
-                                : root.page === 1
-                                    ? "Choose Engine"
-                                    : root.page === 2
-                                        ? (root.compositorIndex === 0 ? "Hyprland Rices" : "Niri Rices")
-                                        : "Switcher Themes"
+                                : root.page === 2
+                                    ? (root.compositorIndex === 0 ? "Hyprland Rices" : "Niri Rices")
+                                    : "Switcher Themes"
                             color: root.titleText
                             font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: root.revo ? 27 : 29
@@ -415,26 +405,50 @@ ShellRoot {
                     Item { Layout.fillWidth: true }
 
                     Rectangle {
-                        width: root.page === 3 ? 180 : 150
+                        id: themesButton
+                        width: 150
                         height: 38
                         radius: root.revo ? 8 : 19
-                        color: root.chip
+                        color: themesMouse.containsMouse
+                            ? root.panelSelected
+                            : root.chip
                         border.width: root.revo ? 1 : 0
-                        border.color: root.borderIdle
+                        border.color: root.page === 3
+                            ? root.accent
+                            : root.borderIdle
 
                         Text {
                             anchors.centerIn: parent
-                            text: root.page === 0
-                                ? "RICES  •  THEMES"
-                                : root.page === 1
-                                    ? "SELECT ENGINE"
-                                    : root.page === 2
-                                        ? (root.compositorIndex === 0 ? "HYPRLAND" : "NIRI")
-                                        : (root.activeTheme === "revo" ? "REVO-INSPIRED" : "ORIGINAL")
-                            color: root.mutedText
+                            text: root.page === 3 ? "←  BACK" : "THEMES  ◐"
+                            color: root.page === 3
+                                ? root.accentText
+                                : root.mutedText
                             font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 11
-                            font.bold: root.revo
+                            font.bold: true
+                        }
+
+                        MouseArea {
+                            id: themesMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+
+                            onClicked: {
+                                root.actionMessage = ""
+                                if (root.page === 3) {
+                                    root.page = 0
+                                } else {
+                                    for (let i = 0; i < root.themes.length; ++i) {
+                                        if (root.themes[i].id === root.activeTheme) {
+                                            root.themeIndex = i
+                                            break
+                                        }
+                                    }
+                                    root.page = 3
+                                }
+                                root.forceActiveFocus()
+                            }
                         }
                     }
                 }
@@ -448,7 +462,7 @@ ShellRoot {
                         id: hubPage
                         anchors.centerIn: parent
                         spacing: 28
-                        visible: root.page === 0
+                        visible: false
 
                         Repeater {
                             model: [
@@ -542,7 +556,7 @@ ShellRoot {
                         id: compositorPage
                         anchors.centerIn: parent
                         spacing: 28
-                        visible: root.page === 1
+                        visible: root.page === 0
 
                         Repeater {
                             model: [
@@ -850,10 +864,8 @@ ShellRoot {
                         text: root.actionMessage.length > 0
                             ? root.actionMessage
                             : root.page === 0
-                                ? "← →  Rices / Themes"
-                                : root.page === 1
-                                    ? "← →  Select compositor"
-                                    : root.page === 2
+                                ? "← →  Select compositor     T  Themes"
+                                : root.page === 2
                                         ? "↑ ↓  Select rice"
                                         : "← →  Select switcher theme"
                         color: root.mutedText
@@ -866,9 +878,7 @@ ShellRoot {
                     Text {
                         text: root.page === 0
                             ? "ENTER  Open     ESC  Close"
-                            : root.page === 1
-                                ? "ENTER  Open     ESC  Back"
-                                : root.page === 2
+                            : root.page === 2
                                     ? "ENTER  Select     ESC  Back"
                                     : "ENTER  Apply     ESC  Back"
                         color: root.mutedText
