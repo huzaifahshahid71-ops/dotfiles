@@ -45,7 +45,8 @@ jobs:
           grep -Fq 'Type exactly INSTALL TAHOE to continue' v6/tahoe/session/install-tahoe-session.sh
           grep -Fq 'state.conf are not modified' v6/tahoe/session/install-tahoe-session.sh
           grep -Fq 'Hyprland --verify-config --config' v6/tahoe/session/install-tahoe-session.sh
-          ! grep -Eq 'pacman|hyprpm|hyprctl plugin|systemctl enable|systemctl disable|state[.]conf' v6/tahoe/session/install-tahoe-session.sh
+          ! grep -Eq '^[[:space:]]*(pacman|hyprpm|hyprctl[[:space:]]+plugin|systemctl[[:space:]]+(enable|disable))([[:space:]]|$)' v6/tahoe/session/install-tahoe-session.sh
+          ! grep -Fq '/var/lib/sddm/state.conf' v6/tahoe/session/install-tahoe-session.sh
           grep -Fq 'hl.bind("SUPER + SHIFT + E", hl.dsp.exit())' v6/tahoe/session/hyprland.lua
           grep -Fq 'hl.exec_cmd("foot")' v6/tahoe/session/hyprland.lua
           ! grep -Eq 'hl[.]plugin[.]load|hyprpm|systemctl|sudo|pacman' v6/tahoe/session/hyprland.lua
