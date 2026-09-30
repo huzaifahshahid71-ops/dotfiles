@@ -47,19 +47,31 @@ The real host already has Hyprland 0.56.2. If live scene refraction is mandatory
 
 A third compositor adds operational complexity and is not needed for the initial proof.
 
-## Release-layout decision **pending user's confirmation**
+## Confirmed release-layout decision
 
-Goal remains **12 rices** preserving 8 currently installed Hyprland + 3 Niri:
+User explicitly approved **Tahoe as Hyprland rice #9**. Goal remains **12 rices** preserving 8 currently installed Hyprland + 3 Niri:
 
-- Option A — **9 Hyprland + 3 Niri**: Add Tahoe as a ninth Hyprland rice, using `hyprliquid`. Direct path toward live refractive materials.
-- Option B — **8 Hyprland + 4 Niri**: Add Tahoe as fourth Niri rice, with built-in live background blur + custom visual shaders, but true arbitrary live refraction is a separately scoped compositor/protocol development effort. Do **not** claim parity until demonstrated.
+- **Selected — 9 Hyprland + 3 Niri**: Add Tahoe as ninth Hyprland rice, using `hyprliquid` after testing exact plugin compatibility.
+- **Deferred — 8 Hyprland + 4 Niri**: A Tahoe-on-Niri variant remains an optional future effort only if Niri acquires a documented live-refraction path.
 
 Whichever option the user chooses, keep all 11 existing rices, the original switcher, the optional independent Revo-inspired switcher theme, Lumina music service, and host-first offline v6 packaging.
 
 ## Decision gate / proof sequence
 
-1. **No changes on host:** choose A or B with accurate tradeoffs.
+1. **No changes on host:** record decision A and prototype one sandboxed Hyprland Tahoe profile.
 2. Safely back up active Niri/Hyprland and Quickshell configs; verify fallback login. Confirm user's custom kernel, Btrfs snapshot, power/refresh control remain untouched.
 3. Render a stand-alone MacTahoe bar/dock glass proof: test with *moving app windows behind* to check whether content is truly distorted, not just blurred.
 4. Benchmark 60 Hz and high-refresh mode on actual NVIDIA hardware, while dragging a window and during fullscreen/overview. Measure visible artifacts and frame pacing.
 5. Only then implement Control Center, Spotlight, dock animation, icons/GTK/cursors, switcher Themes, and installer.
+
+
+## macOS interaction requirement (2026-09-30)
+
+The user additionally prioritized **floating macOS-style window management,
+Dock minimize/restore, and the actual Genie window deformation**. The first
+features can be composed from Hyprland floating rules, specific window
+identities, hidden special-workspace state, and Quickshell Dock controls.
+Hyprland's documented core animations offer `slide`, `popin`, and
+`gnomed`, **not** native Genie. A custom pinned renderer/plugin is an
+experimental acceptance gate, not a guarantee. See
+[TAHOE-WINDOW-MANAGEMENT.md](TAHOE-WINDOW-MANAGEMENT.md).
