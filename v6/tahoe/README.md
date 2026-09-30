@@ -151,3 +151,36 @@ After a successful plugin-free nested session and confirmation that parent
 Hyprland remains healthy, create a second *separate* script for a
 nested-only glass demo. Do not ever issue an unqualified `hyprctl plugin
 load` in the original daily-use compositor.
+
+## Nested Liquid Glass proof (stage 2)
+
+After the user confirms that the plugin-free nested compositor launched
+(the September 30 screenshot showed the expected Hyprland triangle wallpaper
+and debug-only `start-hyprland` warning), **exit that baseline window**
+and check that the original host desktop still works normally.
+
+Run only inside the existing normal Hyprland session:
+
+```fish
+curl -fsSLo /tmp/z6-nested-glass.sh https://raw.githubusercontent.com/huzaifahshahid71-ops/dotfiles/v6.0-tahoe-dev/v6/tahoe/nested-glass.sh
+bash /tmp/z6-nested-glass.sh --check
+# Only after PASS, and after exiting the baseline nested process:
+bash /tmp/z6-nested-glass.sh --run
+```
+
+The second script starts **a separate Hyprland nested instance** using
+another disposable Lua config. That config calls `hl.plugin.load` on
+the exact, already-compiled home-local library *inside the nested process*;
+the parent instance's plugin registry is never changed. A specially
+translucent Foot window starts as a visual test, with the `liquid_glass`
+rule, edge highlights, and RGB dispersion only in this disposable config.
+
+Press Ctrl+C in the *outside launching terminal* or Super+Shift+Q in the
+nested window to exit; never issue plugin load/unload in the active daily
+desktop. If a GPU fault affects the whole desktop, recover using the
+previously-working fallback session before trying again.
+
+Success criterion: while dragging the Foot window, background shapes
+actually **bend/refract** near its rounded edges. A static translucent
+background, a black surface, or merely startup without a crash does
+not count as demonstrated refraction. Send screenshot and logs.
