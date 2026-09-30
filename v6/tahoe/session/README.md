@@ -104,25 +104,25 @@ register an entry without permission. All other sessions remain selectable
 in SDDM for recovery.
 
 
-## BLOCKER — physical plugin-free Tahoe baseline also unusable
+## Physical plugin-free Tahoe baseline — PASS after live runtime inspection
 
-On the first real SDDM login test after the guarded install, the user
-reported that `ZEPHYRUS Tahoe (Experimental)` again remained at the
-Hyprland default/welcome triangle screen and did **not** become a usable
-Tahoe desktop.
+Initial visual interpretation was wrong: the default Hyprland welcome /
+triangle surface looked like a frozen session because the minimal Tahoe
+baseline intentionally has no shell, dock, bar or wallpaper daemon.
 
-This test was intentionally **plugin-free**, therefore this symptom cannot
-be attributed to Hyprliquid. It also occurred outside the nested Wayland
-test, so the earlier Aquamarine nested-output issue is insufficient as the
-sole explanation.
+Live inspection from the running Tahoe session proved it is healthy:
 
-**Status: standalone baseline FAIL.** Do not enable hyprliquid, Quickshell
-Tahoe shell, floating-first rules, or any other v6 feature in this login
-entry. Do not repeat the same physical test unchanged.
+- `hyprctl configerrors`: empty.
+- Physical output: `eDP-1`, 2560x1600, 240 Hz, scale 1.25, focused.
+- `Super+T` launches Foot successfully; multiple Foot clients are mapped.
+- Google Chrome launched and mapped on workspace 1.
+- Input/keybind dispatch therefore works.
+- Instance signature is valid and the compositor owns `wayland-1`.
 
-Next work must be read-only diagnosis from a known-good existing rice:
-compare the working rice's monitor/output/input/session environment with
-the staged minimal Lua session, inspect any available startup logs, and
-verify whether Foot and the keybind dispatchers ever start. The installed
-experimental entry should be rolled back until a corrected baseline is
-ready.
+**Status: standalone baseline PASS.** The default welcome surface is simply
+the bare compositor background. Do not rollback the session solely because
+that screen is visible.
+
+Next milestone: launch the existing Tahoe Quickshell alpha live in this same
+physical standalone session, still with Hyprliquid disabled. Validate bar,
+Dock, launchers, focus and clean exit before enabling any native plugin.
