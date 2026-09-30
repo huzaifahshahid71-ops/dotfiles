@@ -258,3 +258,12 @@ the plugin into the Tahoe install/autostart path until visible rendering,
 interaction and fallback recovery are demonstrated.
 
 Host-first v6 branch and 11 existing rices remain unchanged.
+
+
+## Nested output hang: Aquamarine upstream lead (2026-09-30)
+
+User supplied grep-filtered logs for two nested glass runs. The 20:05:12 run loaded Hyprliquid (plugin system), attempted nested Wayland backend, **exceeded the 2000 ms display launch window**, entered virtual monitor `FALLBACK`, launched Foot as fallback became active, then removed that fallback output. XDG-output/XWayland subsequently referenced an inert/nonexistent monitor. This does **not** demonstrate a functioning glass compositor and should not be described as one.
+
+See upstream **open** Aquamarine issue [#348 — nested Wayland backend stops presenting frames](https://github.com/hyprwm/aquamarine/issues/348), filed August 1, 2026, for Hyprland 0.56.1 + Intel GPU + Aquamarine 0.14.0. It documents nested frame callbacks arriving without subsequent presents; user visibly experiences a frozen nested surface even though inner applications have mapped. This is a **plausible match**, not a proven identical defect; the user's actual installed Aquamarine version has not yet been recorded.
+
+**Development decision:** Do not repeatedly run `nested-glass.sh --run`, suggest `AQ_NO_MODIFIERS`/driver resets, or auto-load the compiled library into the user's active Hyprland rice. Keep v6's eight original Hyprland profiles and three Niri profiles unchanged. To validate real refraction later, construct a separate opt-in Tahoe Hyprland login session with an independent Lua config, verified fallback session, config backups, and controlled recovery. Continue MacTahoe GTK/icons/cursors/Quickshell UI as independently testable work in the meantime. Do not install a global plugin/autostart until the isolated session is demonstrably responsive.
