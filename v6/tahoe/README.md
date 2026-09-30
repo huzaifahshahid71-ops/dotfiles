@@ -118,3 +118,36 @@ Hyprland reload, alter `~/.config`, or change existing rices.
 A successful build is **not** permission to load it into the current
 desktop: next step is a tested independent Tahoe session with a rescue
 login and guaranteed fallback.
+
+## Next milestone: nested compositor safety baseline
+
+The pinned Hyprliquid binary was **actually compiled successfully** on the
+real G16 on September 30, 2026:
+
+- Exact Hyprland version: 0.56.2, `efb50993780079460b0cbed1363e2166a2de1d9f`.
+- Plugin source: `c5442379542dc5e5c91cc385e3168172dd9d5ff9`.
+- Result: `~/.local/share/zephyrus-v6/plugins/hyprliquid-v0562/libhyprliquid.so`,
+  926K and sha256
+  `bed03aef37ca9865c7e47632c7e155d688e5f5447a00d7f76a736e4fc7ff52c1`.
+- Plugin remains **unloaded**; runtime stability is untested.
+
+Test baseline **in existing Hyprland GUI terminal**:
+
+```fish
+curl -fsSLo /tmp/z6-nested-probe.sh https://raw.githubusercontent.com/huzaifahshahid71-ops/dotfiles/v6.0-tahoe-dev/v6/tahoe/nested-probe.sh
+bash /tmp/z6-nested-probe.sh --check
+# After config verification, start a secondary compositor window:
+bash /tmp/z6-nested-probe.sh --baseline
+```
+
+The script uses a temporary isolated Lua config, no user profile symlink,
+no auto-launched bars or portals, NO plugins, no native plugin hooks, no
+changes to systemd graphical environment and no Hyprland reload.
+`Ctrl+C` in the parent terminal, or `Super+Shift+Q` in the nested window
+closes it. **If launching a nested compositor fails, do not try the next
+step from a tty.** Instead send terminal log and stop.
+
+After a successful plugin-free nested session and confirmation that parent
+Hyprland remains healthy, create a second *separate* script for a
+nested-only glass demo. Do not ever issue an unqualified `hyprctl plugin
+load` in the original daily-use compositor.
