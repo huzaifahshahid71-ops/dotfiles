@@ -43,7 +43,7 @@ jobs:
           grep -Fq 'id: themesButton' dual-rice/quickshell/multi-rice-switcher/shell.qml
           grep -Fq 'text: "HUZAIFAH"' dual-rice/quickshell/multi-rice-switcher/shell.qml
           grep -Fq 'id: compositorPage' dual-rice/quickshell/multi-rice-switcher/shell.qml
-          grep -Fq 'Revo-inspired' dual-rice/quickshell/multi-rice-switcher/shell.qml
+          grep -Fq 'Midnight Cyan' dual-rice/quickshell/multi-rice-switcher/shell.qml
           test -s v6/tahoe/session/hyprland.lua
           bash -n v6/tahoe/session/zephyrus-tahoe-session
           bash -n v6/tahoe/session/install-tahoe-session.sh
