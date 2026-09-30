@@ -47,8 +47,8 @@ else
         "$remote" -o "$preview_dir/shell.qml"
 fi
 
-printf '\n%s\n' "ZEPHYRUS TAHOE • Alpha 0.1"
-printf '%s\n' "- Preview ONLY: menu bar, dock, running app focus, pinned launcher."
+printf '\n%s\n' "ZEPHYRUS TAHOE • Alpha 0.2"
+printf '%s\n' "- Preview ONLY: working app menu, compact bar, larger Dock, launchers and app focus."
 printf '%s\n' "- Glass here is VISUAL tint, not Hyprliquid refraction yet."
 printf '%s\n' "- No profile switch, no system installs, no keybind or config changes."
 printf '%s\n' "- Existing bars/docks may overlap while you inspect it."
