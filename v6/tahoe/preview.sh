@@ -15,7 +15,8 @@ check() {
         printf '%s\n' "Quickshell 'qs' not found; refusing to change system packages." >&2
         return 1
     fi
-    if [[ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" && "${XDG_CURRENT_DESKTOP,,}" != *hyprland* ]]; then
+    local desktop="${XDG_CURRENT_DESKTOP:-}"
+    if [[ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" && "${desktop,,}" != *hyprland* ]]; then
         printf '%s\n' "Please run from your existing Hyprland rice (not a Niri session)." >&2
         return 1
     fi
