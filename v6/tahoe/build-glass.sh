@@ -43,7 +43,7 @@ fi
 if ! pkg-config --exists hyprland; then
     fail "Hyprland pkg-config headers are missing. Check pkg-config --modversion hyprland; do not update Hyprland blindly."
 fi
-if ! pkg-config --modversion hyprland | grep -Eq '^0\\.56\\.2([.-]|$)'; then
+if ! pkg-config --modversion hyprland | grep -Eq '^0[.]56[.]2([.-]|$)'; then
     fail "The hyprland development metadata isn't 0.56.2. Do not mix plugin headers with the compositor."
 fi
 if [[ ! -r /usr/include/stb/stb_image.h && ! -r /usr/local/include/stb/stb_image.h &&
