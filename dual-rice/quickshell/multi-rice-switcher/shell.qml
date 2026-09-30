@@ -21,11 +21,11 @@ ShellRoot {
         Rectangle {
             id: root
             anchors.fill: parent
-            radius: root.activeTheme === "midnight" ? 18 : 24
+            radius: 24
             antialiasing: true
             clip: true
             color: root.bg
-            border.width: root.activeTheme === "midnight" ? 1 : 2
+            border.width: 2
             border.color: root.accent
 
             focus: true
@@ -251,13 +251,18 @@ ShellRoot {
                 if (forceThemePicker)
                     return
 
-                deckProc.command = [
-                    "quickshell",
-                    "-p",
+                const deckPath =
                     Quickshell.env("HOME") +
-                        "/.local/share/desktop-switcher/themes/sumi-deck/DotsBrowser.qml"
-                ]
-                deckProc.running = true
+                    "/.local/share/desktop-switcher/themes/sumi-deck/DotsBrowser.qml"
+
+                Quickshell.execDetached([
+                    "bash",
+                    "-lc",
+                    "test -r " + JSON.stringify(deckPath) +
+                        " && exec quickshell -p " + JSON.stringify(deckPath) +
+                        " || { notify-send 'Huzaifah Switcher' 'Sumi Deck is missing; reinstall switcher themes.' 2>/dev/null || true; exit 1; }"
+                ])
+
                 Qt.callLater(Qt.quit)
             }
 
@@ -331,18 +336,6 @@ ShellRoot {
                         root.actionMessage = "Theme change failed • exit " + exitCode
                     }
                     root.pendingTheme = ""
-                }
-            }
-
-            Process {
-                id: deckProc
-
-                onExited: (exitCode, exitStatus) => {
-                    if (exitCode !== 0) {
-                        console.log(
-                            "Sumi Deck launch failed • exit " + exitCode
-                        )
-                    }
                 }
             }
 
@@ -437,17 +430,6 @@ ShellRoot {
             }
 
             Component.onCompleted: forceActiveFocus()
-
-            // Subtle Midnight Cyan highlight. It is deliberately visual only.
-            Rectangle {
-                visible: root.midnight
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                height: 3
-                color: root.accent
-                opacity: 0.85
-            }
 
             ColumnLayout {
                 anchors.fill: parent
