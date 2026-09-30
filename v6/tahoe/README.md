@@ -235,3 +235,26 @@ interpolation; it now uses `BASHPID`. No host profile changes.
 semi-transparent Foot terminal appeared. Do not repeatedly request the
 same runtime test if the GUI was never visible; inspect parent Wayland
 surface focus/placement and nested process environment first.
+
+
+## BLOCKER — frozen nested display, reported by user (2026-09-30)
+
+**Do not equate successful plugin load with a working glass prototype.**
+The user explicitly clarified that the **nested Hyprland GUI was stuck on its
+default triangle wallpaper**, not just that the launch command was waiting
+in the parent terminal. Even though the log shows plugin v0.2.1 loaded and
+Foot mapped, the user did not observe a usable Foot window or moving
+Liquid Glass refraction. Thus Tahoe material rendering has **NOT PASSED**.
+
+**Do not ask user to repeat the same nested-glass.sh experiment**, even with
+the 30-second timeout. Next investigate existing logs read-only and isolate
+the failure source. Possible causes to *test*, not assert: nested Wayland
+compositor frame presentation, input/focus forwarding, output scale/geometry,
+or plugin render interaction. One decisive A/B control should compare a
+functional nested compositor with and without plugin in the same otherwise
+minimal config, only if user opts in after reviewing the existing logs.
+Do not attempt direct plugin load in any existing host rice. Do not promote
+the plugin into the Tahoe install/autostart path until visible rendering,
+interaction and fallback recovery are demonstrated.
+
+Host-first v6 branch and 11 existing rices remain unchanged.
