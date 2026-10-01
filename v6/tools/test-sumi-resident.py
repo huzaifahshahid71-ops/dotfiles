@@ -15,7 +15,7 @@ CLOSE = '''    function close() {
 IPC = '''    // Temporary Huzaifah same-process reopen diagnostic.
     IpcHandler {
         target: "huzaifahSumiTest"
-        function show(): void {
+        function reopenDeck(): void {
             panel.visible = true
             Qt.callLater(function() { stage.forceActiveFocus() })
         }
@@ -44,4 +44,4 @@ if __name__ == "__main__":
     except (OSError, ValueError) as exc:
         sys.exit(str(exc))
     print("Prepared:", TARGET)
-    print("Installed deck is untouched. Launch the test, scroll, press Esc, then use IPC show to reopen.")
+    print("Installed deck is untouched. Launch the test, scroll, press Esc, then use IPC reopenDeck to reopen.")

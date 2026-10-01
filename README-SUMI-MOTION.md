@@ -99,7 +99,7 @@ quickshell -p /tmp/huzaifah-sumi-resident-test.qml > /tmp/huzaifah-sumi-resident
 Scroll until smooth, press Escape, then reopen using this command:
 
 ```fish
-quickshell ipc --path /tmp/huzaifah-sumi-resident-test.qml call huzaifahSumiTest show
+quickshell ipc --path /tmp/huzaifah-sumi-resident-test.qml call huzaifahSumiTest reopenDeck
 ```
 
 Compare the first scroll after each reopening. For this experiment use the IPC
