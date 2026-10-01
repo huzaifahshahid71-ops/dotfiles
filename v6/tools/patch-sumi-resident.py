@@ -11,8 +11,8 @@ RESIDENT = r'''    // Huzaifah Sumi resident v1
 
     IpcHandler {
         target: "huzaifahSumiDeck"
-        function reopenDeck(): void { panel.reopenDeck() }
-        function shutdownDeck(): void { Qt.quit() }
+        function reopenDeck() { panel.reopenDeck() }
+        function shutdownDeck() { Qt.quit() }
     }
 
     function reopenDeck() {
