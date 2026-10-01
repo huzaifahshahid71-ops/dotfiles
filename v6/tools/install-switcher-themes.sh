@@ -73,7 +73,7 @@ preflight() {
     die "Downloaded QML is missing the Midnight Cyan theme entry"
   grep -Fq 'Sumi Deck' "$tmp/shell.qml" ||
     die "Downloaded QML is missing the Sumi Deck theme entry"
-  grep -Fq 'HUZAIFAH · SUMI DECK' "$tmp/DotsBrowser.qml" ||
+  grep -Fq 'フザイファ · 墨デッキ' "$tmp/DotsBrowser.qml" ||
     die "Pinned Revo DotsBrowser patch did not produce Sumi Deck"
 
   if command -v qmlformat >/dev/null 2>&1; then

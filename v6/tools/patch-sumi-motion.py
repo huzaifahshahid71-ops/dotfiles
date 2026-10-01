@@ -3,8 +3,8 @@
 from pathlib import Path
 import sys
 
-MARKER = "// Huzaifah Sumi motion v2"
-MOTION = r'''    // Huzaifah Sumi motion v2
+MARKER = "// Huzaifah Sumi motion v3"
+MOTION = r'''    // Huzaifah Sumi motion v3
     property bool previewsWarm: false
     readonly property int previewWidth: 880
     readonly property int previewHeight: 480
@@ -59,13 +59,25 @@ MOTION = r'''    // Huzaifah Sumi motion v2
             model: panel.dotsArray.length
             delegate: Image {
                 required property int index
+                width: panel.focusedW - 20
+                height: panel.focusedH - 20
                 source: panel.previewFor(panel.dotsArray[index].name)
+                // Crop mode is part of Qt's pixmap cache key: match the cards.
+                fillMode: Image.PreserveAspectCrop
                 sourceSize.width: panel.previewWidth
                 sourceSize.height: panel.previewHeight
                 asynchronous: true
                 cache: true
             }
         }
+    }
+
+    function cardImagesSettled() {
+        for (var i = 0; i < cardPool.count; ++i) {
+            var card = cardPool.itemAt(i)
+            if (!card || !card.previewSettled) return false
+        }
+        return true
     }
 
     // Warm the real card scene, including focused titles, borders and textures.
@@ -83,14 +95,30 @@ MOTION = r'''    // Huzaifah Sumi motion v2
                     return
             }
             if (warmIndex < panel.dotsArray.length) {
-                panel.scrollTarget = warmIndex
-                if (++warmFrames >= 2) {
+                if (panel.scrollTarget !== warmIndex) {
+                    panel.scrollTarget = warmIndex
+                    warmFrames = 0
+                    return
+                }
+                if (!panel.cardImagesSettled()) {
+                    warmFrames = 0
+                    return
+                }
+                if (++warmFrames >= 3) {
                     ++warmIndex
                     warmFrames = 0
                 }
                 return
             }
-            panel.scrollTarget = panel.selFilt
+            if (panel.scrollTarget !== panel.selFilt) {
+                panel.scrollTarget = panel.selFilt
+                restoreFrames = 0
+                return
+            }
+            if (!panel.cardImagesSettled()) {
+                restoreFrames = 0
+                return
+            }
             if (++restoreFrames >= 3) panel.previewsWarm = true
         }
     }
@@ -100,6 +128,9 @@ MOTION = r'''    // Huzaifah Sumi motion v2
 POOL = r'''                readonly property int virtualIdx: panel.virtualIndex(index, panel.visualPosition)
                 readonly property int catalogIdx: panel.wrapIndex(virtualIdx)
                 readonly property var entry: panel.dotsArray[catalogIdx] || null
+                readonly property bool previewSettled: desktopPreview.status === Image.Ready
+                    || desktopPreview.status === Image.Error
+                    || (desktopPreview.status === Image.Null && String(desktopPreview.source).length === 0)
                 readonly property real relIdx: virtualIdx - panel.visualPosition
                 readonly property bool focused: virtualIdx === panel.scrollTarget
                 readonly property real focusAmount: Math.max(0, 1 - Math.abs(relIdx))
@@ -127,8 +158,8 @@ def patch(text):
         if text.count(MARKER) != 1 or "panel.virtualIndex(index, panel.visualPosition)" not in text:
             raise ValueError("Incomplete Sumi motion patch; no changes made")
         return text
-    if "// Huzaifah Sumi motion v1" in text:
-        raise ValueError("Rebuild the pinned deck with install-switcher-themes.sh to upgrade v1")
+    if any("// Huzaifah Sumi motion " + version in text for version in ("v1", "v2")):
+        raise ValueError("Rebuild the pinned deck with install-switcher-themes.sh to upgrade older motion patches")
     if "// Huzaifah Sumi desktop previews v1" not in text:
         raise ValueError("Install the Sumi preview patch before the motion patch")
     text = replace_once(text, "    readonly property bool ready: loaded && layoutSettled",
@@ -139,7 +170,7 @@ def patch(text):
     text = replace_once(text, 'panel.moveSel(wheel.angleDelta.y < 0 ? 1 : -1)',
                         "panel.scrollWheel(wheel)")
     text = replace_once(text, "            model: panel.dotsArray.length\n",
-                        "            model: panel.dotsArray.length ? panel.slotCount : 0\n")
+                        "            id: cardPool\n            model: panel.dotsArray.length ? panel.slotCount : 0\n")
     old = '''                readonly property var  entry:   panel.dotsArray[index] || null
                 readonly property int  relIdx:  index - panel.selFilt
                 readonly property bool focused: relIdx === 0
@@ -162,6 +193,9 @@ def patch(text):
         ("                    hoverEnabled: true\n", "                    hoverEnabled: true\n                    enabled: panel.ready\n"),
         ("sourceSize.width: 1320", "sourceSize.width: panel.previewWidth"),
         ("sourceSize.height: 720", "sourceSize.height: panel.previewHeight"),
+        ('text: "HUZAIFAH · SUMI DECK"\n', 'text: "フザイファ · 墨デッキ"\n'),
+        ('font.family: panel.mono; font.pixelSize: 12; font.letterSpacing: 4; font.weight: Font.Medium',
+         'font.family: "Noto Sans CJK JP"; font.pixelSize: 14; font.letterSpacing: 4; font.weight: Font.Medium'),
         ("        Keys.priority: Keys.BeforeItem\n        Keys.onPressed: function(event) {\n",
          "        Keys.priority: Keys.BeforeItem\n        Keys.onPressed: function(event) {\n"
          "            if (!panel.ready) {\n"
@@ -216,4 +250,4 @@ if __name__ == "__main__":
         raise SystemExit(str(exc))
     if updated != original:
         path.write_text(updated, encoding="utf-8")
-    print("PASS: buffered continuous Sumi motion and full-card warmup patched")
+    print("PASS: continuous Sumi motion, matching preview cache, card-ready warmup, and Japanese heading patched")

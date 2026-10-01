@@ -9,19 +9,28 @@ A continuous position drives the whole fan. A fixed pool of cards recycles beyon
 the fading visible edges, keeping each card's identity while crossing the center.
 High-resolution wheel deltas accumulate into full steps rather than treating
 every tiny input event as a whole profile change.
-Names, ACTIVE badges, geometry, colors, switching commands, and the installed catalog
-remain unchanged.
+The heading is now Japanese: フザイファ · 墨デッキ (Huzaifah · Sumi Deck),
+using Noto Sans CJK JP with system font fallback. Profile names, ACTIVE badges,
+geometry, colors, switching commands, and the installed catalog remain unchanged.
 
-Before revealing the carousel, its screenshots are decoded asynchronously, then
-the actual card scene is rendered in every focused profile state at negligible
+Before revealing the carousel, its screenshots are decoded asynchronously using
+the same PreserveAspectCrop setting and source size as the actual cards. Qt includes
+the crop option in its pixmap cache key; the previous default Stretch preload
+created a second cache entry for every screenshot instead of keeping the card
+entry resident. Warmup now also checks the actual pooled card images after each
+selection and when restoring the active profile. Only settled images (Ready,
+Error, or empty source) let the focused scene finish its warmup.
+The actual card scene is rendered in every focused profile state at negligible
 opacity. This exercises focused text, borders, card layers, and image textures.
 Card contents are cached in Qt layers; their movement uses a single animation.
 The image objects stay alive for the session.
 Decoded previews use 880 × 480 rather than 1320 × 720, reducing their pixel memory
 by about 56% while leaving the original screenshot files untouched.
 Missing or unreadable images finish warmup and use the existing icon fallback.
-There may be a brief loading message on a cold launch. Warmup adds roughly two
-rendered frames per profile plus three frames to restore the active selection.
+There may be a brief loading message on a cold launch. Warmup waits for decoding and then three
+rendered frames per profile, plus three frames to restore the active selection.
+The live no-layer test did not improve the startup hitch, so card layers remain.
+This corrects a reproduced preload bug; laptop GPU performance still needs validation.
 
 ## Install
 
@@ -56,6 +65,9 @@ the THEMES escape hatch, both wrap directions, odd/even dynamic catalogs,
 fractional wheel input, invisible slot recycling across many loops, full-card
 warmup, missing-image fallback, and unchanged profile-switch commands.
 Wayland rendering and first-scroll frame pacing still require a live laptop check.
+An isolated Qt cache test reproduces two entries with mismatched crop modes and
+one shared entry with matching modes. A delayed-card test verifies the deck cannot
+reveal while its card-image barrier is pending, and restores selection after it clears.
 
 Test launch repeatedly, then scroll immediately in both directions across the
 first/last cards. If there is still a pause, inspect:
