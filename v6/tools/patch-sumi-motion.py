@@ -180,6 +180,10 @@ def patch(text):
 '''
     text = replace_once(text, old, POOL)
     changes = [
+        ("font.pixelSize: item.focused ? 72 : (Math.abs(item.relIdx) === 1 ? 34 : 18)",
+         "font.pixelSize: 72\n                            scale: item.focused ? 1 : (Math.abs(item.relIdx) === 1 ? 34 / 72 : 18 / 72)"),
+        ("Behavior on font.pixelSize { NumberAnimation { duration: 200 } }",
+         "Behavior on scale { NumberAnimation { duration: 200 } }"),
         ("y: Math.abs(effRel) * 7 + (focused ? -14 : 0)",
          "y: Math.abs(effRel) * 7 - 14 * focusAmount"),
         ("scale: focused ? (hovered ? 1.045 : 1.0) : 0.97",
