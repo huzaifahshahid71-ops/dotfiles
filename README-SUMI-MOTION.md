@@ -23,14 +23,20 @@ Error, or empty source) let the focused scene finish its warmup.
 The actual card scene is rendered in every focused profile state at negligible
 opacity. This exercises focused text, borders, card layers, and image textures.
 Card contents are cached in Qt layers; their movement uses a single animation.
-The image objects stay alive for the session.
+The image objects stay alive between ordinary openings of the deck. Escape and
+backdrop clicks hide the window; the normal launcher uses IPC to reopen it. The
+hidden window has no ongoing warmup animation once ready.
 Decoded previews use 880 × 480 rather than 1320 × 720, reducing their pixel memory
 by about 56% while leaving the original screenshot files untouched.
 Missing or unreadable images finish warmup and use the existing icon fallback.
 There may be a brief loading message on a cold launch. Warmup waits for decoding and then three
 rendered frames per profile, plus three frames to restore the active selection.
 The live no-layer test did not improve the startup hitch, so card layers remain.
-This corrects a reproduced preload bug; laptop GPU performance still needs validation.
+The user also confirmed that reopening a temporary same-process deck removes
+the repeated Silent-mode initial scroll hitch. Normal launches now use that reuse
+path. The first cold opening after login, a profile switch, or leaving for THEMES
+can still incur initialization cost. Reuse retains the decoded preview memory
+while hidden; it does not change the selected power profile.
 
 ## Install
 
@@ -45,7 +51,9 @@ At the existing installer prompt, type `INSTALL SWITCHER THEMES`.
 Then reopen the switcher with Super+Shift+D.
 The installer backs up the classic QML, backend, and locally installed Sumi QML.
 It preserves the theme preference and all screenshot files.
-No rice configs, compositor processes, keybinds, or services are changed.
+No rice configs, compositor processes, keybinds, or services are changed. The
+installer stops only an existing Sumi resident instance before install or rollback
+to avoid hot-reloading a hidden deck into view.
 Upstream QML is fetched at the existing pinned revision and patched locally.
 
 ## Roll back
@@ -64,7 +72,11 @@ plumbing. They verify classic-window visibility before and after theme resolutio
 the THEMES escape hatch, both wrap directions, odd/even dynamic catalogs,
 fractional wheel input, invisible slot recycling across many loops, full-card
 warmup, missing-image fallback, and unchanged profile-switch commands.
-Wayland rendering and first-scroll frame pacing still require a live laptop check.
+Production tests verify retained warm state on ordinary reopenings, refreshed
+ACTIVE state, immediate selection restore, fresh warmup when catalog IDs/order
+change, and exit after handing off a profile switch. The actual launcher shell
+is tested for IPC reuse, absent-instance startup, path quoting, and missing files.
+The normal shortcut route still requires the live laptop check.
 An isolated Qt cache test reproduces two entries with mismatched crop modes and
 one shared entry with matching modes. A delayed-card test verifies the deck cannot
 reveal while its card-image barrier is pending, and restores selection after it clears.
@@ -79,37 +91,27 @@ tail -n 80 ~/.local/state/huzaifah-switcher/sumi-deck.log
 Per-rice Super+Shift+D bindings are a separate live diagnostic; this update does
 not replace or rewrite them.
 
-## Temporary same-process reopen test
+## Resident lifecycle
 
-The normal launcher still starts a new deck process for each opening. Silent mode
-can therefore repeat the first-use cost. This diagnostic prepares a temporary
-copy of the installed v3 deck: Escape hides it, while an IPC call reopens the same
-QML instance and retains its decoded image objects. GPU resource retention when
-hiding a window is platform-dependent; this is a live experiment, not a guaranteed fix.
-No installed QML, shortcuts, theme setting, services, or rice files are edited.
+The normal launcher first calls `huzaifahSumiDeck reopenDeck` on the installed
+file. If no handler exists, it starts Quickshell with `--no-duplicate`.
+On reopening a hidden deck, the backend catalog and colors refresh before the
+window maps. The active profile is restored without animating from an old selection.
+Matching catalog IDs/order reuse the warm state; changed catalogs warm again.
 
-Close the normal switcher, stay in Silent mode, then run:
+Selecting a profile preserves the existing detached `multi-rice-control switch`
+command and exits the deck process. Opening THEMES also exits the deck process.
+This avoids keeping old desktop or theme state resident across those handoffs.
 
-```fish
-curl -fL https://raw.githubusercontent.com/huzaifahshahid71-ops/dotfiles/v6.0-tahoe-dev/v6/tools/test-sumi-resident.py -o /tmp/test-sumi-resident.py
-python /tmp/test-sumi-resident.py
-quickshell -p /tmp/huzaifah-sumi-resident-test.qml > /tmp/huzaifah-sumi-resident-test.log 2>&1 &
-```
-
-Scroll until smooth, press Escape, then reopen using this command:
+To stop only the resident deck manually:
 
 ```fish
-quickshell ipc --path /tmp/huzaifah-sumi-resident-test.qml call huzaifahSumiTest reopenDeck
+quickshell ipc --path ~/.local/share/desktop-switcher/themes/sumi-deck/DotsBrowser.qml call huzaifahSumiDeck shutdownDeck
 ```
 
-Compare the first scroll after each reopening. For this experiment use the IPC
-command to reopen, since Super+Shift+D still uses the installed launcher.
-Finish by stopping only the temporary instance:
+The earlier `/tmp` diagnostic used `huzaifahSumiTest reopenDeck`. Stop any remaining
+instance of that test before installing this update:
 
 ```fish
 quickshell ipc --path /tmp/huzaifah-sumi-resident-test.qml call huzaifahSumiTest quit
 ```
-
-Headless Qt checks verify repeated hide/show retains the same QML instance and
-warmed image state. Wayland, IPC transport, keyboard focus and Silent-mode frame
-pacing require the laptop test.

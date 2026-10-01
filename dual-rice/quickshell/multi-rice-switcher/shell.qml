@@ -269,7 +269,9 @@ ShellRoot {
                     "-c",
                     "mkdir -p -- \"$2\"; " +
                         "if test -r \"$1\"; then " +
-                        "exec quickshell -p \"$1\" >>\"$3\" 2>&1; " +
+                        "if quickshell ipc --path \"$1\" call " +
+                        "huzaifahSumiDeck reopenDeck >/dev/null 2>&1; then exit 0; fi; " +
+                        "exec quickshell --no-duplicate -p \"$1\" >>\"$3\" 2>&1; " +
                         "else notify-send 'Huzaifah Switcher' " +
                         "'Sumi Deck is missing; reinstall switcher themes.' " +
                         "2>/dev/null || true; exit 1; fi",

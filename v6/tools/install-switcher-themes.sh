@@ -27,6 +27,13 @@ log() { printf '\n==> %s\n' "$*"; }
 ok() { printf 'PASS: %s\n' "$*"; }
 die() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 
+stop_resident_deck() {
+  if [[ -r "$DECK_TARGET" ]] && command -v quickshell >/dev/null 2>&1; then
+    quickshell ipc --path "$DECK_TARGET" call huzaifahSumiDeck shutdownDeck \
+      >/dev/null 2>&1 || true
+  fi
+}
+
 [[ "${EUID:-$(id -u)}" -ne 0 ]] || die "Run as your normal user, not root."
 
 fetch_sources() {
@@ -43,11 +50,14 @@ fetch_sources() {
     "$RAW/v6/tools/patch-sumi-previews.py"
   curl -fsSLo "$tmp/patch-sumi-motion.py" \
     "$RAW/v6/tools/patch-sumi-motion.py"
+  curl -fsSLo "$tmp/patch-sumi-resident.py" \
+    "$RAW/v6/tools/patch-sumi-resident.py"
   curl -fsSLo "$tmp/DotsBrowser.qml" "$REVO_DOTS_URL"
 
   python "$tmp/patch-sumi-deck.py" "$tmp/DotsBrowser.qml"
   python "$tmp/patch-sumi-previews.py" "$tmp/DotsBrowser.qml"
   python "$tmp/patch-sumi-motion.py" "$tmp/DotsBrowser.qml"
+  python "$tmp/patch-sumi-resident.py" "$tmp/DotsBrowser.qml"
 }
 
 preflight() {
@@ -75,6 +85,8 @@ preflight() {
     die "Downloaded QML is missing the Sumi Deck theme entry"
   grep -Fq 'フザイファ · 墨デッキ' "$tmp/DotsBrowser.qml" ||
     die "Pinned Revo DotsBrowser patch did not produce Sumi Deck"
+  grep -Fq 'target: "huzaifahSumiDeck"' "$tmp/DotsBrowser.qml" ||
+    die "Sumi Deck is missing its reopen handler"
 
   if command -v qmlformat >/dev/null 2>&1; then
     cp "$tmp/shell.qml" "$tmp/qml-check.qml"
@@ -102,6 +114,8 @@ install_update() {
   printf '\nType exactly INSTALL SWITCHER THEMES to continue: '
   IFS= read -r answer
   [[ "$answer" == "INSTALL SWITCHER THEMES" ]] || die "Installation cancelled"
+
+  stop_resident_deck
 
   local stamp backup
   stamp="$(date +%Y%m%d-%H%M%S)"
@@ -146,6 +160,8 @@ rollback_update() {
   printf 'Restore switcher snapshot %s? Type exactly ROLLBACK SWITCHER THEMES: ' "$backup"
   IFS= read -r answer
   [[ "$answer" == "ROLLBACK SWITCHER THEMES" ]] || die "Rollback cancelled"
+
+  stop_resident_deck
 
   install -m 0644 "$backup/shell.qml" "$QML_TARGET"
   install -m 0755 "$backup/multi-rice-control" "$BACKEND_TARGET"
