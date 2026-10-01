@@ -17,7 +17,10 @@ DECK_TARGET="$HOME/.local/share/desktop-switcher/themes/sumi-deck/DotsBrowser.qm
 STATE_ROOT="${XDG_STATE_HOME:-$HOME/.local/state}/zephyrus-v6/switcher-theme-backups"
 
 tmp=""
-cleanup() { [[ -n "$tmp" ]] && rm -rf -- "$tmp"; }
+cleanup() {
+  if [[ -n "$tmp" ]]; then rm -rf -- "$tmp"; fi
+  return 0
+}
 trap cleanup EXIT
 
 log() { printf '\n==> %s\n' "$*"; }
@@ -38,10 +41,13 @@ fetch_sources() {
     "$RAW/v6/tools/patch-sumi-deck.py"
   curl -fsSLo "$tmp/patch-sumi-previews.py" \
     "$RAW/v6/tools/patch-sumi-previews.py"
+  curl -fsSLo "$tmp/patch-sumi-motion.py" \
+    "$RAW/v6/tools/patch-sumi-motion.py"
   curl -fsSLo "$tmp/DotsBrowser.qml" "$REVO_DOTS_URL"
 
   python "$tmp/patch-sumi-deck.py" "$tmp/DotsBrowser.qml"
   python "$tmp/patch-sumi-previews.py" "$tmp/DotsBrowser.qml"
+  python "$tmp/patch-sumi-motion.py" "$tmp/DotsBrowser.qml"
 }
 
 preflight() {
@@ -73,9 +79,13 @@ preflight() {
   if command -v qmlformat >/dev/null 2>&1; then
     cp "$tmp/shell.qml" "$tmp/qml-check.qml"
     qmlformat -i "$tmp/qml-check.qml"
+    cp "$tmp/DotsBrowser.qml" "$tmp/deck-check.qml"
+    qmlformat -i "$tmp/deck-check.qml"
   elif [[ -x /usr/lib/qt6/bin/qmlformat ]]; then
     cp "$tmp/shell.qml" "$tmp/qml-check.qml"
     /usr/lib/qt6/bin/qmlformat -i "$tmp/qml-check.qml"
+    cp "$tmp/DotsBrowser.qml" "$tmp/deck-check.qml"
+    /usr/lib/qt6/bin/qmlformat -i "$tmp/deck-check.qml"
   fi
 
   ok "Theme-selector sources validate"

@@ -7,7 +7,9 @@ ShellRoot {
     PanelWindow {
         id: window
 
-        visible: true
+        // Resolve the saved theme before mapping the classic window.
+        visible: root.themeResolved &&
+                 (root.forceThemePicker || root.activeTheme !== "sumi-deck")
         implicitWidth: 860
         implicitHeight: 560
         color: "transparent"
@@ -46,6 +48,7 @@ ShellRoot {
             property var installedProfiles: ({})
 
             property string activeTheme: "original"
+            property bool themeResolved: false
             property string pendingTheme: ""
             property string actionMessage: ""
             property bool forceThemePicker:
@@ -151,6 +154,7 @@ ShellRoot {
                         break
                     }
                 }
+                themeResolved = true
             }
 
             function applyList(text) {
@@ -262,14 +266,14 @@ ShellRoot {
 
                 Quickshell.execDetached([
                     "bash",
-                    "-lc",
-                    "mkdir -p " + JSON.stringify(logDir) + "; " +
-                        "if test -r " + JSON.stringify(deckPath) + "; then " +
-                        "exec quickshell -p " + JSON.stringify(deckPath) +
-                        " >>" + JSON.stringify(logPath) + " 2>&1; " +
+                    "-c",
+                    "mkdir -p -- \"$2\"; " +
+                        "if test -r \"$1\"; then " +
+                        "exec quickshell -p \"$1\" >>\"$3\" 2>&1; " +
                         "else notify-send 'Huzaifah Switcher' " +
                         "'Sumi Deck is missing; reinstall switcher themes.' " +
-                        "2>/dev/null || true; exit 1; fi"
+                        "2>/dev/null || true; exit 1; fi",
+                    "huzaifah-sumi-deck", deckPath, logDir, logPath
                 ])
 
                 Qt.callLater(Qt.quit)
@@ -366,6 +370,14 @@ ShellRoot {
                         } else if (root.activeTheme === "sumi-deck") {
                             Qt.callLater(root.openSumiDeck)
                         }
+                    }
+                }
+
+                onExited: (exitCode, exitStatus) => {
+                    if (exitCode !== 0) {
+                        root.activeTheme = "original"
+                        root.themeResolved = true
+                        root.actionMessage = "Unable to read switcher status • exit " + exitCode
                     }
                 }
             }
