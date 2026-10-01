@@ -5,17 +5,23 @@ Selecting Sumi Deck therefore launches the carousel without a purple window flas
 Original, Midnight Cyan, and the forced THEMES picker retain their existing UI.
 
 The carousel wraps in both directions, including its mouse wheel and arrow/Tab navigation.
-The neighboring cards use their shortest distance around the circular catalog;
-the darkest far card is recycled without sweeping across the focused card.
+A continuous position drives the whole fan. A fixed pool of cards recycles beyond
+the fading visible edges, keeping each card's identity while crossing the center.
+High-resolution wheel deltas accumulate into full steps rather than treating
+every tiny input event as a whole profile change.
 Names, ACTIVE badges, geometry, colors, switching commands, and the installed catalog
 remain unchanged.
 
-Before revealing the carousel, its screenshots are decoded asynchronously and
-primed in the scene graph. The image objects stay alive for the session.
+Before revealing the carousel, its screenshots are decoded asynchronously, then
+the actual card scene is rendered in every focused profile state at negligible
+opacity. This exercises focused text, borders, card layers, and image textures.
+Card contents are cached in Qt layers; their movement uses a single animation.
+The image objects stay alive for the session.
 Decoded previews use 880 × 480 rather than 1320 × 720, reducing their pixel memory
 by about 56% while leaving the original screenshot files untouched.
 Missing or unreadable images finish warmup and use the existing icon fallback.
-There may be a brief loading message on a cold launch.
+There may be a brief loading message on a cold launch. Warmup adds roughly two
+rendered frames per profile plus three frames to restore the active selection.
 
 ## Install
 
@@ -47,7 +53,8 @@ The generated QML is parsed with qmlformat. Headless Qt runtime checks exercise
 the actual UI and artwork while replacing external Quickshell process/window
 plumbing. They verify classic-window visibility before and after theme resolution,
 the THEMES escape hatch, both wrap directions, odd/even dynamic catalogs,
-preview warmup, missing-image fallback, and unchanged profile-switch commands.
+fractional wheel input, invisible slot recycling across many loops, full-card
+warmup, missing-image fallback, and unchanged profile-switch commands.
 Wayland rendering and first-scroll frame pacing still require a live laptop check.
 
 Test launch repeatedly, then scroll immediately in both directions across the
