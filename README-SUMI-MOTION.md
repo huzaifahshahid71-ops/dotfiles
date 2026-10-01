@@ -78,3 +78,38 @@ tail -n 80 ~/.local/state/huzaifah-switcher/sumi-deck.log
 
 Per-rice Super+Shift+D bindings are a separate live diagnostic; this update does
 not replace or rewrite them.
+
+## Temporary same-process reopen test
+
+The normal launcher still starts a new deck process for each opening. Silent mode
+can therefore repeat the first-use cost. This diagnostic prepares a temporary
+copy of the installed v3 deck: Escape hides it, while an IPC call reopens the same
+QML instance and retains its decoded image objects. GPU resource retention when
+hiding a window is platform-dependent; this is a live experiment, not a guaranteed fix.
+No installed QML, shortcuts, theme setting, services, or rice files are edited.
+
+Close the normal switcher, stay in Silent mode, then run:
+
+```fish
+curl -fL https://raw.githubusercontent.com/huzaifahshahid71-ops/dotfiles/v6.0-tahoe-dev/v6/tools/test-sumi-resident.py -o /tmp/test-sumi-resident.py
+python /tmp/test-sumi-resident.py
+quickshell -p /tmp/huzaifah-sumi-resident-test.qml > /tmp/huzaifah-sumi-resident-test.log 2>&1 &
+```
+
+Scroll until smooth, press Escape, then reopen using this command:
+
+```fish
+quickshell ipc --path /tmp/huzaifah-sumi-resident-test.qml call huzaifahSumiTest show
+```
+
+Compare the first scroll after each reopening. For this experiment use the IPC
+command to reopen, since Super+Shift+D still uses the installed launcher.
+Finish by stopping only the temporary instance:
+
+```fish
+quickshell ipc --path /tmp/huzaifah-sumi-resident-test.qml call huzaifahSumiTest quit
+```
+
+Headless Qt checks verify repeated hide/show retains the same QML instance and
+warmed image state. Wayland, IPC transport, keyboard focus and Silent-mode frame
+pacing require the laptop test.
