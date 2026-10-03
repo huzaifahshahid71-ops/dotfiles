@@ -5,6 +5,7 @@ import base64
 import fcntl
 import json
 import os
+import re
 from pathlib import Path
 import shlex
 import shutil
@@ -42,9 +43,14 @@ def run(args, *, timeout=45, env=None):
     return p.stdout.strip()
 
 def prerequisites(install_deps):
-    for file in [METADATA,SYSTEM,HOME/'.local/bin/multi-rice-control',
+    # Read-only launchers may legitimately be symlinks. The root route is a
+    # managed write target and retains the stricter regular-file requirement.
+    if SYSTEM.is_symlink() or not SYSTEM.is_file():
+        raise RuntimeError('Expected installed regular system route: '+str(SYSTEM))
+    for file in [HOME/'.local/bin/multi-rice-control',
                  HOME/'.local/bin/desktop-switch',HOME/'.local/bin/lumina-player-overlay']:
-        if file.is_symlink() or not file.is_file(): raise RuntimeError('Expected installed regular file: '+str(file))
+        if not file.is_file() or not os.access(file,os.X_OK):
+            raise RuntimeError('Expected installed executable: '+str(file))
     if any(char in str(HOME) for char in ['"',"'",'\\','\n','%']):
         raise RuntimeError('This adapter requires a home path without quotes, backslashes, newlines or percent signs')
     for binary in ['/usr/bin/niri','/usr/bin/qs','/usr/bin/git','/usr/bin/dbus-run-session']:
@@ -62,6 +68,35 @@ def prerequisites(install_deps):
     if missing: raise RuntimeError('Missing dependencies. Rerun with --install-deps, or install: '+shlex.join(missing))
     if ROOT.exists() or ROOT.is_symlink(): raise RuntimeError('iNiR already exists; use --status or --rollback')
     run(['systemctl','--user','show-environment'])
+
+def discover_metadata(control):
+    """Observe the backend's selected source; never substitute a repo baseline."""
+    result=subprocess.run(['/usr/bin/bash','-x',str(control),'list'],
+                          capture_output=True,text=True,timeout=30,
+                          env=dict(os.environ,HOME=str(HOME),PS4='+ '))
+    if result.returncode:
+        raise RuntimeError('The installed switcher backend cannot list profiles: '+result.stdout.strip())
+    sources=[]
+    for line in result.stderr.splitlines():
+        match=re.match(r'^\++\s+(?:source|\.)\s+(.+)$',line)
+        if not match: continue
+        try: args=shlex.split(match.group(1))
+        except ValueError: continue
+        if not args: continue
+        path=Path(args[0])
+        if path.name=='profile-metadata.sh' and path.is_file() and path not in sources:
+            sources.append(path)
+    if len(sources)!=1:
+        raise RuntimeError('Cannot identify one active metadata source from the installed backend; found: '+
+                           ', '.join(map(str,sources))+'; no catalog files changed')
+    source=sources[0]
+    print('Active switcher metadata: '+str(source),flush=True)
+    # Copy the active table into the standard override. For a symlink, atomically
+    # replace only the link and retain its exact target for rollback. The backing
+    # file/repository stays untouched. For fallback loading, create an override
+    # and remove it again on rollback.
+    data=source.read_bytes()
+    return source,data,result.stdout.strip().splitlines()
 
 def fetch_source():
     source=BASE/('.inir-source-'+REVISION[:12])
@@ -177,7 +212,7 @@ def system_write(state,action):
 
 def install(install_deps=False):
     prerequisites(install_deps)
-    previous_catalog=run([HOME/'.local/bin/multi-rice-control','list']).splitlines()
+    metadata_source,metadata_data,previous_catalog=discover_metadata(HOME/'.local/bin/multi-rice-control')
     source=fetch_source()
     stage=Path(tempfile.mkdtemp(prefix='.inir-stage-',dir=BASE))
     backup=Path(tempfile.mkdtemp(prefix='inir-backup-',dir=BASE))
@@ -185,7 +220,7 @@ def install(install_deps=False):
     try:
         print('Preparing isolated iNiR '+VERSION,flush=True)
         prepare(source,stage,ROOT,PACKAGE,HOME)
-        metadata=metadata_overlay(METADATA.read_text()).encode()
+        metadata=metadata_overlay(metadata_data.decode()).encode()
         current_route=SYSTEM.read_bytes()
         # Accept the audited Cipher route as well as stock. Unknown local additions are preserved.
         if sha(current_route) not in json.loads((PACKAGE/'routes.json').read_text())['acceptedSha256']:
@@ -197,7 +232,7 @@ def install(install_deps=False):
         changes=units()+[(LOCAL_ROUTE,route,0o755),
                          (HOME/'.local/share/desktop-switcher/previews/inir.webp',preview.read_bytes(),0o644),
                          (METADATA,metadata,0o644)]
-        records=record_targets(changes,backup)
+        records=record_targets(changes,backup,allow_symlinks={METADATA})
         state={'format':1,'status':'pending','sourceCommit':REVISION,'records':records,
                'backup':str(backup),'system':{'priorSha256':sha(current_route),
                'installedSha256':sha(route),'contentBase64':base64.b64encode(route).decode()}}
@@ -211,6 +246,8 @@ def install(install_deps=False):
             for path,data,mode in changes[:2]: atomic(candidate/path.name,data,mode)
             run(['systemd-analyze','--user','verify',*[candidate/path.name for path,_,_ in changes[:2]]])
             shutil.rmtree(candidate)
+            if not metadata_source.is_file() or metadata_source.read_bytes()!=metadata_data:
+                raise RuntimeError('Active metadata source changed during preparation; preserved')
             verify_records(records,False)
             for path,data,mode in changes:
                 atomic(path,data,mode)
@@ -256,16 +293,19 @@ def rollback():
     verify_records(state['records'],True if state['status']=='installed' else None)
     if digest(SYSTEM) not in [state['system']['priorSha256'],state['system']['installedSha256']]:
         raise RuntimeError('System launcher was edited after installation; preserved')
-    current=[(Path(r['path']),Path(r['path']).read_bytes() if Path(r['path']).exists() else None,
-              Path(r['path']).stat().st_mode & 0o777 if Path(r['path']).exists() else 0o644)
+    current=[(Path(r['path']),Path(r['path']).read_bytes() if Path(r['path']).is_file() else None,
+              Path(r['path']).stat().st_mode & 0o777 if Path(r['path']).exists() else 0o644,
+              str(Path(r['path']).readlink()) if Path(r['path']).is_symlink() else None)
              for r in state['records']]
     system_write(state,'rollback')
     try:
         restore(state['records'])
         run(['systemctl','--user','daemon-reload'])
     except BaseException:
-        for path,data,mode in current:
-            if data is None: path.unlink(missing_ok=True)
+        for path,data,mode,link in current:
+            if link is not None:
+                restore([{'path':str(path),'kind':'symlink','linkTarget':link,'existed':True}])
+            elif data is None: path.unlink(missing_ok=True)
             else: atomic(path,data,mode)
         system_write(state,'install')
         raise

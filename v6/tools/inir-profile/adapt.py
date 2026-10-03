@@ -108,8 +108,8 @@ def prepare(source, stage, final, package, real_home):
     extra = ('    Mod+Shift+D { spawn '+kdl(real_home/'.local/bin/desktop-switch')+'; }\n'
              '    Mod+Shift+R { spawn "/usr/bin/python3" '+kdl(final/'refresh.py')+'; }\n'
              '    Mod+Shift+M { spawn '+kdl(real_home/'.local/bin/lumina-player-overlay')+'; }\n'
-             '    Mod+O { spawn "playerctl" "previous"; }\n'
-             '    Mod+I { spawn "playerctl" "play-pause"; }\n'
+             '    Mod+O { spawn "playerctl" "play-pause"; }\n'
+             '    Mod+I { spawn "playerctl" "previous"; }\n'
              '    Mod+P { spawn "playerctl" "next"; }\n')
     binds.write_text(text.replace(anchor,anchor+extra,1))
     home = stage/'home'

@@ -157,6 +157,7 @@ def check_transactions(source):
                 assert (home/'.config/niri').readlink()==link
                 assert not any('start' in event for event in events)
             finally: install.atomic=original_atomic
+    install.run=original_run
 
 def check_lifecycle():
     with tempfile.TemporaryDirectory(prefix='inir-session-') as name:
@@ -183,6 +184,31 @@ elif '--wait' in args: sys.exit(5)
         assert any(x[:3]==['--user','stop','huzaifah-inir-shell.service'] for x in events)
         print('PASS: failed compositor login restores empty PATH and previous NIRI_CONFIG and stops only owned services')
 
+def check_metadata_layouts(source):
+    original_run=install.run
+    for layout in ['symlink','fallback','dangling-symlink']:
+        install.run=original_run
+        with tempfile.TemporaryDirectory(prefix='inir-layout-') as name:
+            home,base,root,metadata,system,env,events,write=host_fixture(Path(name),source)
+            data=metadata.read_bytes()
+            backing=home/'.local/lib/profile-metadata.sh'
+            backing.parent.mkdir(); backing.write_bytes(data)
+            metadata.unlink()
+            if layout=='symlink': metadata.symlink_to(backing)
+            elif layout=='dangling-symlink': metadata.symlink_to('missing-old-metadata.sh')
+            old_link=str(metadata.readlink()) if metadata.is_symlink() else None
+            install.install()
+            assert metadata.is_file() and not metadata.is_symlink()
+            assert backing.read_bytes()==data
+            listing=shell('"$1" list',home/'.local/bin/multi-rice-control',env=env).splitlines()
+            assert len(listing)==12 and any(x.startswith('tsugumori|Tsugumori|') for x in listing)
+            install.rollback()
+            assert backing.read_bytes()==data
+            if old_link is None: assert not metadata.exists() and not metadata.is_symlink()
+            else: assert metadata.is_symlink() and str(metadata.readlink())==old_link
+            print('PASS: '+layout+' metadata discovery preserves backing source and restores the original entry')
+    install.run=original_run
+
 def main():
     source=Path(sys.argv[1]).resolve()
     assert subprocess.check_output(['git','-C',str(source),'rev-parse','HEAD'],text=True).strip()==adapt.REVISION
@@ -192,6 +218,7 @@ def main():
         command=Path(name)/'niri-session'; command.write_text('#!/bin/sh\nexit 0\n'); command.chmod(0o755)
         os.environ['PATH']=name+':'+os.environ['PATH']
         check_transactions(source)
+        check_metadata_layouts(source)
     check_lifecycle()
     print('PASS: host Qt/Niri/service startup checks intentionally deferred to the laptop installer')
 

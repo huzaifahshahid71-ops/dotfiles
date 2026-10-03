@@ -2,6 +2,8 @@
 
 Adds **iNiR**, the fourth Niri profile, to the installed Sumi Deck catalog. Starts with the iRiS panel family; Super+Shift+W cycles iRiS, ii and Waffle. Existing profiles, including Tsugumori, are retained by wrapping the installed metadata functions instead of replacing their table.
 
+Metadata is discovered through the installed backend's read-only `list` command. Regular-file, symlink and fallback metadata layouts are supported. Registration creates a standard metadata override from the actual active table; symlink backing files and fallback sources are untouched. Rollback restores the exact prior symlink or removes a newly created override.
+
 Upstream: https://github.com/snowarch/iNiR
 Pinned source: `c08bb928fe71c6a00bfede3e99ef26fb1825ebe2`, version 2.32.0, GPL-3.0. The installer downloads this exact source into a separate cache and retains upstream licensing. Adapter source: https://github.com/huzaifahshahid71-ops/dotfiles/tree/v6.0-tahoe-dev/v6/tools/inir-profile
 
@@ -27,7 +29,7 @@ On success, close and reopen Sumi Deck with **Super+Shift+D**, choose **iNiR**, 
 | Super+Shift+D | Sumi Deck |
 | Super+Shift+R | Niri refresh picker; advertised modes with a 10-second revert |
 | Super+Shift+M | Shared Lumina player |
-| Super+O / I / P | Previous / play-pause / next |
+| Super+O / I / P | Play-pause / previous / next |
 | Super+Space | iNiR launcher |
 | Super+, | iNiR settings |
 | Super+Shift+W | Cycle panel families |
