@@ -1,0 +1,16 @@
+{
+  "foot_source_commit": "ab33c9a19d626f8d0ac0bd1adfdba21946ada948",
+  "status": "prepared sources; session activation blocked on missing laptop launcher/plugin inputs",
+  "original_sha256": {
+    "GlassPlayer.qml": "508ab2e02e0358b9ec7a5d46f82eee0b064bea80b623b454853d63bed411f49b",
+    "MaterialPlayer.qml": "9da0eefce40786c4ac7b345ce3b066d8dbccaf190546f4b82d1938d168b211d7",
+    "shell.qml": "151b47f52ba8c698252653f162b590a00e6784cd0d78dcab7c8563221449a25e",
+    "NexusPlayer.qml": "739f21d95450a26d4c0699e1181ab8e6003b09b502cd07d0f8a8825a8268bf46",
+    "foot/render.c": "97280b358e859d2c4f40f7ddf0b55311d7d66f9a5d9fe6e2c221611c6e0187cb"
+  },
+  "validation": {
+    "foot_button_geometry": "61464 cases passed; six scales, all maximize/minimize capability combinations, widths 0\u20132560",
+    "full_foot_build": "pending on target; full source/build dependencies not present in this workspace",
+    "qml_runtime": "pending; installed Quickshell not available in this workspace"
+  }
+}

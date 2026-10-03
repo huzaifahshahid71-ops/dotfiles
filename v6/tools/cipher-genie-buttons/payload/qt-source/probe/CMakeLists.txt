@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.16)
+project(CipherTrafficLightProbe LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+find_package(Qt${QT_MAJOR} REQUIRED COMPONENTS Core Gui Widgets)
+add_executable(cipher-qt-traffic-test main.cpp)
+target_link_libraries(cipher-qt-traffic-test PRIVATE Qt${QT_MAJOR}::Core Qt${QT_MAJOR}::Gui Qt${QT_MAJOR}::Widgets)

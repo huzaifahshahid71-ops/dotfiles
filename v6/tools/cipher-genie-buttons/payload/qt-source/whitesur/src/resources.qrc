@@ -1,0 +1,38 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/titlebuttons/titlebutton-backdrop.svg</file>
+        <file>resources/titlebuttons/titlebutton-backdrop-dark.svg</file>
+        <file>resources/titlebuttons/titlebutton-close.svg</file>
+        <file>resources/titlebuttons/titlebutton-close-active.svg</file>
+        <file>resources/titlebuttons/titlebutton-close-active-dark.svg</file>
+        <file>resources/titlebuttons/titlebutton-close-backdrop.svg</file>
+        <file>resources/titlebuttons/titlebutton-close-backdrop-dark.svg</file>
+        <file>resources/titlebuttons/titlebutton-close-dark.svg</file>
+        <file>resources/titlebuttons/titlebutton-close-hover.svg</file>
+        <file>resources/titlebuttons/titlebutton-close-hover-dark.svg</file>
+        <file>resources/titlebuttons/titlebutton-maximize.svg</file>
+        <file>resources/titlebuttons/titlebutton-maximize-active.svg</file>
+        <file>resources/titlebuttons/titlebutton-maximize-active-dark.svg</file>
+        <file>resources/titlebuttons/titlebutton-maximize-backdrop.svg</file>
+        <file>resources/titlebuttons/titlebutton-maximize-backdrop-dark.svg</file>
+        <file>resources/titlebuttons/titlebutton-maximize-dark.svg</file>
+        <file>resources/titlebuttons/titlebutton-maximize-hover.svg</file>
+        <file>resources/titlebuttons/titlebutton-maximize-hover-dark.svg</file>
+        <file>resources/titlebuttons/titlebutton-minimize.svg</file>
+        <file>resources/titlebuttons/titlebutton-minimize-active.svg</file>
+        <file>resources/titlebuttons/titlebutton-minimize-active-dark.svg</file>
+        <file>resources/titlebuttons/titlebutton-minimize-backdrop.svg</file>
+        <file>resources/titlebuttons/titlebutton-minimize-backdrop-dark.svg</file>
+        <file>resources/titlebuttons/titlebutton-minimize-dark.svg</file>
+        <file>resources/titlebuttons/titlebutton-minimize-hover.svg</file>
+        <file>resources/titlebuttons/titlebutton-minimize-hover-dark.svg</file>
+        <file>resources/titlebuttons/titlebutton-unmaximize.svg</file>
+        <file>resources/titlebuttons/titlebutton-unmaximize-active.svg</file>
+        <file>resources/titlebuttons/titlebutton-unmaximize-active-dark.svg</file>
+        <file>resources/titlebuttons/titlebutton-unmaximize-backdrop.svg</file>
+        <file>resources/titlebuttons/titlebutton-unmaximize-backdrop-dark.svg</file>
+        <file>resources/titlebuttons/titlebutton-unmaximize-dark.svg</file>
+        <file>resources/titlebuttons/titlebutton-unmaximize-hover.svg</file>
+        <file>resources/titlebuttons/titlebutton-unmaximize-hover-dark.svg</file>
+    </qresource>
+</RCC>

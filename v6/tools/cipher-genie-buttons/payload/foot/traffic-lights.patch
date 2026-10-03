@@ -1,0 +1,117 @@
+--- a/render.c
++++ b/render.c
+@@ -2334,21 +2334,21 @@
+     const int button_width = title_visible
+         ? roundf(term->conf->csd.button_width * scale) : 0;
+ 
++    /* Private Cipher build: close, minimize, maximize at the left. */
+     int remaining_width = term->width;
+-
+     const int button_close_width = remaining_width >= button_width ? button_width : 0;
+     remaining_width -= button_close_width;
+-    const int button_close_start = remaining_width;
+-
++    const int button_minimize_width = remaining_width >= button_width &&
++        term->window->wm_capabilities.minimize ? button_width : 0;
++    remaining_width -= button_minimize_width;
+     const int button_maximize_width = remaining_width >= button_width &&
+         term->window->wm_capabilities.maximize ? button_width : 0;
+     remaining_width -= button_maximize_width;
+-    const int button_maximize_start = remaining_width;
+-
+-    const int button_minimize_width = remaining_width >= button_width &&
+-        term->window->wm_capabilities.minimize ? button_width : 0;
+-    remaining_width -= button_minimize_width;
+-    const int button_minimize_start = remaining_width;
++
++    const int left_padding = min(remaining_width, (int)roundf(8 * scale));
++    const int button_close_start = left_padding;
++    const int button_minimize_start = button_close_start + button_close_width;
++    const int button_maximize_start = button_minimize_start + button_minimize_width;
+ 
+     /*
+      * With fractional scaling, we must ensure the offset, when
+@@ -2911,23 +2911,61 @@
+         break;
+     }
+ 
+-    if (is_active) {
+-        if (is_set) {
+-            _color = *conf_color;
+-            alpha = _color >> 24 | (_color >> 24 << 8);
+-        }
+-    } else {
+-        _color = 0;
+-        alpha = 0;
+-    }
+-
++    /* Paint the title background first, then an antialiased traffic light.
++     * Keep the existing hover glyphs and native Wayland button actions. */
++    if (is_set)
++        _color = *conf_color;
++    else if (surf_idx == CSD_SURF_CLOSE)
++        _color = 0xffff5f57;
++    else if (surf_idx == CSD_SURF_MINIMIZE)
++        _color = 0xfffebc2e;
++    else
++        _color = 0xff28c840;
++    alpha = _color >> 24 | (_color >> 24 << 8);
+     if (!term->visual_focus)
+         _color = color_dim(term, _color);
+ 
+     const bool gamma_correct = wayl_do_linear_blending(term->wl, term->conf);
+-    pixman_color_t color = color_hex_to_pixman_with_alpha(_color, alpha, gamma_correct);
+-    render_csd_part(term, surf->surf, buf, info->width, info->height, &color);
+-
++    uint32_t title_bg = term->conf->csd.color.title_set
++        ? term->conf->csd.color.title
++        : 0xffu << 24 | term->conf->colors_dark.fg;
++    if (!term->visual_focus)
++        title_bg = color_dim(term, title_bg);
++    pixman_color_t background = color_hex_to_pixman_with_alpha(
++        title_bg, title_bg >> 24 | (title_bg >> 24 << 8), gamma_correct);
++    render_csd_part(term, surf->surf, buf, info->width, info->height, &background);
++
++    const float radius = min(6.f * term->scale,
++        (min(info->width, info->height) - 2.f) / 2.f);
++    if (radius > 0.f) {
++        pixman_image_t *mask = pixman_image_create_bits(
++            PIXMAN_a8, info->width, info->height, NULL, 0);
++        if (mask != NULL) {
++            uint8_t *pixels = (uint8_t *)pixman_image_get_data(mask);
++            const int stride = pixman_image_get_stride(mask);
++            const float cx = info->width / 2.f;
++            const float cy = info->height / 2.f;
++            for (int y = 0; y < info->height; y++) {
++                for (int x = 0; x < info->width; x++) {
++                    float dx = x + .5f - cx, dy = y + .5f - cy;
++                    float coverage = max(0.f, min(1.f,
++                        radius + .5f - sqrtf(dx * dx + dy * dy)));
++                    pixels[y * stride + x] = (uint8_t)roundf(255.f * coverage);
++                }
++            }
++            pixman_color_t disk_color = color_hex_to_pixman_with_alpha(
++                _color, alpha, gamma_correct);
++            pixman_image_t *disk = pixman_image_create_solid_fill(&disk_color);
++            if (disk != NULL) {
++                pixman_image_composite32(PIXMAN_OP_OVER, disk, mask, buf->pix[0],
++                    0, 0, 0, 0, 0, 0, info->width, info->height);
++                pixman_image_unref(disk);
++            }
++            pixman_image_unref(mask);
++        }
++    }
++
++    if (is_active && radius >= 3.f) {
+     switch (surf_idx) {
+     case CSD_SURF_MINIMIZE: render_csd_button_minimize(term, buf); break;
+     case CSD_SURF_MAXIMIZE: render_csd_button_maximize(term, buf); break;
+@@ -2936,6 +2974,8 @@
+     default:
+         BUG("unhandled surface type: %u", (unsigned)surf_idx);
+         break;
++    }
++
+     }
+ 
+     csd_commit(term, surf, buf);
