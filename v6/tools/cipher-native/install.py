@@ -203,7 +203,7 @@ def prepare(stage, binary, state):
     configs = {p:p.read_text() for p in (stage/'niri').rglob('*.kdl')}
     try:
         for path,text in configs.items(): path.write_text(text.replace(str(NATIVE),str(stage)))
-        run([stage/'bin/niri','--config',stage/'niri/config.kdl','validate'])
+        run([stage/'bin/niri','validate','--config',stage/'niri/config.kdl'])
     finally:
         for path,text in configs.items(): path.write_text(text)
     run([sys.executable,buttons/'runtime.py','--check-qt'])
@@ -251,7 +251,7 @@ def install():
         os.replace(stage,NATIVE)
         written = []
         try:
-            run([NATIVE/'bin/niri','--config',NATIVE/'niri/config.kdl','validate'])
+            run([NATIVE/'bin/niri','validate','--config',NATIVE/'niri/config.kdl'])
             for record,(path,data,mode) in zip(records,changes):
                 atomic(path,data,mode); written.append(record)
             run(['systemctl','--user','daemon-reload'])

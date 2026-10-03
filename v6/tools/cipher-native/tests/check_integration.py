@@ -35,6 +35,8 @@ import os,sys,json
 from pathlib import Path
 if '--version' in sys.argv: print('niri 26.04 (c1a5a2f)'); sys.exit(0)
 if 'validate' in sys.argv:
+ if len(sys.argv)!=4 or sys.argv[1:3]!=['validate','--config']:
+  print("error: unexpected argument 'validate' found",file=sys.stderr); sys.exit(2)
  p=Path(sys.argv[sys.argv.index('--config')+1]); text=p.read_text()
  assert 'off' in text
  assert (p.parent/'clavis/effects.kdl').is_file()
@@ -61,6 +63,11 @@ state.update(footSha256=promote.digest(foot),musicFallback=str(fallback),qs='/us
 effects=profile/'niri/effects.kdl'; effects.write_text('// included setting\n')
 (root/'niri/clavis/effects.kdl').symlink_to(effects)
 (root/'niri/config.kdl').write_text('layout {\n focus-ring {\n  // Disable the blue outline.\n  off\n }\n border { off; }\n}\ninclude "clavis/effects.kdl"\n')
+# The fixture follows Niri's CLI: root options conflict with subcommands.
+p=subprocess.run([binary,'--config',root/'niri/config.kdl','validate'],capture_output=True,text=True)
+assert p.returncode==2 and "unexpected argument 'validate'" in p.stderr
+subprocess.run([binary,'validate','--config',root/'niri/config.kdl'],check=True)
+print('PASS: CLI regression rejects root --config plus validate and accepts validate --config.')
 (root/'shell-private').mkdir()
 (root/'shell-private/dock.qml').write_text('import QtQuick\n// '+str(root)+'/shell-private\n')
 (root/'shell.sh').write_text('#!/bin/bash\nROOT='+str(root)+'\nsource "$ROOT/buttons/session-env.sh"\nexec /usr/bin/true\n')
