@@ -20,10 +20,54 @@ session. Choose the GUI toolkit after checking the minimal supported host;
 any frontend dependency setup must be explicit and precede launch.
 
 The large release payload remains an AppImage with offline packages and all
-12 profiles. Keep a standalone offline entry point for users who already have
-the image. Source tree inspection shows the current `AppRun` uses repeated
+12 profiles. Publish a separate small offline launcher bundle alongside the
+online launcher. Both share the same frontend, backend protocol and installation
+pages; only the content source changes. Source tree inspection shows the current `AppRun` uses repeated
 Zenity/Yad/KDialog menus and a terminal child. Replacing just its first dialog
 would not satisfy the requested single-window experience.
+
+## Separate offline edition
+
+Additional user requirement recorded on 2026-10-04: the offline edition must
+work from locally supplied wallpapers and split AppImage files, with exactly
+the same Sumi Deck styling and overall workflow as the online edition.
+
+- Package the shared frontend, artwork, release manifest/checksums and small
+  preflight/maintenance tools in the offline launcher bundle. Required GUI
+  runtime availability must be solved without fetching the large payload or
+  contacting the network; include necessary runtime support or provide the
+  documented local prerequisite and terminal fallback.
+- Host preflight checks the same machine/configuration/space requirements.
+  Internet connectivity is not a requirement, and offline mode does not
+  silently fall back to downloads, repository refreshes or online package
+  installs. Offline payload/prerequisite availability is reported separately.
+- The wallpaper page provides **Choose folder** and **Skip**. Preview/count
+  readable images in the chosen directory and copy them to
+  `~/Pictures/Wallpapers`, which is also the online edition's default destination.
+  Keep the source folder intact, retain existing destination content, resolve
+  filename conflicts visibly and skip unsupported files with a report. An
+  empty/missing folder lets the user choose another directory or skip.
+- The payload page provides **Choose parts folder**, **Select files**, and
+  **Scan this folder**. Limit scanning to the user-selected directory; do not
+  search the entire disk. Recognize only the pinned release's expected parts,
+  show found/missing/invalid files, and allow another folder to supply missing
+  parts. An already assembled matching AppImage is also accepted after full
+  verification. A name or extension alone is not proof of a valid payload.
+- Use the bundled release manifest and SHA-256 expectations for per-part
+  verification, assembly order, total lengths and final AppImage verification.
+  Do not trust an arbitrary nearby checksum file as the sole expected release
+  identity. Stop before execution on missing, mixed-version or corrupt parts.
+- Join valid split parts in installer-owned staging, verify the assembled
+  image, then use the same backend entry point and progress events as online
+  setup. Extraction, where needed by the backend, occurs after image validation.
+  Continue through the same review, backup, install, optional GRUB and finish
+  pages without opening a second installer window.
+- Copy/assembly progress shows real bytes/items. Cleanup removes only managed
+  staging/cache copies, retaining user-selected source wallpapers/parts and
+  recovery backups. Reuse a valid retained staged image on the next run.
+- Preflight and uninstall/restore remain usable with no parts or AppImage
+  present. The interface may show an Online/Offline badge; layout, theme,
+  navigation, advanced options and outcome handling remain shared.
 
 ## Pages in one window
 
@@ -37,7 +81,8 @@ would not satisfy the requested single-window experience.
    are a separate later stage; host preflight must not require the image.
 3. **Wallpapers:** after preflight passes, ask Yes/No for the curated pack;
    offer the full collection as another choice. Show thumbnails, counts,
-   destination and size. Download into the selected Wallpapers directory,
+   destination and size. Default to `~/Pictures/Wallpapers`; allow the user
+   to select another directory in either edition. Download into that directory,
    retain existing images and avoid overwriting unrelated names. Missing or
    interrupted optional downloads offer retry or skip.
 4. **Prepare installer:** show the planned download and disk requirements,
@@ -180,3 +225,9 @@ transaction must finish before cancellation.
    cleanup preserving restoration, and uninstall without the AppImage.
 8. Validate the final payload and tagged launcher together before v6.0.0.
 
+Offline acceptance additionally covers network disabled, local folder import
+and skip, empty wallpaper directories, duplicate destination names, parts on
+removable storage, incomplete/mixed/corrupt part sets, complete-image reuse,
+missing frontend prerequisites, source files surviving cleanup, and maintenance
+with no payload present. Confirm the same page structure and Sumi Deck visual
+styling in both editions.

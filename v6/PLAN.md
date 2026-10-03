@@ -138,6 +138,12 @@ optional curated/full wallpaper downloads, resumable split-AppImage retrieval
 with per-part and assembled-image verification, backup and installation,
 collapsed advanced device options, optional GRUB, cache cleanup/reuse and a
 thank-you/reboot choice. See [the concrete design](INSTALLER-DESIGN.md).
+The separate offline edition uses the same Sumi Deck frontend: choose or skip
+a local wallpaper folder, copy images to `~/Pictures/Wallpapers`, select/scan
+local parts, verify each and the assembled AppImage, then use the same backup,
+installation, GRUB and finish flow. It requires no online fallback and keeps
+preflight/restore independent of the large payload. Both editions share UI
+and backend code so their behavior and appearance remain consistent.
 This is the next implementation scope; the new launcher and GUI are not yet
 implemented and the host Wallpapers collection has not been uploaded.
 
