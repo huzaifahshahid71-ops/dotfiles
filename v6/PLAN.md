@@ -67,8 +67,8 @@ Windows default. Its host backup is `/var/backups/g16-grub-wvs0j_wm`.
 The user then reported `uname -r` as `7.2.8-1-cachyos-g16` and NVIDIA
 615.71.09 DKMS installed for that kernel and all three previous kernels.
 This confirms first boot and the driver build, not live GPU operation or
-resolution of the earlier stall. New-kernel power and suspend validation
-remain pending. The build uses
+resolution of the earlier stall. Initial live power-state checks now pass;
+controlled consumption and suspend validation remain pending. The build uses
 `linux-cachyos-g16` and its headers, preserving `linux-cachyos-vmdtest` as a
 fallback. This is a manual G16 maintenance workflow, not a universal kernel
 payload automatically installed on other machines. Keep hardware-specific
@@ -78,11 +78,20 @@ The initial new-kernel report shows Lumina (`sayconlun`) active, audio
 `power_save=10` and `power_save_controller=Y`, and one battery discharge
 sample of 8.22 W at 80%. This is not a controlled power comparison.
 NVIDIA is built but did not initialize: D3cold/device-inaccessible probe
-errors persist. Confirm the firmware GPU mode before treating this as a
-driver regression. The Intel Port F/VBT warning, NVIDIA errors and GPU
+errors persist. Subsequent queries confirm `dgpu_disable=1` and
+`gpu_mux_mode=1` (Integrated mode), consistent with an inaccessible dGPU;
+live NVIDIA operation with the GPU enabled remains untested.
+The Intel Port F/VBT warning, NVIDIA errors and GPU
 audio codec failures also appear in the supplied 7.2.5 boot log. The new
-report contains no NVMe timeout, OOM kill or lockup report. ASPM, runtime
-suspension, suspend/resume and long-term stability still require live checks.
+report contains no NVMe timeout, OOM kill or lockup report. Both VMD links
+show ASPM L1 enabled and PCI/ASPM L1.1/L1.2 enabled. The display is at 60 Hz
+and the audio controller is suspended. ITE 0b05:19b6 has autosuspend set
+to auto with a 2000 ms delay; the finalizer succeeded and the device
+suspended after 15 seconds idle, with no hidraw holder reported by fuser.
+The later battery sample is 8.75 W; CPU package power and idle residency
+are still needed for comparison. Suspend/resume and long-term stability
+also remain untested. The installed asusctl 6.5.0 source uses positional
+queries (`asusctl armoury get dgpu_disable`), not `--property`.
 
 ## Before the release
 
