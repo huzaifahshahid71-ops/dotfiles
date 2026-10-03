@@ -14,7 +14,10 @@ Development stays on `v6.0-tahoe-dev`; `main` remains unchanged.
   the fourth Niri profile. Eclipse is the display name; `inir` remains its
   internal ID and runtime/service identity.
 - The user confirmed iNiR installation, a live login and the modern switcher
-  shortcut on 2026-10-03. Broader feature and cross-profile switching checks
+  shortcut on 2026-10-03. After the host upgrade, the Waffle taskbar's
+  content-derived input mask blocked hover and clicks. Binding its region to
+  the panel dimensions restored both, confirmed live by the user and carried
+  in the profile installer. Broader feature and cross-profile switching checks
   remain outstanding. See [the profile installer](tools/inir-profile/README.md).
 - Preserve Sumi Deck and its existing switching backend, active selection,
   preview handling and saved theme preference. Super+Shift+D launches the
@@ -46,7 +49,14 @@ in GRUB. **Windows is the default boot selection**, confirmed by the user on
   Exact source reconstruction, 7.2.8 patch applicability, repeat application,
   partial series and conflict rejection pass remotely.
 
-No new kernel has been compiled, installed or booted yet. A new build uses
+The host repository upgrade completed successfully (384 packages), and the
+user rebooted into the preserved vmdtest kernel. NVIDIA 615.71.09 DKMS modules
+are installed for vmdtest, stock 7.2.8-2 and LTS 6.18.52-1; Python 3.12.14
+starts. The separate 7.2.8 source preparation applied both kernel patches and
+passed checksum/signature checks. The subsequent Clang/LLVM upgrade requires
+refreshing preparation before compilation.
+
+No new custom kernel has been compiled, installed or booted yet. A new build uses
 `linux-cachyos-g16` and its headers, preserving `linux-cachyos-vmdtest` as a
 fallback. This is a manual G16 maintenance workflow, not a universal kernel
 payload automatically installed on other machines. Keep hardware-specific

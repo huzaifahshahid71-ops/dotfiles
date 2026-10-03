@@ -268,6 +268,8 @@ def check_transactions(source):
                 if scenario=='success':
                     install.install()
                     assert root.is_dir() and (root/'READY').is_file()
+                    taskbar=(root/'runtime/modules/waffle/bar/WaffleBar.qml').read_text()
+                    assert 'mask: Region {\n                    width: barRoot.width\n                    height: barRoot.height\n                }' in taskbar
                     binds=(root/'niri/config.d/70-binds.kdl').read_text()
                     expected='Mod+Shift+D { spawn "/usr/bin/qs" "-p" '+json.dumps(str(home/'.config/quickshell/multi-rice-switcher/shell.qml'))+'; }'
                     assert expected in binds and str(home/'.local/bin/desktop-switch') not in binds

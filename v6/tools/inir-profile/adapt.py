@@ -43,6 +43,13 @@ def prepare(source, stage, final, package, real_home):
                  'Singleton {\n    property FontLoader profileRobotoFlex: FontLoader {\n'
                  '        source: Quickshell.shellPath("assets/fonts/roboto-flex/RobotoFlex.ttf")\n'
                  '    }\n')
+    # Bind the taskbar input region to its layer surface dimensions. The
+    # content-derived mask left the visible bar without hover/click input
+    # on the G16; explicit dimensions restored both in the live session.
+    replace_once(runtime/'modules/waffle/bar/WaffleBar.qml',
+                 'mask: Region {\n                    item: content\n                }',
+                 'mask: Region {\n                    width: barRoot.width\n'
+                 '                    height: barRoot.height\n                }')
     # The upstream process killer is inappropriate in a multi-rice session.
     replace_once(runtime/'services/ConflictKiller.qml',
                  'function _maybeHandleConflicts(): void {',
