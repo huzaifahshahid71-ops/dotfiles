@@ -80,3 +80,14 @@ WhiteSur pinned revision c68082c3e9019e7ea27d06fdc8d8b242c6e12961;
 Foot pinned revision ab33c9a19d626f8d0ac0bd1adfdba21946ada948.
 Quickshell FloatingWindow reference:
 https://quickshell.org/docs/v0.3.1/types/Quickshell/FloatingWindow/
+
+## October 3 device acceptance and normal Multi-Rice integration
+
+The user confirmed Qt, private Foot and all three Lumina themes working in the
+Cipher Genie session, followed by approved 10px GTK3/Chrome controls and removal
+of the Niri focus ring. The earlier missing tllist dependency was installed and
+the device build completed. For promotion into the normal Cipher profile and
+Huzaifah Multi-Rice login, use `../cipher-native/install.py --install` from the
+working test session. That installer copies the tested runtime independently,
+checks compatibility on-device, retains the test login and provides rollback.
+See `../cipher-gtk-controls/` for the GTK extension source.

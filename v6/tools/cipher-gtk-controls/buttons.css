@@ -1,0 +1,34 @@
+/* Only title-bar buttons change. Normal GTK widgets retain the current theme. */
+headerbar button.titlebutton,
+.titlebar button.titlebutton {
+  min-width: 16px;
+  min-height: 16px;
+  padding: 1px;
+  margin: 0;
+  border: none;
+  border-radius: 100%;
+  box-shadow: none;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 10px 10px;
+  color: transparent;
+  -gtk-icon-shadow: none;
+  text-shadow: none;
+}
+headerbar button.titlebutton image,
+.titlebar button.titlebutton image { color: transparent; }
+headerbar button.titlebutton.close,
+.titlebar button.titlebutton.close { background-image: url("assets/close.svg"); }
+headerbar button.titlebutton.minimize,
+.titlebar button.titlebutton.minimize { background-image: url("assets/minimize.svg"); }
+headerbar button.titlebutton.maximize,
+.titlebar button.titlebutton.maximize { background-image: url("assets/maximize.svg"); }
+headerbar button.titlebutton:hover,
+.titlebar button.titlebutton:hover,
+headerbar button.titlebutton:hover image,
+.titlebar button.titlebutton:hover image { color: #242428; }
+headerbar button.titlebutton:active,
+.titlebar button.titlebutton:active { opacity: 0.8; }
+headerbar button.titlebutton:backdrop,
+.titlebar button.titlebutton:backdrop { opacity: 0.55; }

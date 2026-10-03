@@ -63,19 +63,12 @@ case "$target_comp" in
         ;;
 
     niri)
-        # Cipher's tested native runtime is installed independently of stock Niri.
-        cipher_native="$HOME/.local/share/desktop-profiles/clavis/native"
-        if [ "$profile" = clavis ] && [ -f "$cipher_native/READY" ] &&
-           [ -x "$cipher_native/session.sh" ]; then
-            cmd=(/usr/bin/bash "$cipher_native/session.sh")
-        else
-            command -v niri-session >/dev/null 2>&1 || {
-                echo "multi-rice-session: niri-session not found" >&2
-                exit 1
-            }
+        command -v niri-session >/dev/null 2>&1 || {
+            echo "multi-rice-session: niri-session not found" >&2
+            exit 1
+        }
 
-            cmd=(niri-session)
-        fi
+        cmd=(niri-session)
         ;;
 
     *)
