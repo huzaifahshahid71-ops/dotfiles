@@ -1,6 +1,6 @@
-# iNiR — Multi-Rice profile 12
+# Eclipse (iNiR) — Multi-Rice profile 12
 
-Adds **iNiR**, the fourth Niri profile, to the installed Sumi Deck catalog. Starts with the iRiS panel family; Super+Shift+W cycles iRiS, ii and Waffle. Existing profiles, including Tsugumori, are retained by wrapping the installed metadata functions instead of replacing their table.
+Adds **Eclipse**, based on iNiR, as the fourth Niri profile in the installed Sumi Deck catalog. Its internal ID remains `inir`. Starts with the iRiS panel family; Super+Shift+W cycles iRiS, ii and Waffle. Existing profiles, including Tsugumori, are retained by wrapping the installed metadata functions instead of replacing their table.
 
 Metadata is discovered through the installed backend's read-only `list` command. Regular-file, symlink and fallback metadata layouts are supported. Registration creates a standard metadata override from the actual active table; symlink backing files and fallback sources are untouched. Rollback restores the exact prior symlink or removes a newly created override.
 
@@ -26,7 +26,15 @@ The installer checks the Niri config with `niri validate --config PATH`, parses 
 
 The QML check starts after the root component has been constructed, so Quickshell's quit handler is connected. Components compile sequentially, including asynchronous loading; each begin/ready result is logged. A timeout stops the check's own process group and retains both `logs/qml-component-check.log` and `runtime/multi-rice-check.qml` under the reported `failed-profile` preparation directory.
 
-On success, close and reopen Sumi Deck with **Super+Shift+D**, choose **iNiR**, then log in using **Huzaifah Multi-Rice**. Selecting a rice ends the current session through the existing switcher. Installation itself does not change the selected rice, your `~/.config/niri` link, or restart a desktop.
+On success, close and reopen Sumi Deck with **Super+Shift+D**, choose **Eclipse**, then log in using **Huzaifah Multi-Rice**. Selecting a rice ends the current session through the existing switcher. Installation itself does not change the selected rice, your `~/.config/niri` link, or restart a desktop.
+
+For an existing iNiR installation, extract this updated package and rename its display entry without reinstalling:
+
+```fish
+python3 ~/Downloads/inir-profile/install.py --rename Eclipse
+```
+
+The name comes from the shared metadata used by the switcher's card labels and catalog. Renaming backs up the metadata and installation receipt, updates the receipt's checksum so rollback remains valid, and verifies all other catalog fields stay identical. An interrupted change is recovered on the next rename/status/rollback command. Close and reopen Sumi Deck to refresh its labels; runtime paths, settings, preview art, upstream attribution, service names and selected profile ID stay intact.
 
 ## Shared shortcuts
 

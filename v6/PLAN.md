@@ -1,6 +1,6 @@
 # ZEPHYRUS G16 — v6.0 Project TAHOE (design stage)
 
-Status: **Current release scope: preserve the eight host Hyprland rices and three existing Niri rices; add iNiR as profile 12, the fourth Niri rice.** The selected-profile installer is in [`tools/inir-profile`](tools/inir-profile/README.md). Remote adaptation, environment, catalog/routing and recovery checks pass; host component checks run during installation and live iNiR login validation remains outstanding.
+Status: **Current release scope: preserve the eight host Hyprland rices and three existing Niri rices; add Eclipse (iNiR) as profile 12, the fourth Niri rice.** The selected-profile installer is in [`tools/inir-profile`](tools/inir-profile/README.md). Remote adaptation, environment, catalog/routing and recovery checks pass. The user confirmed successful host installation, live iNiR login and the modern switcher shortcut on 2026-10-03. Eclipse is the display name; `inir` remains the internal ID. Broader feature and cross-profile switching validation remains outstanding.
 
 ## Why this branch exists
 
@@ -14,10 +14,10 @@ Begin from v5.0 `main`, not the draft `v5.1.0-revo-dev` branch.
   The Git repository's baseline table contains 7; extend the installed host
   table additively so Tsugumori and any local profiles remain available.
 - Preserve the 3 existing Niri rices: Solstice/jaqc, Cipher/clavis,
-  Astra/nixri. Add **iNiR/inir** as the **fourth Niri rice**.
+  Astra/nixri. Add **Eclipse/inir (upstream iNiR)** as the **fourth Niri rice**.
 - Target release: **12 desktop rices: 8 Hyprland + 4 Niri**, contingent on
   successful iNiR host validation. The older Tahoe design sections below
-  record the earlier exploration; iNiR is the currently selected final rice.
+  record the earlier exploration; Eclipse (iNiR) is the currently selected final rice.
 - Preserve Lumina's current music player, media integrations, and existing
   user systemd backend services; audit actual filenames/units before shipping.
 - Keep the original graphical rice switcher and its backend, with an optional

@@ -273,7 +273,7 @@ def check_transactions(source):
                     assert expected in binds and str(home/'.local/bin/desktop-switch') not in binds
                     listing=shell('"$1" list',home/'.local/bin/multi-rice-control',env=env).splitlines()
                     assert len(listing)==12 and any(x.startswith('tsugumori|Tsugumori|') for x in listing)
-                    assert any(x.startswith('inir|iNiR|◌|niri|true|') for x in listing)
+                    assert any(x.startswith('inir|Eclipse|◌|niri|true|') for x in listing)
                     assert (home/'.config/desktop-profile/active').read_bytes()==active
                     assert (home/'.config/niri').readlink()==link
                     for profile in ['clavis','jaqc','nixri','inir']:
@@ -357,6 +357,72 @@ def check_metadata_layouts(source):
             print('PASS: '+layout+' metadata discovery preserves backing source and restores the original entry')
     install.run=original_run
 
+def check_name_changes(source):
+    original_run=install.run
+    for scenario in ['success','metadata-interruption','receipt-interruption','pending-recovery']:
+        install.run=original_run
+        with tempfile.TemporaryDirectory(prefix='inir-name-fixture-') as name:
+            home,base,root,metadata,system,env,events,write=host_fixture(Path(name),source)
+            baseline_system=system.read_bytes()
+            install.install()
+            # Model the user's existing pre-Eclipse installation and receipt.
+            receipt=root/'installed.json'
+            legacy=metadata.read_bytes().replace(b'then echo Eclipse; else inir_original_profile_name',
+                                                b'then echo iNiR; else inir_original_profile_name')
+            metadata.write_bytes(legacy)
+            state=json.loads(receipt.read_text());state.pop('profileName',None)
+            next(r for r in state['records'] if r['path']==str(metadata))['installedSha256']=install.sha(legacy)
+            receipt.write_text(json.dumps(state,indent=2)+'\n')
+            old_receipt=receipt.read_bytes()
+            active=home/'.config/desktop-profile/active';active.write_text('inir\n')
+            link=(home/'.config/niri').readlink();prior_system=system.read_bytes()
+            old_atomic=install.atomic
+            target=metadata if scenario=='metadata-interruption' else receipt
+            delivered=False
+            if scenario.endswith('interruption'):
+                def interrupted(path,data,mode=0o644):
+                    nonlocal delivered
+                    old_atomic(path,data,mode)
+                    if path==target and not delivered:
+                        delivered=True;raise KeyboardInterrupt('name commit acknowledged late')
+                install.atomic=interrupted
+            old_recover=install.recover_name_change
+            if scenario=='pending-recovery':
+                # Emulate abrupt process death: the recovery journal survives.
+                install.recover_name_change=lambda:None
+                def interrupted(path,data,mode=0o644):
+                    old_atomic(path,data,mode)
+                    if path==metadata:raise KeyboardInterrupt('simulated process death')
+                install.atomic=interrupted
+            try:
+                if scenario=='success':
+                    install.rename_profile('Eclipse');install.rename_profile('Eclipse')
+                    state=json.loads(receipt.read_text());install.verify_records(state['records'],True)
+                    listing=shell('"$1" list',home/'.local/bin/multi-rice-control',env=env).splitlines()
+                    assert any(row.startswith('inir|Eclipse|◌|niri|true|') for row in listing)
+                    # User edits remain protected after the authorized rename.
+                    clean=metadata.read_bytes();metadata.write_bytes(clean+b'# user edit\n')
+                    try:install.rename_profile('Umbra');raise AssertionError('edited metadata overwritten')
+                    except RuntimeError as error:assert 'preserved' in str(error)
+                    metadata.write_bytes(clean)
+                    assert system.read_bytes()==prior_system
+                    active.write_text('clavis\n');install.rollback()
+                else:
+                    try:install.rename_profile('Eclipse');raise AssertionError('name interruption not delivered')
+                    except KeyboardInterrupt:pass
+                    install.atomic=old_atomic;install.recover_name_change=old_recover
+                    install.recover_name_change()
+                    assert metadata.read_bytes()==legacy and receipt.read_bytes()==old_receipt
+                    assert not (root/'name-change-pending.json').exists()
+                assert (home/'.config/niri').readlink()==link
+                assert system.read_bytes()==(baseline_system if scenario=='success' else prior_system)
+                assert active.read_text()==('clavis\n' if scenario=='success' else 'inir\n')
+                assert not any('start' in event for event in events)
+                print('PASS: display-name '+scenario+' preserves IDs, routes, active session and rollback')
+            finally:
+                install.atomic=old_atomic;install.recover_name_change=old_recover
+    install.run=original_run
+
 def main():
     source=Path(sys.argv[1]).resolve()
     assert subprocess.check_output(['git','-C',str(source),'rev-parse','HEAD'],text=True).strip()==adapt.REVISION
@@ -372,6 +438,7 @@ def main():
         os.environ['PATH']=name+':'+os.environ['PATH']
         check_transactions(source)
         check_metadata_layouts(source)
+        check_name_changes(source)
     check_lifecycle()
     print('PASS: host Qt/Niri/service startup checks intentionally deferred to the laptop installer')
 

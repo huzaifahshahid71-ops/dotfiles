@@ -15,7 +15,7 @@ import sys
 import tempfile
 import time
 
-from adapt import REVISION, VERSION, metadata_overlay, prepare, session_route
+from adapt import DISPLAY_NAME, REVISION, VERSION, metadata_overlay, prepare, session_route
 from environment import private_env
 from transaction import atomic, digest, record_targets, restore, sha, verify_records
 
@@ -164,7 +164,7 @@ def units():
     command='"'+str(ROOT/'session.sh')+'" --compositor'
     shell_command='"'+str(ROOT/'shell.sh')+'"'
     compositor=f'''[Unit]
-Description=Huzaifah Multi-Rice (iNiR)
+Description=Huzaifah Multi-Rice ({DISPLAY_NAME})
 BindsTo=graphical-session.target
 Before=graphical-session.target
 Wants=graphical-session.target {SHELL}
@@ -178,7 +178,7 @@ TimeoutStopSec=10
 KillMode=control-group
 '''
     shell=f'''[Unit]
-Description=iNiR selected-profile shell
+Description={DISPLAY_NAME} selected-profile shell
 PartOf={UNIT}
 Requisite={UNIT}
 After={UNIT}
@@ -343,7 +343,7 @@ def install(install_deps=False):
                          (HOME/'.local/share/desktop-switcher/previews/inir.webp',preview.read_bytes(),0o644),
                          (METADATA,metadata,0o644)]
         records=record_targets(changes,backup,allow_symlinks={METADATA})
-        state={'format':1,'status':'pending','sourceCommit':REVISION,'records':records,
+        state={'format':1,'status':'pending','profileName':DISPLAY_NAME,'sourceCommit':REVISION,'records':records,
                'backup':str(backup),'system':{'priorSha256':sha(current_route),
                'installedSha256':sha(route),'contentBase64':base64.b64encode(route).decode()}}
         atomic(stage/'installed.json',(json.dumps(state,indent=2)+'\n').encode(),0o600)
@@ -364,7 +364,7 @@ def install(install_deps=False):
             run(['systemctl','--user','daemon-reload'])
             # Verify backend discovery preserves the rest of the catalog.
             listing=run([HOME/'.local/bin/multi-rice-control','list']).splitlines()
-            if not any(row.startswith('inir|iNiR|◌|niri|false|') for row in listing):
+            if not any(row.startswith('inir|'+DISPLAY_NAME+'|◌|niri|false|') for row in listing):
                 raise RuntimeError('Backend did not discover prepared iNiR')
             before=[row.split('|')[:5] for row in previous_catalog]
             after=[row.split('|')[:5] for row in listing if not row.startswith('inir|')]
@@ -388,8 +388,8 @@ def install(install_deps=False):
             raise
     finally:
         if stage.exists(): shutil.rmtree(stage)
-    print('INSTALLED: iNiR is available in Sumi Deck. Current profile was not changed.')
-    print('Select iNiR, then log in through Huzaifah Multi-Rice.')
+    print('INSTALLED: '+DISPLAY_NAME+' is available in Sumi Deck. Current profile was not changed.')
+    print('Select '+DISPLAY_NAME+', then log in through Huzaifah Multi-Rice.')
     print('Backup: '+str(backup))
 
 def rollback():
@@ -430,18 +430,84 @@ def status():
     print('profile=inir\nversion='+VERSION+'\nstatus='+state['status'])
     print(run([HOME/'.local/bin/multi-rice-control','list']))
 
+def recover_name_change():
+    journal=ROOT/'name-change-pending.json'
+    if journal.exists():
+        records=json.loads(journal.read_text())['records']
+        verify_records(records,None)
+        restore(records)
+        journal.unlink()
+        print('Recovered interrupted display-name change',flush=True)
+
+def rename_profile(name):
+    if not name.strip() or len(name)>40 or any(char in name for char in ['|','\n','\r','\0']):
+        raise RuntimeError('Profile name must be 1–40 characters without pipes, newlines or nulls')
+    recover_name_change()
+    receipt=ROOT/'installed.json'
+    old_receipt=receipt.read_bytes()
+    state=json.loads(old_receipt)
+    if state['status']!='installed' or not (ROOT/'READY').is_file():
+        raise RuntimeError('Complete profile installation is required before renaming')
+    managed=[record for record in state['records'] if record['path']==str(METADATA)]
+    if len(managed)!=1: raise RuntimeError('One managed profile metadata entry is required')
+    verify_records(managed,True)
+    old_metadata=METADATA.read_bytes()
+    before=run([HOME/'.local/bin/multi-rice-control','list']).splitlines()
+    rows=[row for row in before if row.startswith('inir|')]
+    if len(rows)!=1: raise RuntimeError('Installed backend must expose exactly one inir profile')
+    old_name=rows[0].split('|')[1]
+    if old_name==name:
+        print('Profile is already named '+name)
+        return
+    pattern=re.compile(r'(?m)^(profile_name\(\) \{ if \[\[ "\$1" == inir \]\]; then echo )(.+?)(; else inir_original_profile_name "\$@"; fi; \})$')
+    matches=list(pattern.finditer(old_metadata.decode()))
+    if len(matches)!=1 or shlex.split(matches[0].group(2))!=[old_name]:
+        raise RuntimeError('Managed profile-name function differs; preserved')
+    new_metadata=pattern.sub(lambda match:match.group(1)+shlex.quote(name)+match.group(3),old_metadata.decode()).encode()
+    managed[0]['installedSha256']=sha(new_metadata)
+    state['profileName']=name
+    new_receipt=(json.dumps(state,indent=2)+'\n').encode()
+    backup=Path(tempfile.mkdtemp(prefix='inir-name-backup-',dir=BASE)); os.chmod(backup,0o700)
+    changes=[(METADATA,new_metadata,METADATA.stat().st_mode & 0o777),
+             (receipt,new_receipt,receipt.stat().st_mode & 0o777)]
+    records=record_targets(changes,backup)
+    candidate=backup/'metadata-check.sh'; candidate.write_bytes(new_metadata)
+    run(['/usr/bin/bash','-n',candidate])
+    verify_records(records,False)
+    journal=ROOT/'name-change-pending.json'
+    atomic(journal,(json.dumps({'records':records},indent=2)+'\n').encode(),0o600)
+    try:
+        for path,data,mode in changes: atomic(path,data,mode)
+        after=run([HOME/'.local/bin/multi-rice-control','list']).splitlines()
+        expected=[]
+        for row in before:
+            parts=row.split('|')
+            if parts[0]=='inir': parts[1]=name
+            expected.append('|'.join(parts))
+        if after!=expected: raise RuntimeError('Profile catalog changed beyond its display name')
+        journal.unlink()
+    except BaseException:
+        recover_name_change()
+        raise
+    print('RENAMED: '+old_name+' → '+name+'. Internal profile ID remains inir.')
+    print('Close and reopen Sumi Deck with Super+Shift+D. No logout or restart needed.')
+    print('Backup: '+str(backup))
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     modes=p.add_mutually_exclusive_group(required=True)
     for mode in ['install','rollback','status']: modes.add_argument('--'+mode,action='store_true')
+    modes.add_argument('--rename',metavar='NAME',help='Change the installed profile display name without switching or renaming its ID')
     p.add_argument('--install-deps',action='store_true',help='Install missing official Arch dependencies, keeping existing Quickshell/Niri')
     a=p.parse_args()
     if os.geteuid() == 0: raise RuntimeError('Run as your normal user; only dependencies and the system route use sudo')
     if not BASE.is_dir(): raise RuntimeError('Existing Multi-Rice profile root is missing')
     with (BASE/'.inir-install.lock').open('a') as lock:
         fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        if a.rollback or a.status: recover_name_change()
         if a.install: install(a.install_deps)
         elif a.rollback: rollback()
+        elif a.rename: rename_profile(a.rename)
         else: status()
 
 if __name__ == '__main__':

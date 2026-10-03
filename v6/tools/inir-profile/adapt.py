@@ -8,6 +8,7 @@ from fonts import prepare_font
 
 REVISION = 'c08bb928fe71c6a00bfede3e99ef26fb1825ebe2'
 VERSION = '2.32.0'
+DISPLAY_NAME = 'Eclipse'
 
 def polkit_fallback(candidates=None):
     candidates=candidates if candidates is not None else [
@@ -182,7 +183,7 @@ def metadata_overlay(original):
         appended.append('eval "$(declare -f '+name+' | sed \'1s/^'+name+' /inir_original_'+name+' /\')"')
     appended += [
         'profile_compositor() { if [[ "$1" == inir ]]; then echo niri; else inir_original_profile_compositor "$@"; fi; }',
-        'profile_name() { if [[ "$1" == inir ]]; then echo iNiR; else inir_original_profile_name "$@"; fi; }',
+        'profile_name() { if [[ "$1" == inir ]]; then echo '+DISPLAY_NAME+'; else inir_original_profile_name "$@"; fi; }',
         'profile_icon() { if [[ "$1" == inir ]]; then echo "◌"; else inir_original_profile_icon "$@"; fi; }',
         'profile_config_path() { if [[ "$2" == inir ]]; then [[ -f "$1/inir/READY" && -f "$1/inir/niri/config.kdl" ]] || return 1; printf "%s\\n" "$1/inir/niri"; else inir_original_profile_config_path "$@"; fi; }',
         'profile_ids() { inir_original_profile_ids; printf "%s\\n" inir; }',
