@@ -115,12 +115,17 @@ cross-compositor switches; Hyprland is owned by UWSM's `hyprland.desktop`
 session, while Eclipse/Cipher use their separate Niri routers.
 
 [The scoped-service fix](tools/profile-service-fix/README.md) migrates existing
-enable links to the UWSM Hyprland session and adds profile/live-session
+enable links to UWSM's later Hyprland autostart target and adds profile/live-session
 conditions. Refresh remains available to all eight Hyprland profiles; Lumina
 rotation is limited to `sayconlun`. Existing scripts, preferences, catalog and
-session routes are retained. Remote profile, stale-environment, rollback,
-repeat and systemd ordering checks pass. Host application and the
-Lumina -> Eclipse -> Lumina acceptance cycle remain pending.
+session routes are retained. The first version installed but blocked UWSM
+logout: its drop-in could not clear the base wallpaper service's `After=`
+dependency. Version 2 retains that dependency and moves activation after
+graphical readiness. Real base-unit/drop-in tests reproduce the v1 cycle and
+pass with v2, including staged verification over an existing v1 installation.
+Profile, stale-environment, rollback, repeat and direct-upgrade checks pass.
+Host v2 application and the Lumina -> Eclipse -> Lumina acceptance cycle
+remain pending.
 
 ## Before the release
 

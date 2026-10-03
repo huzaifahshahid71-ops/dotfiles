@@ -2,6 +2,7 @@
 """Scope the two inspected user services to their UWSM Hyprland session."""
 import argparse
 import configparser
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -11,6 +12,8 @@ import sys
 import tempfile
 
 TARGET = "wayland-session@hyprland.desktop.target"
+START_TARGET = "wayland-session-xdg-autostart@hyprland.desktop.target"
+V1_GUARD_SHA256 = "3865b8a661c2c98275460cfe524bebf4f88a1849dbbae9b7fbffc9c91fe35db2"
 WM = "wayland-wm@hyprland.desktop.service"
 WAITENV = "wayland-session-waitenv.service"
 HYPRLAND = frozenset(("caelestia", "end4", "ambxst", "dms", "serpantinum",
@@ -50,10 +53,25 @@ def allowed(kind, home, env, runner=run):
 
 
 def dropin(kind):
-    # After= is reset: the old wallpaper unit orders itself AFTER the generic
-    # graphical target, which would form a cycle when wanted by this session.
+    # Dependencies cannot be cleared in drop-ins. Keep the original ordering
+    # and activate from the later autostart target, after graphical readiness.
     # PartOf supplies stop propagation without pulling a compositor into a
     # manual start transaction (BindsTo/Requires on WM would do that).
+    return f'''# Managed by Huzaifah Multi-Rice profile-service-fix v2
+[Unit]
+After={WM} {WAITENV} graphical-session.target
+PartOf={TARGET} graphical-session.target
+
+[Service]
+ExecCondition=/usr/bin/python3 "%h/{GUARD}" --condition {kind}
+
+[Install]
+WantedBy=
+WantedBy={START_TARGET}
+'''.encode()
+
+
+def legacy_dropin(kind):
     return f'''# Managed by Huzaifah Multi-Rice profile-service-fix v1
 [Unit]
 After=
@@ -152,7 +170,8 @@ def paths(home):
     for service in SERVICES:
         result.extend((user / (service + ".d") / DROP,
                        user / "default.target.wants" / service,
-                       user / (TARGET + ".wants") / service))
+                       user / (TARGET + ".wants") / service,
+                       user / (START_TARGET + ".wants") / service))
     return result
 
 
@@ -174,7 +193,7 @@ def preflight(home, code, runner=run):
         safe_parent(path, home)
     guard = home / GUARD
     if guard.exists() or guard.is_symlink():
-        if guard.is_symlink() or not guard.is_file() or guard.read_bytes() != code:
+        if guard.is_symlink() or not guard.is_file() or (guard.read_bytes() != code and hashlib.sha256(guard.read_bytes()).hexdigest() != V1_GUARD_SHA256):
             raise RuntimeError("The guard destination contains another file; preserved")
     for service, kind in SERVICES.items():
         source = user / service
@@ -183,13 +202,13 @@ def preflight(home, code, runner=run):
             raise RuntimeError(f"Installed unit differs from the inspected source: {source}; preserved")
         own = user / (service + ".d") / DROP
         if own.exists() or own.is_symlink():
-            if own.is_symlink() or not own.is_file() or own.read_bytes() != dropin(kind):
+            if own.is_symlink() or not own.is_file() or own.read_bytes() not in (dropin(kind), legacy_dropin(kind)):
                 raise RuntimeError(f"Another drop-in occupies {own}; preserved")
         fragment = runner(["/usr/bin/systemctl", "--user", "show", service, "-p", "FragmentPath", "--value"]).stdout.strip()
         drops = runner(["/usr/bin/systemctl", "--user", "show", service, "-p", "DropInPaths", "--value"]).stdout.strip()
         if fragment != str(source) or drops not in ("", str(own)):
             raise RuntimeError(f"Unexpected loaded configuration for {service}; preserved")
-        allowed_links = {user / "default.target.wants" / service, user / (TARGET + ".wants") / service}
+        allowed_links = {user / "default.target.wants" / service, user / (TARGET + ".wants") / service, user / (START_TARGET + ".wants") / service}
         for link in user.glob("*.*/*"):
             if link.name == service and (link.exists() or link.is_symlink()):
                 if link not in allowed_links or not link.is_symlink() or link.resolve() != source.resolve():
@@ -199,7 +218,7 @@ def preflight(home, code, runner=run):
         script = home / rel
         if not script.is_file() or not os.access(script, os.X_OK):
             raise RuntimeError(f"Installed backend is missing or not executable: {script}")
-    for unit in (TARGET, WM, WAITENV):
+    for unit in (TARGET, START_TARGET, WM, WAITENV):
         state = runner(["/usr/bin/systemctl", "--user", "show", unit, "-p", "LoadState", "--value"]).stdout.strip()
         if state != "loaded":
             raise RuntimeError(f"Required UWSM unit is unavailable: {unit}")
@@ -211,10 +230,12 @@ def desired(home, code, before):
     for service, kind in SERVICES.items():
         own = user / (service + ".d") / DROP
         old = user / "default.target.wants" / service
-        new = user / (TARGET + ".wants") / service
-        enabled = before[str(old)]["type"] == "link" or before[str(new)]["type"] == "link"
+        legacy = user / (TARGET + ".wants") / service
+        new = user / (START_TARGET + ".wants") / service
+        enabled = any(before[str(p)]["type"] == "link" for p in (old, legacy, new))
         result[str(own)] = {"type": "file", "data": dropin(kind).decode(), "mode": 0o644}
         result[str(old)] = {"type": "absent"}
+        result[str(legacy)] = {"type": "absent"}
         result[str(new)] = {"type": "link", "target": "../" + service} if enabled else {"type": "absent"}
     return result
 
@@ -226,7 +247,7 @@ def install(home, code, apply=False, runner=run):
     if before == after:
         print("ALREADY APPLIED: services are owned by the Hyprland session")
         return
-    # Verify staged merged units against the host's UWSM dependencies first.
+    # Verify real base-unit/drop-in/activation-link layout, not concatenated text.
     base = home / ".local/share/desktop-profiles"
     safe_parent(base / "stage", home)
     base.mkdir(parents=True, exist_ok=True)
@@ -234,9 +255,26 @@ def install(home, code, apply=False, runner=run):
         staged = []
         for service, kind in SERVICES.items():
             path = Path(staging) / service
-            path.write_text(expected_unit(service, home) + "\n" + dropin(kind).decode())
+            path.write_text(expected_unit(service, home))
+            own = Path(staging) / (service + ".d") / DROP
+            own.parent.mkdir()
+            own.write_bytes(dropin(kind))
+            # Shadow activation links that will be removed on publication.
+            # The remainder of SYSTEMD_UNIT_PATH includes installed host units.
+            for target in ("default.target", TARGET):
+                removed = Path(staging) / (target + '.wants') / service
+                removed.parent.mkdir(exist_ok=True)
+                removed.symlink_to('/dev/null')
+            if after[str(home / '.config/systemd/user' / (START_TARGET + '.wants') / service)]["type"] == "link":
+                link = Path(staging) / (START_TARGET + '.wants') / service
+                link.parent.mkdir(exist_ok=True)
+                link.symlink_to('../' + service)
             staged.append(str(path))
-        runner(["/usr/bin/systemd-analyze", "--user", "verify", *staged])
+        verify_env = dict(os.environ, SYSTEMD_UNIT_PATH=staging + ":")
+        result = runner(["/usr/bin/systemd-analyze", "--user", "verify", *staged, TARGET, START_TARGET], env=verify_env)
+        # verify can return zero after dropping an optional job to break a cycle.
+        if "ordering cycle" in result.stderr.lower() or "transaction order is cyclic" in result.stderr.lower():
+            raise RuntimeError("Staged session has an ordering cycle:\n" + result.stderr.strip())
     print("Refresh: all eight Hyprland profiles; wallpaper rotation: Lumina only")
     if not apply:
         print("CHECK PASSED: run with --apply to install")
@@ -259,9 +297,9 @@ def install(home, code, apply=False, runner=run):
         runner(["/usr/bin/systemctl", "--user", "daemon-reload"])
         # Only these two services are started, and only with a live allowed session.
         for service, kind in SERVICES.items():
-            if allowed(kind, home, env, runner) and (service in active or after[str(home / '.config/systemd/user' / (TARGET + '.wants') / service)]["type"] == "link"):
+            if allowed(kind, home, env, runner) and (service in active or after[str(home / '.config/systemd/user' / (START_TARGET + '.wants') / service)]["type"] == "link"):
                 runner(["/usr/bin/systemctl", "--user", "restart", service])
-        (backup / "APPLIED").write_text("Profile service ownership v1\n")
+        (backup / "APPLIED").write_text("Profile service ownership v2\n")
     except BaseException:
         if mutated:
             runner(["/usr/bin/systemctl", "--user", "stop", *SERVICES], check=False)
