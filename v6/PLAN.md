@@ -74,6 +74,16 @@ fallback. This is a manual G16 maintenance workflow, not a universal kernel
 payload automatically installed on other machines. Keep hardware-specific
 power settings, swap and hibernation out of automatic rice installation.
 
+The initial new-kernel report shows Lumina (`sayconlun`) active, audio
+`power_save=10` and `power_save_controller=Y`, and one battery discharge
+sample of 8.22 W at 80%. This is not a controlled power comparison.
+NVIDIA is built but did not initialize: D3cold/device-inaccessible probe
+errors persist. Confirm the firmware GPU mode before treating this as a
+driver regression. The Intel Port F/VBT warning, NVIDIA errors and GPU
+audio codec failures also appear in the supplied 7.2.5 boot log. The new
+report contains no NVMe timeout, OOM kill or lockup report. ASPM, runtime
+suspension, suspend/resume and long-term stability still require live checks.
+
 ## Before the release
 
 1. Recover and preserve the working power fixes before the host update.
