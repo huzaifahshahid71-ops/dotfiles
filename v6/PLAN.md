@@ -35,9 +35,10 @@ the reviewed sources, notices, build requirements and recovery procedures.
 
 ## G16 kernel and power maintenance
 
-The active host kernel is `7.2.5-1-cachyos-vmdtest`, labelled **Linux stable**
-in GRUB. **Windows is the default boot selection**, confirmed by the user on
-2026-10-03. Preserve both choices; the rice installer must not rewrite them.
+The active host kernel is now `7.2.8-1-cachyos-g16`, with its first boot
+confirmed by the user on 2026-10-03. The previous `7.2.5-1-cachyos-vmdtest`
+remains labelled **Linux Stable** in GRUB. **Windows is the default boot
+selection**. Preserve both choices; the rice installer must not rewrite them.
 
 [The maintenance kit](tools/g16-power-kit/README.md) separately preserves:
 
@@ -53,16 +54,21 @@ The host repository upgrade completed successfully (384 packages), and the
 user rebooted into the preserved vmdtest kernel. NVIDIA 615.71.09 DKMS modules
 are installed for vmdtest, stock 7.2.8-2 and LTS 6.18.52-1; Python 3.12.14
 starts. The separate 7.2.8 source preparation applied both kernel patches and
-passed checksum/signature checks. The subsequent Clang/LLVM upgrade requires
-refreshing preparation before compilation.
+passed checksum/signature checks. Clang/LLVM was upgraded before the completed
+build; the subsequent source check confirmed the complete patch series.
 
 The user completed the custom build (22:00 local on 2026-10-03) and verified
 that the complete kernel patch series remained applied. Both packages are now
 installed; NVIDIA DKMS, initramfs generation, kernel signing and GRUB generation
 completed without a reported failure. Snapper recorded snapshots 138/139.
-The custom GRUB menu still lacks a G16 entry; the guarded
-[menu helper](tools/G16-GRUB-ENTRY.md) adds it under Advanced Linux Options.
-No first boot or new-kernel power validation has been reported yet. The build uses
+The guarded [menu helper](tools/G16-GRUB-ENTRY.md) successfully added
+**Advanced Linux Options > G16 Patched**, preserving the existing entries and
+Windows default. Its host backup is `/var/backups/g16-grub-wvs0j_wm`.
+The user then reported `uname -r` as `7.2.8-1-cachyos-g16` and NVIDIA
+615.71.09 DKMS installed for that kernel and all three previous kernels.
+This confirms first boot and the driver build, not live GPU operation or
+resolution of the earlier stall. New-kernel power and suspend validation
+remain pending. The build uses
 `linux-cachyos-g16` and its headers, preserving `linux-cachyos-vmdtest` as a
 fallback. This is a manual G16 maintenance workflow, not a universal kernel
 payload automatically installed on other machines. Keep hardware-specific
