@@ -124,8 +124,22 @@ dependency. Version 2 retains that dependency and moves activation after
 graphical readiness. Real base-unit/drop-in tests reproduce the v1 cycle and
 pass with v2, including staged verification over an existing v1 installation.
 Profile, stale-environment, rollback, repeat and direct-upgrade checks pass.
-Host v2 application and the Lumina -> Eclipse -> Lumina acceptance cycle
-remain pending.
+The user subsequently completed the live Lumina -> Eclipse -> Lumina cycle:
+both helpers were inactive/dead in Eclipse and active/running back in Lumina
+(confirmed just after midnight on 2026-10-04 Riyadh time). The updated enable
+target was reported on the host, and switching no longer hit the v1 cycle.
+Broader twelve-profile and charger-transition acceptance remains pending.
+
+## v6.0 installer experience
+
+The user requested a small command-launched, single-window setup on
+2026-10-04: greeting/previews, payload-independent preflight and uninstall,
+optional curated/full wallpaper downloads, resumable split-AppImage retrieval
+with per-part and assembled-image verification, backup and installation,
+collapsed advanced device options, optional GRUB, cache cleanup/reuse and a
+thank-you/reboot choice. See [the concrete design](INSTALLER-DESIGN.md).
+This is the next implementation scope; the new launcher and GUI are not yet
+implemented and the host Wallpapers collection has not been uploaded.
 
 ## Before the release
 
