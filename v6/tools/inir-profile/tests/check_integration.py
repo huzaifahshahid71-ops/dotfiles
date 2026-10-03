@@ -22,6 +22,7 @@ from transaction import digest
 
 def check_dependencies():
     assert 'ttf-roboto-flex' not in install.PACKAGES
+    assert 'polkit-gnome' not in install.PACKAGES
     for scenario in ['installed','available','unavailable','query-failure']:
         calls=[]
         def fake(args,**kwargs):
@@ -42,6 +43,32 @@ def check_dependencies():
             else: install.dependencies(True)
         assert any(x[0]=='sudo' for x in calls)==(scenario=='available')
     print('PASS: repository preflight stops unavailable packages before sudo; installed/available dependencies pass')
+
+def check_polkit():
+    with tempfile.TemporaryDirectory(prefix='inir-polkit-') as name:
+        base=Path(name); missing=base/'missing'; disabled=base/'disabled'; agent=base/'agent'
+        disabled.write_text('#!/bin/sh\nexit 0\n'); disabled.chmod(0o644)
+        assert adapt.polkit_fallback([missing,disabled]) is None
+        agent.write_text('#!/bin/sh\nexit 0\n'); agent.chmod(0o755)
+        assert adapt.polkit_fallback([missing,disabled,agent])==str(agent)
+        old_root=install.ROOT
+        try:
+            install.ROOT=base/'profile'; (install.ROOT/'runtime').mkdir(parents=True)
+            for fallback,fail in [(None,False),(str(agent),False),(None,True)]:
+                (install.ROOT/'POLKIT.json').write_text(json.dumps({'fallback':fallback}))
+                def component_check(args,**kwargs):
+                    harness=(install.ROOT/'runtime/multi-rice-check.qml').read_text()
+                    assert ('services/PolkitServiceImpl.qml' in harness)==(fallback is None)
+                    assert 'component.createObject' not in harness
+                    return subprocess.CompletedProcess(args,0,
+                        'INIR_COMPONENT_FAILURE: services/PolkitServiceImpl.qml' if fail else 'INIR_COMPONENTS_READY','')
+                with patch.object(install,'run',return_value=''),patch.object(install.subprocess,'run',component_check):
+                    if fail:
+                        try: install.validate_runtime(); raise AssertionError('missing native authentication accepted')
+                        except RuntimeError as error: assert 'PolkitServiceImpl.qml' in str(error)
+                    else: install.validate_runtime()
+        finally: install.ROOT=old_root
+    print('PASS: standalone Polkit fallback requires an existing executable; no conflicting agent dependency')
 
 def check_fonts():
     with tempfile.TemporaryDirectory(prefix='inir-font-') as name:
@@ -261,6 +288,7 @@ def main():
     source=Path(sys.argv[1]).resolve()
     assert subprocess.check_output(['git','-C',str(source),'rev-parse','HEAD'],text=True).strip()==adapt.REVISION
     check_dependencies()
+    check_polkit()
     check_fonts()
     check_environment()
     # Only stock-launcher availability is mocked for route dry-runs.

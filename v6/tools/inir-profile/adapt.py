@@ -1,12 +1,22 @@
 """Pinned-source adaptations; never run upstream setup or change another rice."""
 import importlib.util
 import json
+import os
 from pathlib import Path
 import shutil
 from fonts import prepare_font
 
 REVISION = 'c08bb928fe71c6a00bfede3e99ef26fb1825ebe2'
 VERSION = '2.32.0'
+
+def polkit_fallback(candidates=None):
+    candidates=candidates if candidates is not None else [
+        '/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1',
+        '/usr/lib/polkit-kde-authentication-agent-1',
+        '/usr/bin/lxqt-policykit-agent',
+        '/usr/lib/mate-polkit/polkit-mate-authentication-agent-1',
+        '/usr/libexec/polkit-mate-authentication-agent-1']
+    return next((str(path) for path in candidates if Path(path).is_file() and os.access(path,os.X_OK)),None)
 
 def replace_once(path, before, after):
     text = path.read_text()
@@ -37,11 +47,16 @@ def prepare(source, stage, final, package, real_home):
                  'function _maybeHandleConflicts(): void {',
                  'function _maybeHandleConflicts(): void {\n        return; // Multi-Rice owns shell lifetimes.\n')
     polkit = runtime/'services/PolkitService.qml'
-    replace_once(polkit,'} else if (component.status === Component.Error) {',
-                 '} else if (component.status === Component.Error) {\n                fallbackAgent.running = true;')
-    text = polkit.read_text()
-    end = text.rfind('\n}')
-    polkit.write_text(text[:end]+'\n    Process {\n        id: fallbackAgent\n        command: ["/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"]\n    }\n'+text[end:])
+    fallback=polkit_fallback()
+    (stage/'POLKIT.json').write_text(json.dumps({'fallback':fallback})+'\n')
+    # Prefer iNiR's native agent. Reuse a standalone fallback only if already
+    # installed; another rice's agent package must never be replaced.
+    if fallback:
+        replace_once(polkit,'} else if (component.status === Component.Error) {',
+                     '} else if (component.status === Component.Error) {\n                fallbackAgent.running = true;')
+        text = polkit.read_text()
+        end = text.rfind('\n}')
+        polkit.write_text(text[:end]+'\n    Process {\n        id: fallbackAgent\n        command: '+json.dumps([fallback])+'\n    }\n'+text[end:])
     # Keep dynamic palette generation, omit external app restyling/restarts.
     for script in ['applycolor.sh','apply-gtk-theme.sh','apply-spicetify-theme.sh']:
         path = runtime/'scripts/colors'/script

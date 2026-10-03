@@ -33,7 +33,7 @@ PACKAGES=['qt6-5compat','qt6-imageformats','qt6-multimedia','qt6-quicktimeline',
           'noto-fonts-emoji','python-numpy','python-pillow','python-pip',
           'jq','fish','foot','fuzzel','wl-clipboard','cliphist','brightnessctl','playerctl',
           'libnotify','grim','slurp','curl','rsync','xdg-utils','xdg-user-dirs','wlsunset',
-          'polkit-gnome','swayidle','swaylock','xwayland-satellite',
+          'swayidle','swaylock','xwayland-satellite',
           'xdg-desktop-portal-gnome','xdg-desktop-portal-gtk']
 
 def run(args, *, timeout=45, env=None):
@@ -183,11 +183,15 @@ def validate_runtime():
     # Compile components, without creating the iNiR desktop or acquiring its bus names.
     # A private bus, offscreen renderer and private HOME prevent interference with Cipher.
     harness=ROOT/'runtime/multi-rice-check.qml'
+    components=['shell.qml','settings.qml','welcome.qml']
+    if not json.loads((ROOT/'POLKIT.json').read_text())['fallback']:
+        components.append('services/PolkitServiceImpl.qml')
+        print('Checking existing Quickshell native Polkit support; no agent package will be replaced',flush=True)
     harness.write_text('''import QtQuick
 import Quickshell
 ShellRoot {
     Component.onCompleted: {
-        const names = ["shell.qml", "settings.qml", "welcome.qml"]
+        const names = COMPONENT_NAMES
         for (const name of names) {
             const component = Qt.createComponent(Quickshell.shellPath(name), Component.PreferSynchronous)
             if (component.status !== Component.Ready) {
@@ -200,7 +204,7 @@ ShellRoot {
         Qt.quit()
     }
 }
-''')
+'''.replace('COMPONENT_NAMES',json.dumps(components)))
     env=private_env(ROOT,os.environ)
     for key in ['NIRI_SOCKET','WAYLAND_DISPLAY','DISPLAY','HYPRLAND_INSTANCE_SIGNATURE','DBUS_SESSION_BUS_ADDRESS']:
         env.pop(key,None)

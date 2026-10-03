@@ -20,6 +20,8 @@ python3 ~/Downloads/inir-profile/install.py --install --install-deps
 
 Missing packages are checked against enabled pacman repositories before requesting sudo. Roboto Flex is bundled in the ZIP under its SIL Open Font License and loaded only into iNiR's Quickshell processes; `ttf-roboto-flex` is not a pacman dependency. A source checkout downloads the exact Google Fonts revision and verifies the sizes and SHA-256 hashes in `font-manifest.json`. The font is never installed into your global or user font directories.
 
+`polkit-gnome` is not a mandatory dependency: it can conflict with another rice's built-in agent package. iNiR uses its native Quickshell Polkit interface, or an already installed standalone GNOME/KDE/LXQt/MATE agent when that interface is unavailable. If no standalone agent exists, installation explicitly checks that the native Polkit component compiles. A missing native module stops preparation with a diagnostic; the installer does not remove or replace your existing agent packages.
+
 The installer checks the Niri config with `niri validate --config PATH`, parses service files, runs the actual palette generator, and compiles the shell/settings/welcome QML on a private D-Bus with an offscreen renderer. It does **not** instantiate the new desktop in your current Cipher session. QML check output is retained with preparation diagnostics if an error occurs.
 
 On success, close and reopen Sumi Deck with **Super+Shift+D**, choose **iNiR**, then log in using **Huzaifah Multi-Rice**. Selecting a rice ends the current session through the existing switcher. Installation itself does not change the selected rice, your `~/.config/niri` link, or restart a desktop.
