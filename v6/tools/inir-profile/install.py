@@ -29,7 +29,7 @@ SHELL='huzaifah-inir-shell.service'
 # Keep the working Quickshell/Niri packages; never install iNiR's conflicting meta-package.
 PACKAGES=['qt6-5compat','qt6-imageformats','qt6-multimedia','qt6-quicktimeline',
           'kirigami','syntax-highlighting','qt6-webengine','layer-shell-qt',
-          'ttf-material-symbols-variable','ttf-roboto-flex','ttf-jetbrains-mono-nerd',
+          'ttf-material-symbols-variable','ttf-jetbrains-mono-nerd',
           'noto-fonts-emoji','python-numpy','python-pillow','python-pip',
           'jq','fish','foot','fuzzel','wl-clipboard','cliphist','brightnessctl','playerctl',
           'libnotify','grim','slurp','curl','rsync','xdg-utils','xdg-user-dirs','wlsunset',
@@ -41,6 +41,25 @@ def run(args, *, timeout=45, env=None):
     p=subprocess.run(list(map(str,args)),capture_output=True,text=True,timeout=timeout,env=env)
     if p.returncode: raise RuntimeError((p.stderr or p.stdout).strip() or 'Command failed')
     return p.stdout.strip()
+
+def dependencies(install_deps):
+    check=subprocess.run(['pacman','-T',*PACKAGES],capture_output=True,text=True)
+    if check.returncode not in [0,127]: raise RuntimeError(check.stderr.strip() or 'pacman dependency query failed')
+    missing=check.stdout.split()
+    if missing and install_deps:
+        unavailable=[]
+        for name in missing:
+            info=subprocess.run(['pacman','-Si',name],capture_output=True,text=True)
+            if info.returncode: unavailable.append(name)
+        if unavailable:
+            raise RuntimeError('Unavailable in enabled pacman repositories: '+shlex.join(unavailable)+
+                               '; no dependency installation attempted and profiles are unchanged')
+        result=subprocess.run(['sudo','pacman','-S','--needed',*missing])
+        if result.returncode: raise RuntimeError('Dependency installation stopped; profiles are unchanged')
+        check=subprocess.run(['pacman','-T',*PACKAGES],capture_output=True,text=True)
+        if check.returncode not in [0,127]: raise RuntimeError(check.stderr.strip() or 'pacman dependency query failed')
+        missing=check.stdout.split()
+    if missing: raise RuntimeError('Missing dependencies. Rerun with --install-deps, or install: '+shlex.join(missing))
 
 def prerequisites(install_deps):
     # Read-only launchers may legitimately be symlinks. The root route is a
@@ -57,15 +76,7 @@ def prerequisites(install_deps):
         if not os.access(binary,os.X_OK): raise RuntimeError('Required existing runtime is missing: '+binary)
     # Query current packages before changing profile files. Optional installation
     # is explicit on the command line and never installs/replaces Quickshell.
-    check=subprocess.run(['pacman','-T',*PACKAGES],capture_output=True,text=True)
-    if check.returncode not in [0,127]: raise RuntimeError(check.stderr.strip() or 'pacman dependency query failed')
-    missing=check.stdout.split()
-    if missing and install_deps:
-        result=subprocess.run(['sudo','pacman','-S','--needed',*missing])
-        if result.returncode: raise RuntimeError('Dependency installation stopped; profiles are unchanged')
-        check=subprocess.run(['pacman','-T',*PACKAGES],capture_output=True,text=True)
-        missing=check.stdout.split()
-    if missing: raise RuntimeError('Missing dependencies. Rerun with --install-deps, or install: '+shlex.join(missing))
+    dependencies(install_deps)
     if ROOT.exists() or ROOT.is_symlink(): raise RuntimeError('iNiR already exists; use --status or --rollback')
     run(['systemctl','--user','show-environment'])
 

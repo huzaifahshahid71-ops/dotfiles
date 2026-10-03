@@ -9,13 +9,61 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from unittest.mock import patch
+import io
 
 PACKAGE=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(PACKAGE))
 import adapt
 import environment
 import install
+import fonts
 from transaction import digest
+
+def check_dependencies():
+    assert 'ttf-roboto-flex' not in install.PACKAGES
+    for scenario in ['installed','available','unavailable','query-failure']:
+        calls=[]
+        def fake(args,**kwargs):
+            calls.append(args)
+            if args[:2]==['pacman','-T']:
+                if scenario=='query-failure': return subprocess.CompletedProcess(args,1,'','database error')
+                missing=scenario!='installed' and not any(x[0]=='sudo' for x in calls)
+                return subprocess.CompletedProcess(args,127 if missing else 0,'qt6-imageformats\n' if missing else '','')
+            if args[:2]==['pacman','-Si']:
+                return subprocess.CompletedProcess(args,1 if scenario=='unavailable' else 0,'','')
+            assert args==['sudo','pacman','-S','--needed','qt6-imageformats']
+            return subprocess.CompletedProcess(args,0)
+        with patch.object(install.subprocess,'run',fake):
+            if scenario in ['unavailable','query-failure']:
+                try: install.dependencies(True); raise AssertionError('dependency failure accepted')
+                except RuntimeError as error:
+                    assert ('Unavailable' if scenario=='unavailable' else 'database error') in str(error)
+            else: install.dependencies(True)
+        assert any(x[0]=='sudo' for x in calls)==(scenario=='available')
+    print('PASS: repository preflight stops unavailable packages before sudo; installed/available dependencies pass')
+
+def check_fonts():
+    with tempfile.TemporaryDirectory(prefix='inir-font-') as name:
+        work=Path(name); runtime=work/'runtime'
+        fonts.prepare_font(PACKAGE,runtime)
+        assets=runtime/'assets/fonts/roboto-flex'
+        # A source checkout downloads the same bytes; corrupt bundles fail closed.
+        package=work/'source'; package.mkdir()
+        shutil.copy2(PACKAGE/'font-manifest.json',package/'font-manifest.json')
+        manifest=json.loads((package/'font-manifest.json').read_text())
+        def fetch(url,**kwargs):
+            item=next(x for x in manifest['files'] if x['url']==url)
+            return io.BytesIO((assets/item['name']).read_bytes())
+        with patch.object(fonts.urllib.request,'urlopen',fetch):
+            fonts.prepare_font(package,work/'downloaded-runtime')
+        bundled=package/'assets/fonts/roboto-flex'; bundled.mkdir(parents=True)
+        (bundled/'RobotoFlex.ttf').write_bytes(b'corrupt')
+        with patch.object(fonts.urllib.request,'urlopen',side_effect=AssertionError('corrupt font redownloaded')):
+            try: fonts.prepare_font(package,work/'corrupt-runtime'); raise AssertionError('corrupt font accepted')
+            except RuntimeError as error: assert 'checksum differs' in str(error)
+        assert not (work/'home/.local/share/fonts').exists()
+    print('PASS: private font assets and license verify hashes; pinned source fallback and corruption guard pass')
 
 def module(path,name):
     spec=importlib.util.spec_from_file_location(name,path)
@@ -212,6 +260,8 @@ def check_metadata_layouts(source):
 def main():
     source=Path(sys.argv[1]).resolve()
     assert subprocess.check_output(['git','-C',str(source),'rev-parse','HEAD'],text=True).strip()==adapt.REVISION
+    check_dependencies()
+    check_fonts()
     check_environment()
     # Only stock-launcher availability is mocked for route dry-runs.
     with tempfile.TemporaryDirectory(prefix='inir-stock-command-') as name:

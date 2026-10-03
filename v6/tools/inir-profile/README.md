@@ -18,6 +18,8 @@ python3 ~/Downloads/inir-profile/install.py --install --install-deps
 
 `--install-deps` installs missing official Arch dependencies with pacman. It does not install the upstream iNiR meta-package or replace the existing Quickshell/Niri packages. Omit this flag to receive a missing-package list instead. The source download and the private color-generator environment need internet access. Dependency installation is a separate package-manager operation and is retained if profile preparation subsequently fails.
 
+Missing packages are checked against enabled pacman repositories before requesting sudo. Roboto Flex is bundled in the ZIP under its SIL Open Font License and loaded only into iNiR's Quickshell processes; `ttf-roboto-flex` is not a pacman dependency. A source checkout downloads the exact Google Fonts revision and verifies the sizes and SHA-256 hashes in `font-manifest.json`. The font is never installed into your global or user font directories.
+
 The installer checks the Niri config with `niri validate --config PATH`, parses service files, runs the actual palette generator, and compiles the shell/settings/welcome QML on a private D-Bus with an offscreen renderer. It does **not** instantiate the new desktop in your current Cipher session. QML check output is retained with preparation diagnostics if an error occurs.
 
 On success, close and reopen Sumi Deck with **Super+Shift+D**, choose **iNiR**, then log in using **Huzaifah Multi-Rice**. Selecting a rice ends the current session through the existing switcher. Installation itself does not change the selected rice, your `~/.config/niri` link, or restart a desktop.

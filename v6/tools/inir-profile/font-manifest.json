@@ -1,0 +1,20 @@
+{
+  "repository": "https://github.com/google/fonts",
+  "revision": "9710da1eacb3be272583c3224dcb70f9da6eadbb",
+  "family": "Roboto Flex",
+  "license": "OFL-1.1",
+  "files": [
+    {
+      "name": "RobotoFlex.ttf",
+      "url": "https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/robotoflex/RobotoFlex%5BGRAD%2CXOPQ%2CXTRA%2CYOPQ%2CYTAS%2CYTDE%2CYTFI%2CYTLC%2CYTUC%2Copsz%2Cslnt%2Cwdth%2Cwght%5D.ttf",
+      "sha256": "9b523f7d82593df0107173849ebb8c817471a1df4b4fb2c3cbf40cfd810c8281",
+      "size": 1787292
+    },
+    {
+      "name": "OFL.txt",
+      "url": "https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/robotoflex/OFL.txt",
+      "sha256": "9cbaed04b20c853f99840efe5dc96956f6f6120ed83a0ade35f9281a2b63e5d0",
+      "size": 4488
+    }
+  ]
+}

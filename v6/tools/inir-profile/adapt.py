@@ -3,6 +3,7 @@ import importlib.util
 import json
 from pathlib import Path
 import shutil
+from fonts import prepare_font
 
 REVISION = 'c08bb928fe71c6a00bfede3e99ef26fb1825ebe2'
 VERSION = '2.32.0'
@@ -26,6 +27,11 @@ def prepare(source, stage, final, package, real_home):
         else: shutil.copy2(original,target)
     for name in ['LICENSE','README.md','qmldir']:
         if (source/name).is_file(): shutil.copy2(source/name,runtime/name)
+    prepare_font(package,runtime)
+    replace_once(runtime/'modules/common/Appearance.qml','Singleton {\n',
+                 'Singleton {\n    property FontLoader profileRobotoFlex: FontLoader {\n'
+                 '        source: Quickshell.shellPath("assets/fonts/roboto-flex/RobotoFlex.ttf")\n'
+                 '    }\n')
     # The upstream process killer is inappropriate in a multi-rice session.
     replace_once(runtime/'services/ConflictKiller.qml',
                  'function _maybeHandleConflicts(): void {',
