@@ -1,0 +1,120 @@
+use std::fs::OpenOptions;
+use std::io::Write;
+use std::path::PathBuf;
+
+use log::{info, warn};
+use udev::Device;
+
+use crate::error::{PlatformError, Result};
+
+/// A USB device that utilizes hidraw for I/O
+#[derive(Debug)]
+pub struct HidRaw {
+    /// The path to the `/dev/<name>` of the device
+    devfs_path: PathBuf,
+    /// The product ID. The vendor ID is not kept
+    prod_id: String,
+    _device_bcd: u32,
+}
+
+impl HidRaw {
+    pub fn new(id_product: &str) -> Result<Self> {
+        let mut enumerator = udev::Enumerator::new().map_err(|err| {
+            warn!("{}", err);
+            PlatformError::Udev("enumerator failed".into(), err)
+        })?;
+
+        enumerator.match_subsystem("hidraw").map_err(|err| {
+            warn!("{}", err);
+            PlatformError::Udev("match_subsystem failed".into(), err)
+        })?;
+
+        for endpoint in enumerator
+            .scan_devices()
+            .map_err(|e| PlatformError::IoPath("enumerator".to_owned(), e))?
+        {
+            if let Some(usb_device) = endpoint
+                .parent_with_subsystem_devtype("usb", "usb_device")
+                .map_err(|e| {
+                    PlatformError::IoPath(endpoint.devpath().to_string_lossy().to_string(), e)
+                })?
+                && let Some(dev_node) = endpoint.devnode()
+                && let Some(this_id_product) = usb_device.attribute_value("idProduct")
+            {
+                if this_id_product != id_product {
+                    continue;
+                }
+                let dev_path = endpoint.devpath().to_string_lossy();
+                if dev_path.contains("virtual") {
+                    info!(
+                        "Using device at: {:?} for <TODO: label control> control",
+                        dev_node
+                    );
+                }
+                return Ok(Self {
+                    devfs_path: dev_node.to_owned(),
+                    prod_id: this_id_product.to_string_lossy().into(),
+                    _device_bcd: usb_device
+                        .attribute_value("bcdDevice")
+                        .unwrap_or_default()
+                        .to_string_lossy()
+                        .parse()
+                        .unwrap_or_default(),
+                });
+            }
+        }
+        Err(PlatformError::MissingFunction(format!(
+            "hidraw dev {} not found",
+            id_product
+        )))
+    }
+
+    /// Make `HidRaw` device from a udev device
+    pub fn from_device(endpoint: Device) -> Result<Self> {
+        if let Some(parent) = endpoint
+            .parent_with_subsystem_devtype("usb", "usb_device")
+            .map_err(|e| {
+                PlatformError::IoPath(endpoint.devpath().to_string_lossy().to_string(), e)
+            })?
+            && let Some(dev_node) = endpoint.devnode()
+            && let Some(id_product) = parent.attribute_value("idProduct")
+        {
+            return Ok(Self {
+                devfs_path: dev_node.to_owned(),
+                prod_id: id_product.to_string_lossy().into(),
+                _device_bcd: endpoint
+                    .attribute_value("bcdDevice")
+                    .unwrap_or_default()
+                    .to_string_lossy()
+                    .parse()
+                    .unwrap_or_default(),
+            });
+        }
+        Err(PlatformError::MissingFunction(
+            "hidraw dev no dev path".to_string(),
+        ))
+    }
+
+    pub fn prod_id(&self) -> &str {
+        &self.prod_id
+    }
+
+    /// Write an array of raw bytes to the device using the hidraw interface
+    pub fn write_bytes(&self, message: &[u8]) -> Result<()> {
+        // Open hidraw only for the duration of the actual transaction.
+        // A permanently open hidraw fd holds PM_HINT_FULLON and prevents
+        // this USB interface from runtime autosuspending.
+        let mut file = OpenOptions::new()
+            .write(true)
+            .open(&self.devfs_path)
+            .map_err(|e| {
+                PlatformError::IoPath(self.devfs_path.to_string_lossy().to_string(), e)
+            })?;
+
+        file.write_all(message).map_err(|e| {
+            PlatformError::IoPath(self.devfs_path.to_string_lossy().to_string(), e)
+        })?;
+
+        Ok(())
+    }
+}

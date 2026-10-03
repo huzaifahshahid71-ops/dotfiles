@@ -1,0 +1,12 @@
+[Unit]
+Description=Finalize ASUS runtime power management
+After=asusd.service
+Wants=asusd.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/libexec/asus-runtime-pm-finalize
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

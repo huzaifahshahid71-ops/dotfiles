@@ -1,0 +1,16 @@
+#!/usr/bin/fish
+
+# Let boot-time device initialization settle.
+sleep 3
+
+if test -w /sys/module/snd_hda_intel/parameters/power_save
+    echo 10 > /sys/module/snd_hda_intel/parameters/power_save
+end
+
+if test -w /sys/bus/pci/devices/0000:00:1f.3/power/control
+    echo auto > /sys/bus/pci/devices/0000:00:1f.3/power/control
+end
+
+if test -w /sys/bus/usb/devices/3-6/power/control
+    echo auto > /sys/bus/usb/devices/3-6/power/control
+end

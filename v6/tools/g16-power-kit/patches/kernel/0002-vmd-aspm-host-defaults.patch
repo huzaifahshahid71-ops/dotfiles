@@ -1,0 +1,166 @@
+diff --git a/drivers/pci/controller/vmd.c b/drivers/pci/controller/vmd.c
+--- a/drivers/pci/controller/vmd.c
++++ b/drivers/pci/controller/vmd.c
+@@ -71,10 +71,9 @@
+ 	VMD_FEAT_CAN_BYPASS_MSI_REMAP		= (1 << 4),
+ 
+ 	/*
+-	 * Enable ASPM on the PCIE root ports and set the default LTR of the
+-	 * storage devices on platforms where these values are not configured by
+-	 * BIOS. This is needed for laptops, which require these settings for
+-	 * proper power management of the SoC.
++	 * Program default LTR values for storage devices on platforms where
++	 * firmware did not. Required on many laptops for proper SoC power
++	 * management.
+ 	 */
+ 	VMD_FEAT_BIOS_PM_QUIRK		= (1 << 5),
+ 	VMD_FEAT_INTERRUPT_QUIRK	= (1 << 6),
+@@ -761,7 +760,7 @@
+ }
+ 
+ /*
+- * Enable ASPM and LTR settings on devices that aren't configured by BIOS.
++ * Enable LTR settings on devices that aren't configured by BIOS.
+  */
+ static int vmd_pm_enable_quirk(struct pci_dev *pdev, void *userdata)
+ {
+@@ -775,7 +774,7 @@
+ 
+ 	pos = pci_find_ext_capability(pdev, PCI_EXT_CAP_ID_LTR);
+ 	if (!pos)
+-		goto out_state_change;
++		return 0;
+ 
+ 	/*
+ 	 * Skip if the max snoop LTR is non-zero, indicating BIOS has set it
+@@ -783,7 +782,7 @@
+ 	 */
+ 	pci_read_config_dword(pdev, pos + PCI_LTR_MAX_SNOOP_LAT, &ltr_reg);
+ 	if (!!(ltr_reg & (PCI_LTR_VALUE_MASK | PCI_LTR_SCALE_MASK)))
+-		goto out_state_change;
++		return 0;
+ 
+ 	/*
+ 	 * Set the default values to the maximum required by the platform to
+@@ -795,13 +794,6 @@
+ 	pci_write_config_dword(pdev, pos + PCI_LTR_MAX_SNOOP_LAT, ltr_reg);
+ 	pci_info(pdev, "VMD: Default LTR value set by driver\n");
+ 
+-out_state_change:
+-	/*
+-	 * Ensure devices are in D0 before enabling PCI-PM L1 PM Substates, per
+-	 * PCIe r6.0, sec 5.5.4.
+-	 */
+-	pci_set_power_state_locked(pdev, PCI_D0);
+-	pci_enable_link_state_locked(pdev, PCIE_LINK_STATE_ALL);
+ 	return 0;
+ }
+ 
+@@ -957,6 +949,8 @@
+ 	WARN(sysfs_create_link(&vmd->dev->dev.kobj, &vmd->bus->dev.kobj,
+ 			       "domain"), "Can't create symlink to domain\n");
+ 
++	pci_host_set_default_pcie_link_state(to_pci_host_bridge(vmd->bus->bridge),
++					     PCIE_LINK_STATE_ALL);
+ 	vmd_acpi_begin();
+ 
+ 	pci_scan_child_bus(vmd->bus);
+diff --git a/drivers/pci/pcie/aspm.c b/drivers/pci/pcie/aspm.c
+--- a/drivers/pci/pcie/aspm.c
++++ b/drivers/pci/pcie/aspm.c
+@@ -375,6 +375,39 @@
+ 	pcie_set_clkpm_nocheck(link, enable);
+ }
+ 
++/**
++ * pci_host_set_default_pcie_link_state - set controller-provided default ASPM/CLKPM mask
++ * @host: host bridge on which to apply the defaults
++ * @state: PCIE_LINK_STATE_XXX flags
++ *
++ * Allows a PCIe controller driver to specify the default ASPM and/or
++ * Clock Power Management (CLKPM) link state mask that will be used
++ * for links under this host bridge during ASPM/CLKPM capability init.
++ *
++ * The value is consumed in pcie_aspm_cap_init() and pcie_clkpm_cap_init()
++ * to override the firmware-discovered defaults.
++ *
++ * Interpretation of aspm_default_link_state:
++ *   - Nonzero: bitmask of PCIE_LINK_STATE_* values to be used as defaults
++ *   - Zero:    no override provided; ASPM/CLKPM defaults fall back to
++ *              values discovered in hardware/firmware
++ *
++ * Note: zero is always treated as "unset", not as "force ASPM/CLKPM off".
++ */
++void pci_host_set_default_pcie_link_state(struct pci_host_bridge *host,
++					  unsigned int state)
++{
++	host->aspm_default_link_state = state;
++}
++EXPORT_SYMBOL_GPL(pci_host_set_default_pcie_link_state);
++
++static u32 pci_host_get_default_pcie_link_state(struct pci_dev *dev)
++{
++	struct pci_host_bridge *host = pci_find_host_bridge(dev->bus);
++
++	return host ? host->aspm_default_link_state : 0;
++}
++
+ static void pcie_clkpm_cap_init(struct pcie_link_state *link, int blacklist)
+ {
+ 	int capable = 1, enabled = 1;
+@@ -396,7 +429,10 @@
+ 			enabled = 0;
+ 	}
+ 	link->clkpm_enabled = enabled;
+-	link->clkpm_default = enabled;
++	if (pci_host_get_default_pcie_link_state(link->pdev) & PCIE_LINK_STATE_CLKPM)
++		link->clkpm_default = 1;
++	else
++		link->clkpm_default = enabled;
+ 	link->clkpm_capable = capable;
+ 	link->clkpm_disable = blacklist ? 1 : 0;
+ }
+@@ -932,7 +968,9 @@
+ 	}
+ 
+ 	/* Save default state */
+-	link->aspm_default = link->aspm_enabled;
++	link->aspm_default = pci_host_get_default_pcie_link_state(parent);
++	if (!link->aspm_default)
++		link->aspm_default = link->aspm_enabled;
+ 
+ 	pcie_aspm_override_default_link_state(link);
+ 
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -666,6 +666,10 @@
+ 	unsigned int	msi_domain:1;		/* Bridge wants MSI domain */
+ 	unsigned int	broken_l1ss_resume:1;	/* Resuming from L1SS during
+ 						   system suspend is broken */
++
++#ifdef CONFIG_PCIEASPM
++	unsigned int	aspm_default_link_state;	/* Controller-provided default */
++#endif
+ 
+ 	/* Resource alignment requirements */
+ 	resource_size_t (*align_resource)(struct pci_dev *dev,
+@@ -1922,6 +1926,8 @@
+ int pci_disable_link_state_locked(struct pci_dev *pdev, int state);
+ int pci_enable_link_state(struct pci_dev *pdev, int state);
+ int pci_enable_link_state_locked(struct pci_dev *pdev, int state);
++void pci_host_set_default_pcie_link_state(struct pci_host_bridge *host,
++					  unsigned int state);
+ void pcie_no_aspm(void);
+ bool pcie_aspm_support_enabled(void);
+ bool pcie_aspm_enabled(struct pci_dev *pdev);
+@@ -1934,6 +1940,9 @@
+ { return 0; }
+ static inline int pci_enable_link_state_locked(struct pci_dev *pdev, int state)
+ { return 0; }
++static inline void
++pci_host_set_default_pcie_link_state(struct pci_host_bridge *host,
++				     unsigned int state) { }
+ static inline void pcie_no_aspm(void) { }
+ static inline bool pcie_aspm_support_enabled(void) { return false; }
+ static inline bool pcie_aspm_enabled(struct pci_dev *pdev) { return false; }

@@ -1,0 +1,27 @@
+{
+  "recovered_on": "2026-10-03",
+  "input_archive_sha256": "0df0461c1acdcf86aaabf4ec542f2090c80400484471f998db464573d15e7dd2",
+  "working_kernel": "7.2.5-1-cachyos-vmdtest",
+  "working_boot_label": "Linux stable",
+  "default_boot_selection": "Windows (user confirmed)",
+  "old_recipe_repository": "https://github.com/CachyOS/linux-cachyos",
+  "old_recipe_commit": "a9073a0930149e4fffd6c48cc60daa7370ba9590",
+  "target_recipe_commit": "c7d6ad1ead107761d354a12d6217ddf6840cb177",
+  "kernel_source_repository": "https://github.com/CachyOS/linux",
+  "kernel_reference_tags": [
+    "cachyos-7.2.5-1",
+    "cachyos-7.2.8-1"
+  ],
+  "vmd_interrupt_upstream_commit": "95ac22dd4bf13373f90bb6d51bcd1fd1d8f5db54",
+  "aspm_series_reference": "20250825203542.3502368-1-david.e.box@linux.intel.com",
+  "aspm_patch_basis": "Exact diff between captured .orig files and modified files; .orig ASPM/header matched fetched 7.2.5 sources",
+  "asusctl_repository": "https://github.com/OpenGamingCollective/asusctl",
+  "asusctl_commit": "ec09e7629da3e4081d9c342e7f323e30158cccfd",
+  "asusctl_version": "6.5.0",
+  "experimental_ite_module_loaded": false,
+  "kernel_build_or_runtime_validation_performed": false,
+  "kernel_reference_commits": {
+    "cachyos-7.2.5-1": "0508056791522041f5034cd99fd82d27a662337e",
+    "cachyos-7.2.8-1": "2b929db2eff77a4b1801fc43f6cc736728fd1706"
+  }
+}
