@@ -97,10 +97,30 @@ Performance policy is configured. These samples support working power
 states, not a controlled before/after consumption comparison.
 At 23:20 local the log records s2idle entry and suspend exit, with Intel
 GuC/HuC initialization messages and no errors in the supplied filtered
-output. The user returned after waking; explicit post-wake peripheral
-function confirmation and longer stability testing remain pending.
+output. The user confirmed display, input, sound and Wi-Fi operation after
+waking, plus automatic Bluetooth headphone reconnection. Initial kernel
+acceptance checks are complete; longer stability testing remains pending.
 The installed asusctl 6.5.0 source uses positional
 queries (`asusctl armoury get dgpu_disable`), not `--property`.
+
+## Profile service ownership
+
+The host's inspected refresh and Lumina wallpaper units both use
+`WantedBy=default.target` and have no session ownership. The refresh script
+polls UPower every second and calls the Hyprland-only backend on state changes
+and every 30 seconds. The Lumina timer sleeps for its configured interval,
+then calls wallpaper/theme and bar helpers without checking the active profile.
+The installed switch backend exits the compositor for both same- and
+cross-compositor switches; Hyprland is owned by UWSM's `hyprland.desktop`
+session, while Eclipse/Cipher use their separate Niri routers.
+
+[The scoped-service fix](tools/profile-service-fix/README.md) migrates existing
+enable links to the UWSM Hyprland session and adds profile/live-session
+conditions. Refresh remains available to all eight Hyprland profiles; Lumina
+rotation is limited to `sayconlun`. Existing scripts, preferences, catalog and
+session routes are retained. Remote profile, stale-environment, rollback,
+repeat and systemd ordering checks pass. Host application and the
+Lumina -> Eclipse -> Lumina acceptance cycle remain pending.
 
 ## Before the release
 
@@ -111,7 +131,8 @@ queries (`asusctl armoury get dgpu_disable`), not `--property`.
 3. Validate the updated host, its working kernel, app controls, shell services,
    refresh-rate behavior, sleep/wake and power settings.
    The freeze journals show Hyprland refresh polling and Lumina wallpaper
-   rotation running in Eclipse; fix their profile ownership before release.
+   rotation running in Eclipse; apply and validate the prepared ownership fix
+   before release.
    No NVMe timeout, OOM kill or kernel-lockup report was observed around that
    stall; the supplied journals do not establish a confirmed freeze cause.
 4. Complete a switching/login check across all 12 profiles. Eclipse, Cipher,
