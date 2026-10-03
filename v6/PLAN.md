@@ -67,8 +67,9 @@ Windows default. Its host backup is `/var/backups/g16-grub-wvs0j_wm`.
 The user then reported `uname -r` as `7.2.8-1-cachyos-g16` and NVIDIA
 615.71.09 DKMS installed for that kernel and all three previous kernels.
 This confirms first boot and the driver build, not live GPU operation or
-resolution of the earlier stall. Initial live power-state checks now pass;
-controlled consumption and suspend validation remain pending. The build uses
+resolution of the earlier stall. Initial live power-state checks and one
+suspend/wake cycle now pass; controlled consumption comparison and longer
+stability checks remain pending. The build uses
 `linux-cachyos-g16` and its headers, preserving `linux-cachyos-vmdtest` as a
 fallback. This is a manual G16 maintenance workflow, not a universal kernel
 payload automatically installed on other machines. Keep hardware-specific
@@ -88,9 +89,17 @@ show ASPM L1 enabled and PCI/ASPM L1.1/L1.2 enabled. The display is at 60 Hz
 and the audio controller is suspended. ITE 0b05:19b6 has autosuspend set
 to auto with a 2000 ms delay; the finalizer succeeded and the device
 suspended after 15 seconds idle, with no hidraw holder reported by fuser.
-The later battery sample is 8.75 W; CPU package power and idle residency
-are still needed for comparison. Suspend/resume and long-term stability
-also remain untested. The installed asusctl 6.5.0 source uses positional
+The later battery sample is 8.75 W. Three 5-second turbostat intervals in
+Quiet mode report package power falling 4.94 -> 4.75 -> 4.57 W, CPU busy
+2.62-2.92%, C8 residency rising 13.27 -> 20.31 -> 23.72%, temperatures
+44-46 C and no reported core thermal throttling. Battery Quiet / AC
+Performance policy is configured. These samples support working power
+states, not a controlled before/after consumption comparison.
+At 23:20 local the log records s2idle entry and suspend exit, with Intel
+GuC/HuC initialization messages and no errors in the supplied filtered
+output. The user returned after waking; explicit post-wake peripheral
+function confirmation and longer stability testing remain pending.
+The installed asusctl 6.5.0 source uses positional
 queries (`asusctl armoury get dgpu_disable`), not `--property`.
 
 ## Before the release
