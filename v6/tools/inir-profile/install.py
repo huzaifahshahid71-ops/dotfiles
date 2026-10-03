@@ -9,9 +9,11 @@ import re
 from pathlib import Path
 import shlex
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
+import time
 
 from adapt import REVISION, VERSION, metadata_overlay, prepare, session_route
 from environment import private_env
@@ -61,6 +63,33 @@ def dependencies(install_deps):
         missing=check.stdout.split()
     if missing: raise RuntimeError('Missing dependencies. Rerun with --install-deps, or install: '+shlex.join(missing))
 
+def previous_check_pids(proc_root=Path('/proc')):
+    expected=[b'/usr/bin/qs',b'-p',os.fsencode(ROOT/'runtime/multi-rice-check.qml')]
+    required={b'INIR_PROFILE_ROOT='+os.fsencode(ROOT),b'HOME='+os.fsencode(ROOT/'home'),
+              b'QT_QPA_PLATFORM=offscreen'}
+    found=[]
+    for entry in proc_root.iterdir():
+        if not entry.name.isdecimal(): continue
+        try:
+            if entry.stat().st_uid!=os.getuid(): continue
+            if (entry/'cmdline').read_bytes().split(b'\0')[:-1]!=expected: continue
+            if not required.issubset(set((entry/'environ').read_bytes().split(b'\0'))): continue
+            found.append(int(entry.name))
+        except (FileNotFoundError,PermissionError,ProcessLookupError): pass
+    return found
+
+def stop_previous_checks():
+    pids=previous_check_pids()
+    for pid in pids:
+        print('Stopping retained offscreen iNiR checker: '+str(pid),flush=True)
+        try: os.kill(pid,signal.SIGTERM)
+        except ProcessLookupError: pass
+    if pids:
+        time.sleep(.2)
+        for pid in set(pids).intersection(previous_check_pids()):
+            try: os.kill(pid,signal.SIGKILL)
+            except ProcessLookupError: pass
+
 def prerequisites(install_deps):
     # Read-only launchers may legitimately be symlinks. The root route is a
     # managed write target and retains the stricter regular-file requirement.
@@ -78,6 +107,7 @@ def prerequisites(install_deps):
     # is explicit on the command line and never installs/replaces Quickshell.
     dependencies(install_deps)
     if ROOT.exists() or ROOT.is_symlink(): raise RuntimeError('iNiR already exists; use --status or --rollback')
+    stop_previous_checks()
     run(['systemctl','--user','show-environment'])
 
 def discover_metadata(control):
@@ -176,6 +206,70 @@ def create_venv():
     if not isinstance(json.loads((generated/'colors.json').read_text()),dict):
         raise RuntimeError('Color generator did not return an object')
 
+def qml_harness(components):
+    return '''import QtQuick
+import Quickshell
+ShellRoot {
+    id: root
+    readonly property var names: COMPONENT_NAMES
+    property int checkIndex: 0
+    property var pendingComponent: null
+    function finishComponent() {
+        if (pendingComponent.status === Component.Loading) return
+        if (pendingComponent.status !== Component.Ready) {
+            console.error("INIR_COMPONENT_FAILURE: " + names[checkIndex] + "\\n" + pendingComponent.errorString())
+            Qt.quit()
+            return
+        }
+        console.log("INIR_COMPONENT_READY: " + names[checkIndex])
+        checkIndex++
+        pendingComponent = null
+        Qt.callLater(nextComponent)
+    }
+    function nextComponent() {
+        if (checkIndex === names.length) {
+            console.log("INIR_COMPONENTS_READY")
+            Qt.quit()
+            return
+        }
+        console.log("INIR_COMPONENT_BEGIN: " + names[checkIndex])
+        pendingComponent = Qt.createComponent(Quickshell.shellPath(names[checkIndex]), Component.PreferSynchronous)
+        if (pendingComponent.status === Component.Loading)
+            pendingComponent.statusChanged.connect(finishComponent)
+        else
+            finishComponent()
+    }
+    // Quickshell installs its quit handler after constructing the root.
+    Component.onCompleted: Qt.callLater(nextComponent)
+}
+'''.replace('COMPONENT_NAMES',json.dumps(components))
+
+def run_qml_check(args,env,log,timeout=60):
+    log.parent.mkdir(parents=True,exist_ok=True)
+    timed_out=False
+    with log.open('w') as output:
+        # Own a separate process group so timeout/cancellation cannot leave the
+        # offscreen qs or its private D-Bus behind, or signal the user's desktop.
+        process=subprocess.Popen(args,stdout=output,stderr=subprocess.STDOUT,
+                                 text=True,env=env,start_new_session=True)
+        try:
+            code=process.wait(timeout=timeout)
+        except BaseException as error:
+            timed_out=isinstance(error,subprocess.TimeoutExpired)
+            for sig in [signal.SIGTERM,signal.SIGKILL]:
+                try: os.killpg(process.pid,sig)
+                except ProcessLookupError: pass
+                if sig==signal.SIGTERM:
+                    try: process.wait(timeout=2)
+                    except subprocess.TimeoutExpired: pass
+            process.wait()
+            if not timed_out: raise
+    output=log.read_text(errors='replace')
+    if timed_out:
+        raise RuntimeError('iNiR QML component check timed out; test processes stopped. Output retained in '+
+                           str(log.relative_to(ROOT))+':\n'+output[-10000:])
+    return code,output
+
 def validate_runtime():
     run(['/usr/bin/niri','validate','--config',ROOT/'niri/config.kdl'])
     for file in [ROOT/'session.sh',ROOT/'shell.sh',ROOT/'bin/inir']:
@@ -187,36 +281,20 @@ def validate_runtime():
     if not json.loads((ROOT/'POLKIT.json').read_text())['fallback']:
         components.append('services/PolkitServiceImpl.qml')
         print('Checking existing Quickshell native Polkit support; no agent package will be replaced',flush=True)
-    harness.write_text('''import QtQuick
-import Quickshell
-ShellRoot {
-    Component.onCompleted: {
-        const names = COMPONENT_NAMES
-        for (const name of names) {
-            const component = Qt.createComponent(Quickshell.shellPath(name), Component.PreferSynchronous)
-            if (component.status !== Component.Ready) {
-                console.error("INIR_COMPONENT_FAILURE: " + name + "\\n" + component.errorString())
-                Qt.quit()
-                return
-            }
-        }
-        console.log("INIR_COMPONENTS_READY")
-        Qt.quit()
-    }
-}
-'''.replace('COMPONENT_NAMES',json.dumps(components)))
+    harness.write_text(qml_harness(components))
     env=private_env(ROOT,os.environ)
     for key in ['NIRI_SOCKET','WAYLAND_DISPLAY','DISPLAY','HYPRLAND_INSTANCE_SIGNATURE','DBUS_SESSION_BUS_ADDRESS']:
         env.pop(key,None)
     env.update(QT_QPA_PLATFORM='offscreen',QT_QUICK_BACKEND='software',QSG_RHI_BACKEND='software')
     try:
-        result=subprocess.run(['/usr/bin/dbus-run-session','--','/usr/bin/qs','-p',str(harness)],
-                              capture_output=True,text=True,timeout=60,env=env)
-        output=result.stdout+'\n'+result.stderr
-        atomic(ROOT/'logs/qml-component-check.log',output.encode())
-        if result.returncode or 'INIR_COMPONENTS_READY' not in output or 'INIR_COMPONENT_FAILURE' in output:
+        code,output=run_qml_check(['/usr/bin/dbus-run-session','--','/usr/bin/qs','-p',str(harness)],
+                                  env,ROOT/'logs/qml-component-check.log')
+        if code or 'INIR_COMPONENTS_READY' not in output or 'INIR_COMPONENT_FAILURE' in output:
             raise RuntimeError('iNiR QML component check failed:\n'+output[-10000:])
-    finally: harness.unlink(missing_ok=True)
+    except BaseException:
+        # Keep the exact harness alongside the failed profile for diagnosis.
+        raise
+    else: harness.unlink(missing_ok=True)
     print('PASS: Niri config and non-instantiating QML component checks',flush=True)
 
 def system_write(state,action):

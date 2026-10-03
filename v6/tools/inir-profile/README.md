@@ -24,6 +24,8 @@ Missing packages are checked against enabled pacman repositories before requesti
 
 The installer checks the Niri config with `niri validate --config PATH`, parses service files, runs the actual palette generator, and compiles the shell/settings/welcome QML on a private D-Bus with an offscreen renderer. It does **not** instantiate the new desktop in your current Cipher session. QML check output is retained with preparation diagnostics if an error occurs.
 
+The QML check starts after the root component has been constructed, so Quickshell's quit handler is connected. Components compile sequentially, including asynchronous loading; each begin/ready result is logged. A timeout stops the check's own process group and retains both `logs/qml-component-check.log` and `runtime/multi-rice-check.qml` under the reported `failed-profile` preparation directory.
+
 On success, close and reopen Sumi Deck with **Super+Shift+D**, choose **iNiR**, then log in using **Huzaifah Multi-Rice**. Selecting a rice ends the current session through the existing switcher. Installation itself does not change the selected rice, your `~/.config/niri` link, or restart a desktop.
 
 ## Shared shortcuts

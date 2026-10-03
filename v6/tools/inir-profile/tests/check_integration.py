@@ -56,19 +56,65 @@ def check_polkit():
             install.ROOT=base/'profile'; (install.ROOT/'runtime').mkdir(parents=True)
             for fallback,fail in [(None,False),(str(agent),False),(None,True)]:
                 (install.ROOT/'POLKIT.json').write_text(json.dumps({'fallback':fallback}))
-                def component_check(args,**kwargs):
+                def component_check(args,env,log,**kwargs):
                     harness=(install.ROOT/'runtime/multi-rice-check.qml').read_text()
                     assert ('services/PolkitServiceImpl.qml' in harness)==(fallback is None)
                     assert 'component.createObject' not in harness
-                    return subprocess.CompletedProcess(args,0,
-                        'INIR_COMPONENT_FAILURE: services/PolkitServiceImpl.qml' if fail else 'INIR_COMPONENTS_READY','')
-                with patch.object(install,'run',return_value=''),patch.object(install.subprocess,'run',component_check):
+                    return 0,'INIR_COMPONENT_FAILURE: services/PolkitServiceImpl.qml' if fail else 'INIR_COMPONENTS_READY'
+                with patch.object(install,'run',return_value=''),patch.object(install,'run_qml_check',component_check):
                     if fail:
                         try: install.validate_runtime(); raise AssertionError('missing native authentication accepted')
                         except RuntimeError as error: assert 'PolkitServiceImpl.qml' in str(error)
                     else: install.validate_runtime()
         finally: install.ROOT=old_root
     print('PASS: standalone Polkit fallback requires an existing executable; no conflicting agent dependency')
+
+def check_qml_process_cleanup():
+    old_root=install.ROOT
+    with tempfile.TemporaryDirectory(prefix='inir-qml-process-') as name:
+        try:
+            install.ROOT=Path(name)
+            fake_proc=install.ROOT/'proc';fake_proc.mkdir()
+            expected=[b'/usr/bin/qs',b'-p',os.fsencode(install.ROOT/'runtime/multi-rice-check.qml')]
+            context=[b'INIR_PROFILE_ROOT='+os.fsencode(install.ROOT),b'HOME='+os.fsencode(install.ROOT/'home'),
+                     b'QT_QPA_PLATFORM=offscreen']
+            for pid,cmd,env in [(100,expected,context),(101,expected,[]),
+                                (102,[b'/usr/bin/qs',b'-p',b'/normal/shell.qml'],context)]:
+                entry=fake_proc/str(pid);entry.mkdir()
+                (entry/'cmdline').write_bytes(b'\0'.join(cmd)+b'\0')
+                (entry/'environ').write_bytes(b'\0'.join(env)+b'\0')
+            assert install.previous_check_pids(fake_proc)==[100]
+            signals=[]
+            with patch.object(install,'previous_check_pids',side_effect=[[100],[100]]),\
+                 patch.object(install.os,'kill',side_effect=lambda pid,sig:signals.append((pid,sig))),\
+                 patch.object(install.time,'sleep',return_value=None):
+                install.stop_previous_checks()
+            import signal
+            assert signals==[(100,signal.SIGTERM),(100,signal.SIGKILL)]
+            code,output=install.run_qml_check([sys.executable,'-c','print("INIR_COMPONENTS_READY",flush=True)'],
+                                           os.environ,install.ROOT/'logs/success.log',timeout=2)
+            assert code==0 and 'INIR_COMPONENTS_READY' in output
+            # Both parent and child ignore TERM; only the checker process group
+            # may be killed. Output must survive the timeout.
+            script=('import subprocess,signal,time,os;signal.signal(signal.SIGTERM,signal.SIG_IGN);'
+                    'child=subprocess.Popen(["'+sys.executable+'","-c",'
+                    '"import signal,time;signal.signal(signal.SIGTERM,signal.SIG_IGN);time.sleep(30)"]);'
+                    'print("CHILD_PID="+str(child.pid),flush=True);time.sleep(30)')
+            log=install.ROOT/'logs/timeout.log'
+            try:
+                install.run_qml_check([sys.executable,'-c',script],os.environ,log,timeout=.3)
+                raise AssertionError('hung checker accepted')
+            except RuntimeError as error:
+                assert 'timed out' in str(error) and 'CHILD_PID=' in str(error)
+            pid=int(log.read_text().strip().split('=')[1])
+            status=Path('/proc')/str(pid)/'stat'
+            import time
+            for _ in range(20):
+                if not status.exists() or status.read_text().split()[2]=='Z': break
+                time.sleep(.05)
+            assert not status.exists() or status.read_text().split()[2]=='Z','checker child remained live'
+        finally: install.ROOT=old_root
+    print('PASS: timeout retains output and terminates only the isolated checker process group')
 
 def check_fonts():
     with tempfile.TemporaryDirectory(prefix='inir-font-') as name:
@@ -289,6 +335,7 @@ def main():
     assert subprocess.check_output(['git','-C',str(source),'rev-parse','HEAD'],text=True).strip()==adapt.REVISION
     check_dependencies()
     check_polkit()
+    check_qml_process_cleanup()
     check_fonts()
     check_environment()
     # Only stock-launcher availability is mocked for route dry-runs.
