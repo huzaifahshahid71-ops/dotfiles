@@ -1,6 +1,6 @@
 # ZEPHYRUS G16 — v6.0 Project TAHOE (design stage)
 
-Status: **Tahoe-on-Hyprland selected; build-only Hyprliquid verified; implementation not yet installed as a host profile**.
+Status: **Current release scope: preserve the eight host Hyprland rices and three existing Niri rices; add iNiR as profile 12, the fourth Niri rice.** The selected-profile installer is in [`tools/inir-profile`](tools/inir-profile/README.md). Remote adaptation, environment, catalog/routing and recovery checks pass; host component checks run during installation and live iNiR login validation remains outstanding.
 
 ## Why this branch exists
 
@@ -10,13 +10,14 @@ Begin from v5.0 `main`, not the draft `v5.1.0-revo-dev` branch.
 
 ## Release scope
 
-- Preserve exactly the **8 existing Hyprland profiles on the real G16**.
-  The Git repository's current baseline contains 7; discover the 8th from
-  the host. Do not invent its name or include an unverified directory.
+- Preserve exactly the **8 existing Hyprland profiles on the real G16**, including Tsugumori.
+  The Git repository's baseline table contains 7; extend the installed host
+  table additively so Tsugumori and any local profiles remain available.
 - Preserve the 3 existing Niri rices: Solstice/jaqc, Cipher/clavis,
-  Astra/nixri. Add **Tahoe** as the **ninth Hyprland rice**.
-- Target release: **12 desktop rices: 9 Hyprland + 3 Niri**, contingent on
-  successful native plugin and host validation.
+  Astra/nixri. Add **iNiR/inir** as the **fourth Niri rice**.
+- Target release: **12 desktop rices: 8 Hyprland + 4 Niri**, contingent on
+  successful iNiR host validation. The older Tahoe design sections below
+  record the earlier exploration; iNiR is the currently selected final rice.
 - Preserve Lumina's current music player, media integrations, and existing
   user systemd backend services; audit actual filenames/units before shipping.
 - Keep the original graphical rice switcher and its backend, with an optional

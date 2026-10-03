@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+eval "$(/usr/bin/python3 "$ROOT/environment.py" --shell)"
+case "${1:-help}" in
+    run|start|stop|kill|service|setup|install|uninstall|update|reset|cleanup-orphans)
+        echo 'iNiR is managed by Multi-Rice. Use its installer or select another rice.' >&2
+        exit 2 ;;
+    restart)
+        exec systemctl --user restart huzaifah-inir-shell.service ;;
+    logs)
+        exec journalctl --user -u huzaifah-inir-shell.service "${@:2}" ;;
+    terminal|browser)
+        kind="$1"; shift
+        app="$(jq -r --arg kind "$kind" '.apps[$kind] // empty' "$HOME/.config/inir/config.json")"
+        if [[ -z "$app" ]]; then
+            if [[ "$kind" == terminal ]]; then app=foot; else app=xdg-open; fi
+        fi
+        if [[ "$kind" == browser && "$app" == xdg-open && $# == 0 ]]; then set -- https://github.com/snowarch/iNiR; fi
+        exec /usr/bin/python3 "$ROOT/environment.py" -- "$app" "$@" ;;
+esac
+exec /usr/bin/bash "$ROOT/runtime/scripts/inir-upstream" "$@"
