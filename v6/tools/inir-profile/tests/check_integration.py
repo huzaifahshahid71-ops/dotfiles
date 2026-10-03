@@ -268,6 +268,9 @@ def check_transactions(source):
                 if scenario=='success':
                     install.install()
                     assert root.is_dir() and (root/'READY').is_file()
+                    binds=(root/'niri/config.d/70-binds.kdl').read_text()
+                    expected='Mod+Shift+D { spawn "/usr/bin/qs" "-p" '+json.dumps(str(home/'.config/quickshell/multi-rice-switcher/shell.qml'))+'; }'
+                    assert expected in binds and str(home/'.local/bin/desktop-switch') not in binds
                     listing=shell('"$1" list',home/'.local/bin/multi-rice-control',env=env).splitlines()
                     assert len(listing)==12 and any(x.startswith('tsugumori|Tsugumori|') for x in listing)
                     assert any(x.startswith('inir|iNiR|◌|niri|true|') for x in listing)

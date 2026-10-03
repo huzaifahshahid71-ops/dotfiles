@@ -97,9 +97,12 @@ def prerequisites(install_deps):
     if SYSTEM.is_symlink() or not SYSTEM.is_file():
         raise RuntimeError('Expected installed regular system route: '+str(SYSTEM))
     for file in [HOME/'.local/bin/multi-rice-control',
-                 HOME/'.local/bin/desktop-switch',HOME/'.local/bin/lumina-player-overlay']:
+                 HOME/'.local/bin/lumina-player-overlay']:
         if not file.is_file() or not os.access(file,os.X_OK):
             raise RuntimeError('Expected installed executable: '+str(file))
+    switcher=HOME/'.config/quickshell/multi-rice-switcher/shell.qml'
+    if not switcher.is_file() or not os.access(switcher,os.R_OK):
+        raise RuntimeError('Expected installed Multi-Rice switcher QML: '+str(switcher))
     if any(char in str(HOME) for char in ['"',"'",'\\','\n','%']):
         raise RuntimeError('This adapter requires a home path without quotes, backslashes, newlines or percent signs')
     for binary in ['/usr/bin/niri','/usr/bin/qs','/usr/bin/git','/usr/bin/dbus-run-session']:

@@ -126,7 +126,7 @@ def prepare(source, stage, final, package, real_home):
         text = re.sub(r'^\s*'+re.escape(chord)+r'\s+\{[^\n]+\}\s*$', '',text,flags=re.M)
     anchor = '\nbinds {\n'
     if text.count(anchor) != 1: raise RuntimeError('Missing pinned binds block')
-    extra = ('    Mod+Shift+D { spawn '+kdl(real_home/'.local/bin/desktop-switch')+'; }\n'
+    extra = ('    Mod+Shift+D { spawn "/usr/bin/qs" "-p" '+kdl(real_home/'.config/quickshell/multi-rice-switcher/shell.qml')+'; }\n'
              '    Mod+Shift+R { spawn "/usr/bin/python3" '+kdl(final/'refresh.py')+'; }\n'
              '    Mod+Shift+M { spawn '+kdl(real_home/'.local/bin/lumina-player-overlay')+'; }\n'
              '    Mod+O { spawn "playerctl" "play-pause"; }\n'

@@ -41,6 +41,8 @@ On success, close and reopen Sumi Deck with **Super+Shift+D**, choose **iNiR**, 
 | Super+Shift+W | Cycle panel families |
 | Super+Ctrl+Shift+S | iNiR screen recording with sound |
 
+Super+Shift+D launches the installed `~/.config/quickshell/multi-rice-switcher/shell.qml` with `/usr/bin/qs -p` directly. It does not use the older `desktop-switch` Fuzzel script, which can show a stale Hyprland-only catalog from the saved Hyprland symlink.
+
 ## Isolation and lifecycle
 
 Runtime lives under `~/.local/share/desktop-profiles/inir`. The compositor runs the stock `/usr/bin/niri` with this profile's config. The approved Cipher Genie compositor/buttons remain in their own runtime.
