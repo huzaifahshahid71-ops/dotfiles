@@ -56,7 +56,13 @@ starts. The separate 7.2.8 source preparation applied both kernel patches and
 passed checksum/signature checks. The subsequent Clang/LLVM upgrade requires
 refreshing preparation before compilation.
 
-No new custom kernel has been compiled, installed or booted yet. A new build uses
+The user completed the custom build (22:00 local on 2026-10-03) and verified
+that the complete kernel patch series remained applied. Both packages are now
+installed; NVIDIA DKMS, initramfs generation, kernel signing and GRUB generation
+completed without a reported failure. Snapper recorded snapshots 138/139.
+The custom GRUB menu still lacks a G16 entry; the guarded
+[menu helper](tools/G16-GRUB-ENTRY.md) adds it under Advanced Linux Options.
+No first boot or new-kernel power validation has been reported yet. The build uses
 `linux-cachyos-g16` and its headers, preserving `linux-cachyos-vmdtest` as a
 fallback. This is a manual G16 maintenance workflow, not a universal kernel
 payload automatically installed on other machines. Keep hardware-specific
@@ -70,6 +76,10 @@ power settings, swap and hibernation out of automatic rice installation.
    Niri, Quickshell or Qt runtime upgrade; refreshed transactions may differ.
 3. Validate the updated host, its working kernel, app controls, shell services,
    refresh-rate behavior, sleep/wake and power settings.
+   The freeze journals show Hyprland refresh polling and Lumina wallpaper
+   rotation running in Eclipse; fix their profile ownership before release.
+   No NVMe timeout, OOM kill or kernel-lockup report was observed around that
+   stall; the supplied journals do not establish a confirmed freeze cause.
 4. Complete a switching/login check across all 12 profiles. Eclipse, Cipher,
    DMS and Noctalia require explicit post-update checks.
 5. Build and validate the new patched G16 kernel separately before promoting
