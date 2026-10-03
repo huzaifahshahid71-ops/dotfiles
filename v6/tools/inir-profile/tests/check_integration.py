@@ -60,14 +60,37 @@ def check_polkit():
                     harness=(install.ROOT/'runtime/multi-rice-check.qml').read_text()
                     assert ('services/PolkitServiceImpl.qml' in harness)==(fallback is None)
                     assert 'component.createObject' not in harness
+                    assert env['QT_QPA_PLATFORM']=='wayland' and env['WAYLAND_DISPLAY']==str(base/'wayland-test')
+                    assert env['HOME']==str(install.ROOT/'home') and 'DBUS_SESSION_BUS_ADDRESS' not in env
                     return 0,'INIR_COMPONENT_FAILURE: services/PolkitServiceImpl.qml' if fail else 'INIR_COMPONENTS_READY'
-                with patch.object(install,'run',return_value=''),patch.object(install,'run_qml_check',component_check):
+                with patch.dict(os.environ,WAYLAND_DISPLAY=str(base/'wayland-test')),\
+                     patch.object(Path,'is_socket',side_effect=lambda:True),\
+                     patch.object(install,'run',return_value=''),patch.object(install,'run_qml_check',component_check):
                     if fail:
                         try: install.validate_runtime(); raise AssertionError('missing native authentication accepted')
                         except RuntimeError as error: assert 'PolkitServiceImpl.qml' in str(error)
                     else: install.validate_runtime()
         finally: install.ROOT=old_root
     print('PASS: standalone Polkit fallback requires an existing executable; no conflicting agent dependency')
+
+def check_wayland_environment():
+    with tempfile.TemporaryDirectory(prefix='inir-wayland-') as name:
+        path=Path(name)
+        # A real compositor/socket is host-only; mock the OS socket inspection.
+        with patch.object(Path,'is_socket',lambda file:file==path/'wayland-1'):
+            original=dict(os.environ,HOME='/home/gamer',WAYLAND_DISPLAY='wayland-1',XDG_RUNTIME_DIR=name,
+                          QT_QPA_PLATFORM='offscreen',DBUS_SESSION_BUS_ADDRESS='session-bus',
+                          NIRI_SOCKET='niri-ipc',DISPLAY=':0',HYPRLAND_INSTANCE_SIGNATURE='other-rice')
+            env=install.qml_check_environment(original)
+            assert env['QT_QPA_PLATFORM']=='wayland' and env['WAYLAND_DISPLAY']=='wayland-1'
+            assert env['XDG_RUNTIME_DIR']==name and env['QT_QUICK_BACKEND']=='software'
+            assert env['HOME']==str(install.ROOT/'home')
+            assert not any(key in env for key in ['DBUS_SESSION_BUS_ADDRESS','NIRI_SOCKET','DISPLAY','HYPRLAND_INSTANCE_SIGNATURE'])
+            assert original['QT_QPA_PLATFORM']=='offscreen' and original['HOME']=='/home/gamer'
+            for missing in ['', 'missing-wayland']:
+                try: install.qml_check_environment(dict(original,WAYLAND_DISPLAY=missing));raise AssertionError('missing display accepted')
+                except RuntimeError as error: assert 'Wayland' in str(error)
+    print('PASS: QML checker retains the live Wayland socket while isolating HOME, bus and compositor IPC')
 
 def check_qml_process_cleanup():
     old_root=install.ROOT
@@ -79,11 +102,12 @@ def check_qml_process_cleanup():
             context=[b'INIR_PROFILE_ROOT='+os.fsencode(install.ROOT),b'HOME='+os.fsencode(install.ROOT/'home'),
                      b'QT_QPA_PLATFORM=offscreen']
             for pid,cmd,env in [(100,expected,context),(101,expected,[]),
-                                (102,[b'/usr/bin/qs',b'-p',b'/normal/shell.qml'],context)]:
+                                (102,[b'/usr/bin/qs',b'-p',b'/normal/shell.qml'],context),
+                                (103,expected,context[:-1]+[b'QT_QPA_PLATFORM=wayland'])]:
                 entry=fake_proc/str(pid);entry.mkdir()
                 (entry/'cmdline').write_bytes(b'\0'.join(cmd)+b'\0')
                 (entry/'environ').write_bytes(b'\0'.join(env)+b'\0')
-            assert install.previous_check_pids(fake_proc)==[100]
+            assert set(install.previous_check_pids(fake_proc))=={100,103}
             signals=[]
             with patch.object(install,'previous_check_pids',side_effect=[[100],[100]]),\
                  patch.object(install.os,'kill',side_effect=lambda pid,sig:signals.append((pid,sig))),\
@@ -335,6 +359,7 @@ def main():
     assert subprocess.check_output(['git','-C',str(source),'rev-parse','HEAD'],text=True).strip()==adapt.REVISION
     check_dependencies()
     check_polkit()
+    check_wayland_environment()
     check_qml_process_cleanup()
     check_fonts()
     check_environment()

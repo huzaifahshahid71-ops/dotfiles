@@ -65,15 +65,16 @@ def dependencies(install_deps):
 
 def previous_check_pids(proc_root=Path('/proc')):
     expected=[b'/usr/bin/qs',b'-p',os.fsencode(ROOT/'runtime/multi-rice-check.qml')]
-    required={b'INIR_PROFILE_ROOT='+os.fsencode(ROOT),b'HOME='+os.fsencode(ROOT/'home'),
-              b'QT_QPA_PLATFORM=offscreen'}
+    required={b'INIR_PROFILE_ROOT='+os.fsencode(ROOT),b'HOME='+os.fsencode(ROOT/'home')}
     found=[]
     for entry in proc_root.iterdir():
         if not entry.name.isdecimal(): continue
         try:
             if entry.stat().st_uid!=os.getuid(): continue
             if (entry/'cmdline').read_bytes().split(b'\0')[:-1]!=expected: continue
-            if not required.issubset(set((entry/'environ').read_bytes().split(b'\0'))): continue
+            context=set((entry/'environ').read_bytes().split(b'\0'))
+            if not required.issubset(context): continue
+            if not context.intersection({b'QT_QPA_PLATFORM=offscreen',b'QT_QPA_PLATFORM=wayland'}): continue
             found.append(int(entry.name))
         except (FileNotFoundError,PermissionError,ProcessLookupError): pass
     return found
@@ -81,7 +82,7 @@ def previous_check_pids(proc_root=Path('/proc')):
 def stop_previous_checks():
     pids=previous_check_pids()
     for pid in pids:
-        print('Stopping retained offscreen iNiR checker: '+str(pid),flush=True)
+        print('Stopping retained iNiR component checker: '+str(pid),flush=True)
         try: os.kill(pid,signal.SIGTERM)
         except ProcessLookupError: pass
     if pids:
@@ -249,7 +250,7 @@ def run_qml_check(args,env,log,timeout=60):
     timed_out=False
     with log.open('w') as output:
         # Own a separate process group so timeout/cancellation cannot leave the
-        # offscreen qs or its private D-Bus behind, or signal the user's desktop.
+        # checker qs or its private D-Bus behind, or signal the user's desktop.
         process=subprocess.Popen(args,stdout=output,stderr=subprocess.STDOUT,
                                  text=True,env=env,start_new_session=True)
         try:
@@ -270,22 +271,35 @@ def run_qml_check(args,env,log,timeout=60):
                            str(log.relative_to(ROOT))+':\n'+output[-10000:])
     return code,output
 
+def qml_check_environment(incoming):
+    display=incoming.get('WAYLAND_DISPLAY','')
+    runtime=incoming.get('XDG_RUNTIME_DIR','')
+    if not display or (not Path(display).is_absolute() and not runtime):
+        raise RuntimeError('Run the installer from a terminal in your working Wayland session; WAYLAND_DISPLAY/XDG_RUNTIME_DIR is missing')
+    socket=Path(display) if Path(display).is_absolute() else Path(runtime)/display
+    if not socket.is_socket():
+        raise RuntimeError('Current Wayland display socket is unavailable: '+str(socket))
+    env=private_env(ROOT,incoming)
+    for key in ['NIRI_SOCKET','DISPLAY','WAYLAND_SOCKET','HYPRLAND_INSTANCE_SIGNATURE','DBUS_SESSION_BUS_ADDRESS']:
+        env.pop(key,None)
+    # PanelWindow is registered only by the actual Wayland platform plugin.
+    # Components are compiled, never instantiated: the harness creates no windows.
+    env.update(QT_QPA_PLATFORM='wayland',QT_QUICK_BACKEND='software',QSG_RHI_BACKEND='software')
+    return env
+
 def validate_runtime():
     run(['/usr/bin/niri','validate','--config',ROOT/'niri/config.kdl'])
     for file in [ROOT/'session.sh',ROOT/'shell.sh',ROOT/'bin/inir']:
         run(['/usr/bin/bash','-n',file])
     # Compile components, without creating the iNiR desktop or acquiring its bus names.
-    # A private bus, offscreen renderer and private HOME prevent interference with Cipher.
+    # Keep private bus/HOME state; reuse Wayland only to load its window backend.
+    env=qml_check_environment(os.environ)
     harness=ROOT/'runtime/multi-rice-check.qml'
     components=['shell.qml','settings.qml','welcome.qml']
     if not json.loads((ROOT/'POLKIT.json').read_text())['fallback']:
         components.append('services/PolkitServiceImpl.qml')
         print('Checking existing Quickshell native Polkit support; no agent package will be replaced',flush=True)
     harness.write_text(qml_harness(components))
-    env=private_env(ROOT,os.environ)
-    for key in ['NIRI_SOCKET','WAYLAND_DISPLAY','DISPLAY','HYPRLAND_INSTANCE_SIGNATURE','DBUS_SESSION_BUS_ADDRESS']:
-        env.pop(key,None)
-    env.update(QT_QPA_PLATFORM='offscreen',QT_QUICK_BACKEND='software',QSG_RHI_BACKEND='software')
     try:
         code,output=run_qml_check(['/usr/bin/dbus-run-session','--','/usr/bin/qs','-p',str(harness)],
                                   env,ROOT/'logs/qml-component-check.log')
