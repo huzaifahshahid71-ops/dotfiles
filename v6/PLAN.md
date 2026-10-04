@@ -153,6 +153,10 @@ preflight/restore independent of the large payload. Both editions share UI
 and backend code so their behavior and appearance remain consistent.
 This is the next implementation scope; the new launcher and GUI are not yet
 implemented and the host Wallpapers collection has not been uploaded.
+The user confirmed the host collection is `~/Pictures/Wallpapers` on
+2026-10-04. Both editions must resolve this destination from the installing
+desktop user's home, never hardcode `/home/gamer` or use root's home. Collection
+size/content inventory and publication are still pending.
 
 ## Before the release
 
