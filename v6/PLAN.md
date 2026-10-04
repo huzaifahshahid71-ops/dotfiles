@@ -167,6 +167,12 @@ creates a separate public wallpaper repository and publishes a download index
 through the host's authenticated GitHub CLI. Local integrity, resume and
 ownership-rejection fixtures pass. Publication is pending the user's host run;
 the remote workspace cannot read those laptop files.
+The first host run prepared 302 images (1.29 GiB), created the public wallpaper
+repository and draft `wallpapers-1328268ac2c786eb` (release ID 402964504), then
+stopped on a by-tag REST 404 before uploading any assets. The prepared cache
+is retained. Version 1.1 locates unpublished drafts through authenticated
+release listing; its regression test verifies reuse of this existing state.
+Actual asset transfer and publication are still pending the corrected host run.
 
 ## Before the release
 

@@ -40,6 +40,12 @@ download index. Hashes establish transferred content integrity, not copyright
 permissions or independent publisher authentication.
 
 Interrupted runs retain valid local preparation and completed uploaded assets.
+The initial host run prepared all 302 images and created the repository and
+draft, then failed because the by-tag REST endpoint could not resolve the
+unpublished draft. Version 1.1 finds it through authenticated paginated release
+listing and uses its numeric ID for asset inspection. A regression fixture
+explicitly returns 404 for the old lookup and verifies the existing draft is
+reused without creating another repository or release.
 Rerun the same command to verify and skip those assets. An interrupted individual
 asset must restart; this does not claim byte-range resumable GitHub uploads.
 An empty `starter` asset in this publisher's draft release can be removed for

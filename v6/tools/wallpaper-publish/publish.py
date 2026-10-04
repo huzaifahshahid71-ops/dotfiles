@@ -164,7 +164,8 @@ class GitHub:
         if result.returncode:
             if optional and ('HTTP 404' in result.stderr or '(404)' in result.stderr):
                 return None
-            raise RuntimeError(result.stderr.strip() or 'GitHub command failed')
+            context = 'api '+arguments[3] if arguments[0] == 'api' else ' '.join(arguments[:2])
+            raise RuntimeError('GitHub '+context+': '+(result.stderr.strip() or 'command failed'))
         return result.stdout
 
     def api(self, endpoint, payload=None, optional=False, pages=False, method=None):
@@ -228,15 +229,25 @@ def publish(gh, folder, manifest, expected):
         raise RuntimeError('Existing repository is not managed by this publisher')
     tag = manifest['tag']
     marker = MARKER+' snapshot='+manifest['snapshot_sha256']
-    endpoint = f'repos/{REPO}/releases/tags/{tag}'
-    release = gh.api(endpoint, optional=True)
+    def find_release():
+        # The tag endpoint returns published releases, not an untagged draft.
+        # Authenticated release listing includes drafts, identified by tag_name.
+        pages = gh.api(f'repos/{REPO}/releases?per_page=100', pages=True)
+        matches = [item for page in pages for item in page if item.get('tag_name') == tag]
+        if len(matches) > 1:
+            raise RuntimeError('Repeated collection release tags; preserved')
+        return matches[0] if matches else None
+    release = find_release()
     if release is None:
         notes = folder/'release-notes.md'
         save(notes, (marker+'\n\nIndividual wallpapers, the full ZIP, installer manifest and SHA-256 checksums.\n').encode())
         gh.command(['release','create',tag,'--repo',REPO,'--draft','--title',
                     f'Multi-Rice Wallpapers — {len(manifest["wallpapers"])} images',
                     '--target',repository['default_branch'],'--notes-file',str(notes)], write=True)
-        release = gh.api(endpoint)
+        release = find_release()
+        if release is None:
+            raise RuntimeError('Created draft is not yet visible in the release list; rerun to continue')
+    print(f'Release: {tag} (ID {release["id"]}, '+('draft' if release['draft'] else 'published')+')', flush=True)
     if marker not in (release.get('body') or ''):
         raise RuntimeError('Existing release is not owned by this collection; preserved')
     def asset_list():
@@ -278,6 +289,7 @@ def main():
     parser.add_argument('--cache', type=Path, default=Path.home()/'.local/share/multi-rice-wallpaper-publish')
     parser.add_argument('--upload', action='store_true', help='Create the public wallpaper repository and publish the collection')
     args = parser.parse_args()
+    print('Wallpaper publisher 1.1 — draft-aware resume', flush=True)
     if os.geteuid() == 0:
         raise RuntimeError('Run as your desktop user, without sudo')
     gh = GitHub() if args.upload else None

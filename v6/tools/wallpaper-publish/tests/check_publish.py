@@ -34,7 +34,11 @@ class FakeGitHub:
                 self.readme = base64.b64decode(payload['content']).decode()
             return {'sha':'fixture-sha','content':base64.b64encode(self.readme.encode()).decode()} if self.readme else None
         if '/releases/tags/' in endpoint:
-            return self.release
+            raise RuntimeError('HTTP 404: by-tag lookup does not return this unpublished draft')
+        if endpoint.endswith('/releases?per_page=100'):
+            if self.release:
+                return [[],[dict(self.release, tag_name=self.tag)]]
+            return [[]]
         if endpoint.endswith('/assets?per_page=100'):
             # More than one page exercises the pagination/flattening path.
             values = list(self.assets.values())
@@ -51,6 +55,7 @@ class FakeGitHub:
             self.repo = {'private':False,'archived':False,'default_branch':'main'}
             self.readme = '# New repo\n'
         elif args[:2] == ['release','create']:
+            self.tag = args[2]
             notes = Path(args[args.index('--notes-file')+1]).read_text()
             self.release = {'id':1,'draft':True,'body':notes}
         elif args[:2] == ['release','upload']:
@@ -117,6 +122,7 @@ with tempfile.TemporaryDirectory() as temporary:
         if scenario=='foreign-release':
             test.repo={'private':False,'default_branch':'main'};test.readme=p.MARKER
             test.release={'id':3,'draft':True,'body':'unrelated release'}
+            test.tag=manifest['tag']
         try:
             p.publish(test,folder,manifest,expected)
             raise AssertionError('Expected rejection: '+scenario)
@@ -124,5 +130,14 @@ with tempfile.TemporaryDirectory() as temporary:
             pass
         assert not any(c[:2]==['release','edit'] for c in test.commands)
     print('PASS: wrong account, private/unmanaged repository, foreign release and corrupt remote digest cannot publish')
+    created_draft = FakeGitHub()
+    created_draft.repo={'private':False,'archived':False,'default_branch':'main'}
+    created_draft.readme=p.MARKER+'\n# Upload in progress\n'
+    created_draft.release={'id':402964504,'draft':True,'body':p.MARKER+' snapshot='+manifest['snapshot_sha256']}
+    created_draft.tag=manifest['tag']
+    p.publish(created_draft,folder,manifest,expected)
+    assert not any(c[:2] in (['repo','create'],['release','create']) for c in created_draft.commands)
+    assert not created_draft.release['draft']
+    print('PASS: reuse an existing untagged draft despite the tag endpoint returning 404')
     assert before=={str(f.relative_to(source)):f.read_bytes() for f in source.rglob('*') if f.is_file() and not f.is_symlink()}
 print('PASS: wallpaper publisher checks (GitHub operations mocked; live upload runs on the host)')
