@@ -1,7 +1,9 @@
 # v6.0 launcher and installation flow
 
-Design requested on 2026-10-04 (Riyadh). This records the intended next work;
-the launcher, GUI and wallpaper publication are not implemented or released.
+Design requested on 2026-10-04 (Riyadh). Wallpaper publication is complete.
+The shared online/offline GUI and lightweight transport/user recovery backend
+are implemented as candidate 1 under `v6/installer`; the twelve-profile offline
+payload, system recovery and release acceptance remain unfinished.
 Development remains on `v6.0-tahoe-dev`; no changes to `main` or v5 releases.
 
 ## Delivery
@@ -113,7 +115,8 @@ the same Sumi Deck styling and overall workflow as the online edition.
 
 Inventory the actual host Wallpapers folder first: size, file count, duplicate
 content, formats, resolution, credits and redistribution terms. These files
-are not present in the current remote workspace; nothing has been uploaded.
+remain on the working laptop. The 302-image collection is published at
+`huzaifahshahid71-ops/multi-rice-wallpapers`, pinned by `wallpapers-source.json`.
 
 Recommended arrangement is a dedicated public wallpaper repository linked
 from dotfiles, with browsable images/preview index and individual downloads.

@@ -1,0 +1,8 @@
+{
+  "schema": 1,
+  "version": "6.0.0",
+  "arch": "x86_64",
+  "backend_protocol": 1,
+  "status": "development",
+  "reason": "The twelve-profile payload and system restore module are not yet release-validated."
+}

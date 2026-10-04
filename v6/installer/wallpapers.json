@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "repository": "huzaifahshahid71-ops/multi-rice-wallpapers",
+  "release_id": 402964504,
+  "tag": "wallpapers-1328268ac2c786eb",
+  "release_url": "https://github.com/huzaifahshahid71-ops/multi-rice-wallpapers/releases/tag/wallpapers-1328268ac2c786eb",
+  "wallpaper_count": 302,
+  "default_destination": "Pictures/Wallpapers",
+  "manifest": {
+    "asset": "wallpapers-manifest.json",
+    "bytes": 134787,
+    "sha256": "6bdc4af0db27b0e2e99e15d732701e9d7f38eda2366ae094dd638b7f5dcddc2e",
+    "url": "https://github.com/huzaifahshahid71-ops/multi-rice-wallpapers/releases/download/wallpapers-1328268ac2c786eb/wallpapers-manifest.json"
+  },
+  "checksums": {
+    "asset": "SHA256SUMS",
+    "bytes": 30517,
+    "sha256": "998dbdea3e0b8fdc7fbdbca3b8142d723451bf9438386b7626a678ad9ccf569f",
+    "url": "https://github.com/huzaifahshahid71-ops/multi-rice-wallpapers/releases/download/wallpapers-1328268ac2c786eb/SHA256SUMS"
+  },
+  "packs": {
+    "full": {
+      "asset": "multi-rice-wallpapers-full.zip",
+      "bytes": 1389822037,
+      "sha256": "e0b1cd24c4ef53a94f002310c89ba7d1a767c14f6fc9fcbcf9520b91805e98a3",
+      "url": "https://github.com/huzaifahshahid71-ops/multi-rice-wallpapers/releases/download/wallpapers-1328268ac2c786eb/multi-rice-wallpapers-full.zip"
+    }
+  },
+  "snapshot_sha256": "1328268ac2c786eb2f8abb026413b40cd971a1219d6603fe8c0e6c211a8c747b",
+  "selection_ids": [
+    "681e5575452ca7121399",
+    "ffa2b2fc193fbf4913f3",
+    "856e74eb5fa17b5982cf",
+    "fdae4a06d1cbdeb27a01",
+    "4d0036ebbc93e09543de",
+    "ec2f6d50ab6abeb09e2c",
+    "b8ff07b9025fa71ee573",
+    "affc63bebcff0516ccb4",
+    "06e6c6e20c2e6e67034a",
+    "35a09062b523c06fd02c",
+    "c32170c526e20d77061a",
+    "6fc3279dca4be639519b",
+    "5014d719015e64dae4dc",
+    "3e092e338c877d042bbd",
+    "4de2bb3805b303ad6b6a",
+    "1d8731b6b98ad57c98f4",
+    "cdc9ac64b833bfb91a99",
+    "71e0b8aa5a5dc0e2c02a",
+    "8574eb1d2476ad0cd4ae",
+    "8522a773c15fb55f9bad",
+    "4c14921c1f39ca14eeca",
+    "131180754289ba89ae4b",
+    "a3cb4ea05ea66951cbed",
+    "9a97daaecd536a8c210c",
+    "d986505f3f8ab691eb67",
+    "f65f2aa6a096b574a7ad",
+    "72393eb84e159766278e",
+    "c8b6ec0728587e241fcf",
+    "924c55aa56771f01bc98",
+    "96b4ed70e97660e4a4fd",
+    "5acbdba65b3fcd582709",
+    "0a8c00bb306dd808b298",
+    "6cbab059c5a925a58fc1",
+    "64988e764240571d5dc6",
+    "98830e4d212cea9a0229",
+    "b9a28124d4712d930b3f"
+  ],
+  "selection_note": "Deterministic sample pending visual curation before final release."
+}
