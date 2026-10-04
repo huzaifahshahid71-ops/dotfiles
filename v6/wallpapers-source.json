@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "repository": "huzaifahshahid71-ops/multi-rice-wallpapers",
+  "release_id": 402964504,
+  "tag": "wallpapers-1328268ac2c786eb",
+  "release_url": "https://github.com/huzaifahshahid71-ops/multi-rice-wallpapers/releases/tag/wallpapers-1328268ac2c786eb",
+  "wallpaper_count": 302,
+  "default_destination": "Pictures/Wallpapers",
+  "manifest": {
+    "asset": "wallpapers-manifest.json",
+    "bytes": 134787,
+    "sha256": "6bdc4af0db27b0e2e99e15d732701e9d7f38eda2366ae094dd638b7f5dcddc2e",
+    "url": "https://github.com/huzaifahshahid71-ops/multi-rice-wallpapers/releases/download/wallpapers-1328268ac2c786eb/wallpapers-manifest.json"
+  },
+  "checksums": {
+    "asset": "SHA256SUMS",
+    "bytes": 30517,
+    "sha256": "998dbdea3e0b8fdc7fbdbca3b8142d723451bf9438386b7626a678ad9ccf569f",
+    "url": "https://github.com/huzaifahshahid71-ops/multi-rice-wallpapers/releases/download/wallpapers-1328268ac2c786eb/SHA256SUMS"
+  },
+  "packs": {
+    "full": {
+      "asset": "multi-rice-wallpapers-full.zip",
+      "bytes": 1389822037,
+      "sha256": "e0b1cd24c4ef53a94f002310c89ba7d1a767c14f6fc9fcbcf9520b91805e98a3",
+      "url": "https://github.com/huzaifahshahid71-ops/multi-rice-wallpapers/releases/download/wallpapers-1328268ac2c786eb/multi-rice-wallpapers-full.zip"
+    }
+  }
+}

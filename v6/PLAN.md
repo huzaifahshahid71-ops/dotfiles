@@ -155,24 +155,36 @@ installation, GRUB and finish flow. It requires no online fallback and keeps
 preflight/restore independent of the large payload. Both editions share UI
 and backend code so their behavior and appearance remain consistent.
 This is the next implementation scope; the new launcher and GUI are not yet
-implemented and the host Wallpapers collection has not been uploaded.
+implemented. The host Wallpapers collection is now published separately.
 The user confirmed the host collection is `~/Pictures/Wallpapers` on
 2026-10-04. Both editions must resolve this destination from the installing
 desktop user's home, never hardcode `/home/gamer` or use root's home. Collection
-Detailed content inventory and publication are still pending.
+The collection inventory and full publication are complete.
 The user then reported 302 files totaling about 1.3 GiB and requested upload.
 [The host publisher](tools/wallpaper-publish/README.md) prepares source-preserving
 snapshots, individual-image assets, a full ZIP, checksums and a manifest, then
 creates a separate public wallpaper repository and publishes a download index
 through the host's authenticated GitHub CLI. Local integrity, resume and
-ownership-rejection fixtures pass. Publication is pending the user's host run;
-the remote workspace cannot read those laptop files.
+ownership-rejection fixtures pass. The publisher ran on the user's host;
+the remote workspace does not read those laptop files directly.
 The first host run prepared 302 images (1.29 GiB), created the public wallpaper
 repository and draft `wallpapers-1328268ac2c786eb` (release ID 402964504), then
 stopped on a by-tag REST 404 before uploading any assets. The prepared cache
 is retained. Version 1.1 locates unpublished drafts through authenticated
 release listing; its regression test verifies reuse of this existing state.
-Actual asset transfer and publication are still pending the corrected host run.
+The corrected host run completed on 2026-10-04: all 305 assets verified and
+published in the [public wallpaper collection](https://github.com/huzaifahshahid71-ops/multi-rice-wallpapers/releases/tag/wallpapers-1328268ac2c786eb).
+The release contains 302 individual images, the full ZIP (1,389,822,037 bytes),
+`wallpapers-manifest.json` and `SHA256SUMS`; its repository index links each
+image and the full pack. GitHub reports the release published and all assets
+uploaded, with sizes and SHA-256 digests. The downloaded manifest and checksum
+file match those digests; all image and full-pack records agree with the
+published asset metadata and checksum entries. The full ZIP was not downloaded
+again in the remote check. [The pinned source](wallpapers-source.json) records
+this exact release and expected manifest, checksum and full-pack sizes/hashes
+for the next installer implementation. Both editions still target the desktop
+user's `~/Pictures/Wallpapers`. Curated selection and thumbnail preparation
+remain pending; the current release provides the full collection.
 
 ## Before the release
 
