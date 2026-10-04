@@ -70,7 +70,10 @@ menu. The menu helper now supports `--promote`: Windows, Linux G16, Advanced
 Linux Options (CachyOS, CachyOS LTS, Linux Stable/older kernel), BIOS. Windows
 remains default, boot commands and fallbacks are retained, and the reorganized
 layout is checked before publication with rollback on failure. Local promotion
-fixtures pass; host application/menu verification remains pending.
+fixtures pass. The user applied the distinct v2 helper successfully on
+2026-10-04: main Linux G16 entry installed, Windows default and fallback kernels
+retained, backup `/var/backups/g16-grub-en19atrg`. A visual menu check at the
+next reboot is pending.
 The user then reported `uname -r` as `7.2.8-1-cachyos-g16` and NVIDIA
 615.71.09 DKMS installed for that kernel and all three previous kernels.
 This confirms first boot and the driver build, not live GPU operation or
@@ -156,7 +159,14 @@ implemented and the host Wallpapers collection has not been uploaded.
 The user confirmed the host collection is `~/Pictures/Wallpapers` on
 2026-10-04. Both editions must resolve this destination from the installing
 desktop user's home, never hardcode `/home/gamer` or use root's home. Collection
-size/content inventory and publication are still pending.
+Detailed content inventory and publication are still pending.
+The user then reported 302 files totaling about 1.3 GiB and requested upload.
+[The host publisher](tools/wallpaper-publish/README.md) prepares source-preserving
+snapshots, individual-image assets, a full ZIP, checksums and a manifest, then
+creates a separate public wallpaper repository and publishes a download index
+through the host's authenticated GitHub CLI. Local integrity, resume and
+ownership-rejection fixtures pass. Publication is pending the user's host run;
+the remote workspace cannot read those laptop files.
 
 ## Before the release
 

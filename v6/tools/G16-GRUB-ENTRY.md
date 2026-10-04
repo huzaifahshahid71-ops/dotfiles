@@ -39,8 +39,8 @@ this layout on 2026-10-04:
 | Advanced Linux Options | CachyOS, CachyOS LTS, Linux Stable (older kernel) |
 | BIOS | Existing UEFI firmware setup action |
 
-The browser retained the earlier helper under its original filename on the
-host, so the promotion helper is also delivered as `g16-grub-promotion-v2.zip`
+The host command invoked the earlier helper under its original filename, so
+the promotion helper is also delivered as `g16-grub-promotion-v2.zip`
 with a distinct script name. Download that archive and run:
 
 ```fish
