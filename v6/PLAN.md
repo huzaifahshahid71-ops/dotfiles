@@ -28,10 +28,19 @@ Development stays on `v6.0-tahoe-dev`; `main` remains unchanged.
   a separate Cipher decoration/Genie path which must be preserved. The Git
   baseline still has ten profile entries and does not carry the installed
   shared player launcher or Tsugumori sources. The read-only
-  [music source collector](tools/music-shortcut/README.md) prepares the installed
-  binding/launcher/QML sources for integration. The twelve-profile patch and
-  live acceptance remain pending this host input. Release publication is now
-  requested, after the installer/build and acceptance work is completed.
+  [music source collector/integration](tools/music-shortcut/README.md) received
+  the installed binding/launcher/QML sources on 2026-10-04. All twelve profile
+  directories are present. The old non-Cipher overlay route still reached an
+  Amberol development helper with Hyprland-only dispatch; Eclipse used that
+  launcher while the other profiles called the canonical alias. The new
+  backed-up integration makes both aliases use the original Quickshell UI,
+  with absolute Niri launch paths, the existing native Cipher guards and
+  duplicate prevention. Actual host-source fixture tests pass: eight Lua syntax
+  checks, five Niri binding rewrites, source preservation, repeat/rollback/write
+  failure handling, Eclipse environment restoration and guarded Cipher routing.
+  Host installation, Niri/QML runtime validation and twelve-profile graphical
+  acceptance remain pending. Release publication is requested after the
+  installer/build and acceptance work is completed.
 - Do not merge the draft v5.1 Revo collection or vendor unlicensed source.
 
 ## Cipher and application controls

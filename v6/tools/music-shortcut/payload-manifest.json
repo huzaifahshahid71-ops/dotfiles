@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "files": {
+    "payload/native/GlassPlayer.qml": "072cfd419ded143452272c5fd44a2244dc53b16c2b33b50c8ea72c23cc67611f",
+    "payload/native/MaterialPlayer.qml": "74a8203b2962580837393fd0a43ef5c3480f32af02540a347bb3f64cd8585538",
+    "payload/native/NexusPlayer.qml": "1dbaf1d5a7c2c6dca34646cff7817085df19f8e177af3a6ed144afb9610d0363",
+    "payload/native/shell.qml": "517c5fe9b71c6f4757af32c556046cae4bc553ccc3369899f8703a5a4b748429",
+    "payload/overlay/GlassPlayer.qml": "508ab2e02e0358b9ec7a5d46f82eee0b064bea80b623b454853d63bed411f49b",
+    "payload/overlay/MaterialPlayer.qml": "9da0eefce40786c4ac7b345ce3b066d8dbccaf190546f4b82d1938d168b211d7",
+    "payload/overlay/NexusPlayer.qml": "739f21d95450a26d4c0699e1181ab8e6003b09b502cd07d0f8a8825a8268bf46",
+    "payload/overlay/shell.qml": "517c5fe9b71c6f4757af32c556046cae4bc553ccc3369899f8703a5a4b748429",
+    "launcher.py": "b6c8564f6513b45320cd512f59ac7b1a518ae99bec0b72c027311c317fbd68dc"
+  }
+}
