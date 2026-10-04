@@ -23,6 +23,15 @@ Development stays on `v6.0-tahoe-dev`; `main` remains unchanged.
   preview handling and saved theme preference. Super+Shift+D launches the
   modern switcher; do not reintroduce the old Fuzzel-only helper in Niri.
 - Preserve Lumina's working music player and existing user service backends.
+- The user requested Super+Shift+M for Lumina Music in all twelve profiles on
+  2026-10-04, followed by the v6.0.0 release. The installed global launcher has
+  a separate Cipher decoration/Genie path which must be preserved. The Git
+  baseline still has ten profile entries and does not carry the installed
+  shared player launcher or Tsugumori sources. The read-only
+  [music source collector](tools/music-shortcut/README.md) prepares the installed
+  binding/launcher/QML sources for integration. The twelve-profile patch and
+  live acceptance remain pending this host input. Release publication is now
+  requested, after the installer/build and acceptance work is completed.
 - Do not merge the draft v5.1 Revo collection or vendor unlicensed source.
 
 ## Cipher and application controls
@@ -208,9 +217,10 @@ remain pending; the current release provides the full collection.
    recovery paths, asset license notices, checksums and optional split parts.
 7. Validate the release candidate in a VM and on the host before a public tag.
 
-The user's current request is to finish system/kernel maintenance before
-starting the v6.0 release. No public release or main-branch update is authorized
-by the maintenance work alone.
+The user has requested the v6.0.0 release after the shared music shortcut.
+Prepare and validate the twelve-profile payload and online/offline installers
+before publishing the tag/assets. Keep all development on `v6.0-tahoe-dev`;
+the separate restriction against modifying `main` remains in effect.
 
 ## Historical design references
 
