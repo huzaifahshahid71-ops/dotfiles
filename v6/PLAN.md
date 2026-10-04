@@ -64,6 +64,13 @@ completed without a reported failure. Snapper recorded snapshots 138/139.
 The guarded [menu helper](tools/G16-GRUB-ENTRY.md) successfully added
 **Advanced Linux Options > G16 Patched**, preserving the existing entries and
 Windows default. Its host backup is `/var/backups/g16-grub-wvs0j_wm`.
+On 2026-10-04 the user confirmed another G16 boot into Lumina with both scoped
+helpers active/running, then requested the patched kernel on the main GRUB
+menu. The menu helper now supports `--promote`: Windows, Linux G16, Advanced
+Linux Options (CachyOS, CachyOS LTS, Linux Stable/older kernel), BIOS. Windows
+remains default, boot commands and fallbacks are retained, and the reorganized
+layout is checked before publication with rollback on failure. Local promotion
+fixtures pass; host application/menu verification remains pending.
 The user then reported `uname -r` as `7.2.8-1-cachyos-g16` and NVIDIA
 615.71.09 DKMS installed for that kernel and all three previous kernels.
 This confirms first boot and the driver build, not live GPU operation or
