@@ -267,8 +267,11 @@ def main():
             if args.offline:
                 self.wallpaper_choice.addItem("Copy from a local folder", "local")
             else:
-                self.wallpaper_choice.addItem("Download a selection · 36 images", "selection")
-                self.wallpaper_choice.addItem("Download the full collection · 302 images", "full")
+                wallpaper_pin = json.loads((HERE / "wallpapers.json").read_text())
+                self.wallpaper_choice.addItem(
+                    f"Download a selection · {len(wallpaper_pin['selection_ids'])} images", "selection")
+                self.wallpaper_choice.addItem(
+                    f"Download the full collection · {wallpaper_pin['wallpaper_count']} images", "full")
             box.addWidget(self.wallpaper_choice)
             self.wallpaper_source = QLineEdit()
             if args.offline:
