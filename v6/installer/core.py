@@ -10,6 +10,7 @@ from pathlib import Path, PurePosixPath
 import platform
 import re
 import shutil
+import sys
 import tempfile
 import urllib.request
 from urllib.parse import urlsplit
@@ -24,6 +25,28 @@ CHUNK = 1024 * 1024
 
 class SetupError(RuntimeError):
     pass
+
+
+def external_environment():
+    """Keep bundled Python/Qt libraries out of native system subprocesses."""
+    env = dict(os.environ)
+    if getattr(sys, "frozen", False):
+        if "LD_LIBRARY_PATH_ORIG" in env:
+            env["LD_LIBRARY_PATH"] = env.pop("LD_LIBRARY_PATH_ORIG")
+        else:
+            env.pop("LD_LIBRARY_PATH", None)
+        bundle = str(Path(sys._MEIPASS).resolve())
+        for name in ("PATH", "QT_PLUGIN_PATH", "QT_QPA_PLATFORM_PLUGIN_PATH", "QML2_IMPORT_PATH"):
+            if name in env:
+                kept = [p for p in env[name].split(os.pathsep)
+                        if p and not Path(p).resolve().is_relative_to(bundle)]
+                if kept:
+                    env[name] = os.pathsep.join(kept)
+                else:
+                    env.pop(name)
+        env.pop("PYTHONHOME", None)
+        env.pop("PYTHONPATH", None)
+    return env
 
 
 def emit(callback, stage, message, completed=0, total=0, **extra):

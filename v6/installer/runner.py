@@ -7,7 +7,7 @@ import signal
 import subprocess
 import time
 
-from core import PROFILES, SetupError, verified
+from core import PROFILES, SetupError, verified, external_environment
 from maintenance import inspect_receipt, write_json
 
 
@@ -19,11 +19,12 @@ def install(image, manifest, cache, home, callback):
                "hardware_changes": False, "grub": False, "remove_packages": False}
     options_path = cache.path("options.json")
     write_json(options_path, options)
-    env = dict(os.environ, APPIMAGE_EXTRACT_AND_RUN="1")
+    env = dict(external_environment(), APPIMAGE_EXTRACT_AND_RUN="1")
     process = subprocess.Popen([str(image), "--multi-rice-backend", str(options_path)],
                                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT, env=env, start_new_session=True)
     result = None
+    failure = None
     selector = selectors.DefaultSelector()
     selector.register(process.stdout, selectors.EVENT_READ)
     pending = b""
@@ -54,13 +55,16 @@ def install(image, manifest, cache, home, callback):
                         if not isinstance(event, dict) or event.get("protocol") != 1 or not isinstance(event.get("message"), str):
                             raise SetupError("Invalid backend progress record.")
                         callback(event)
+                        if event.get("result") == "failed" or event.get("severity") == "error":
+                            failure = event["message"]
                         if event.get("result") == "installed":
                             if result:
                                 raise SetupError("Duplicate installation result.")
                             result = event
             code = process.wait(timeout=15)
         if code != 0 or not result:
-            raise SetupError("Installation did not report success. Retained log: " + str(cache.path("install.log")))
+            raise SetupError((failure or "Installation did not report success (exit " + str(code) + ").") +
+                             "\nRetained log: " + str(cache.path("install.log")))
         inspect_receipt(Path(result["receipt"]), home)
         # Successful-operation logs belong with recovery state, not disposable
         # downloads. Retain the receipt and log after the cleanup checkbox.

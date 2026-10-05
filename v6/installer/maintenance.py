@@ -64,12 +64,12 @@ def valid_paths(paths):
     result = [str(relative_path(x)) for x in paths]
     if len(set(result)) != len(result):
         raise SetupError("Duplicate managed configuration paths.")
-    for index, a in enumerate(result):
+    ordered = sorted(result)
+    for index, a in enumerate(ordered):
         if a.startswith((".local/share/huzaifah-multi-rice/", "Pictures/", ".cache/")):
             raise SetupError("Recovery data, wallpapers and caches cannot be managed configuration.")
-        for b in result[index + 1:]:
-            if a.startswith(b + "/") or b.startswith(a + "/"):
-                raise SetupError("Managed configuration paths overlap.")
+        if index + 1 < len(ordered) and ordered[index + 1].startswith(a + "/"):
+            raise SetupError("Managed configuration paths overlap.")
     return result
 
 

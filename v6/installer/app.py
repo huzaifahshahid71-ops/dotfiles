@@ -9,9 +9,11 @@ import pwd
 import sys
 
 from core import (Cache, PROFILES, SetupError, load_manifest, local_wallpapers,
-                  online_wallpapers, preflight, prepare_image)
-from maintenance import inspect_receipt, restore, root_for
+                  online_wallpapers, preflight, prepare_image, external_environment)
+from maintenance import inspect_receipt, root_for
+from recovery import restore_installation as restore
 import runner
+import grub_setup
 
 HERE = Path(__file__).resolve().parent
 
@@ -42,7 +44,7 @@ def main():
         receipt, conflicts = inspect_receipt(args.restore, home)
         if conflicts:
             raise SetupError("Restore blocked by changed files: " + ", ".join(conflicts))
-        print("This restores user configuration. Packages and system settings remain installed.")
+        print("This restores backed-up user configuration and desktop session routes. Packages remain installed.")
         if not args.yes and input("Proceed? [y/N] ").lower() != "y":
             return 0
         print(json.dumps(restore(args.restore, home, lambda event: print(event["message"])), indent=2))
@@ -84,28 +86,33 @@ def main():
             self.receipt = None
             self.page_index = 0
             self.preflight_ok = False
-            self.source_folders = []
+            self.source_folders = [str(args.manifest.resolve().parent)]
             self.setStyleSheet("""
-                QMainWindow, QWidget { background:#10141d; color:#e9edf4; font-size:14px; }
-                QLabel#muted { color:#98a5b9; } QLabel#eyebrow { color:#9aacc9; letter-spacing:2px; }
+                QMainWindow, QWidget { background:#0d0f09; color:#e2e3d8; font-size:14px; }
+                QLabel#muted { color:#c5c8b9; } QLabel#eyebrow { color:#b4d088; letter-spacing:2px; }
                 QLabel { background:transparent; }
-                QLabel#mark { font-size:48px; font-family:serif; color:#d8b7a7; }
+                QLabel#mark { font-size:48px; font-family:serif; color:#b4d088; }
                 QLabel#title { font-size:32px; font-weight:600; }
                 QLabel#hero { font-size:42px; font-weight:600; }
-                QFrame#sidebar { background:#151b26; border-right:1px solid #283244; }
-                QFrame#card { background:#1c2534; border:1px solid #35425a; border-radius:16px; }
+                QFrame#sidebar { background:#151810; border-right:1px solid #33362e; }
+                QFrame#card { background:#1e2019; border:1px solid #33362e; border-radius:16px; }
                 QFrame#card QLabel { background:transparent; }
-                QPushButton { background:#243248; border:1px solid #3c506c; padding:11px 18px; border-radius:10px; }
-                QPushButton:hover { background:#314562; border-color:#9faec7; }
-                QPushButton:focus, QComboBox:focus, QLineEdit:focus { border:2px solid #d8b7a7; }
-                QPushButton#primary { background:#d8b7a7; color:#192131; border:1px solid #d8b7a7; font-weight:600; }
-                QPushButton#primary:hover { background:#edcec0; }
-                QPushButton:disabled { background:#1a2230; color:#707c90; border-color:#273246; }
-                QLineEdit, QComboBox { background:#1a2332; border:1px solid #3c506c; padding:10px; border-radius:8px; }
-                QPlainTextEdit { background:#0d121b; border:1px solid #2c3a50; border-radius:8px; font-size:12px; }
-                QProgressBar { background:#202b3d; border:0; border-radius:5px; text-align:center; min-height:16px; }
-                QProgressBar::chunk { background:#c5aa9f; border-radius:5px; }
+                QPushButton { background:#252b1d; border:1px solid #414a35; padding:11px 18px; border-radius:10px; }
+                QPushButton:hover { background:#333e27; border-color:#b4d088; }
+                QPushButton:focus, QComboBox:focus, QLineEdit:focus { border:2px solid #b4d088; }
+                QPushButton#primary { background:#b4d088; color:#18200d; border:1px solid #b4d088; font-weight:600; }
+                QPushButton#primary:hover { background:#c9e79b; }
+                QPushButton:disabled { background:#1c2016; color:#767c6b; border-color:#33362e; }
+                QPushButton#primary:disabled { background:#1c2016; color:#767c6b; border:1px solid #33362e; }
+                QLineEdit, QComboBox { background:#1e2019; border:1px solid #414a35; padding:10px; border-radius:8px; }
+                QPlainTextEdit { background:#0d0f09; border:1px solid #33362e; border-radius:8px; font-size:12px; }
+                QProgressBar { background:#252b1d; border:0; border-radius:5px; text-align:center; min-height:16px; }
+                QProgressBar::chunk { background:#b4d088; border-radius:5px; }
                 QScrollArea { border:0; } QCheckBox { spacing:10px; }
+                QCheckBox::indicator { width:20px; height:20px; border:2px solid #a2aa92; border-radius:4px; background:#151810; }
+                QCheckBox::indicator:hover { border-color:#e2e3d8; }
+                QCheckBox::indicator:checked { background:#b4d088; border-color:#b4d088; }
+                QCheckBox::indicator:disabled { background:#1c2016; border-color:#414a35; }
             """)
             outer = QWidget()
             self.setCentralWidget(outer)
@@ -220,11 +227,11 @@ def main():
                 artwork = HERE / "assets" / (key + ".webp")
                 if artwork.exists():
                     picture = QLabel()
-                    picture.setPixmap(QPixmap(str(artwork)).scaled(200, 75, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation))
+                    picture.setPixmap(QPixmap(str(artwork)).scaled(200, 54, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation))
                     picture.setMinimumWidth(1)
                     picture.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
-                    picture.setFixedHeight(75)
-                    picture.setMaximumHeight(75)
+                    picture.setFixedHeight(54)
+                    picture.setMaximumHeight(54)
                     card.addWidget(picture)
                 card.addWidget(self.label(name))
                 card.addWidget(self.label("HYPRLAND" if index < 8 else "NIRI", "muted"))
@@ -292,6 +299,7 @@ def main():
                 box.addWidget(self.label("Add a folder containing the expected split parts or the assembled AppImage.", "muted"))
                 self.folders = QPlainTextEdit()
                 self.folders.setReadOnly(True)
+                self.folders.setPlainText("\n".join(self.source_folders))
                 box.addWidget(self.folders)
                 add = QPushButton("Choose / scan parts folder")
                 add.clicked.connect(self.add_folder)
@@ -304,22 +312,36 @@ def main():
         def review_page(self):
             box = self.page("04 / REVIEW YOUR SETUP", "Everything in its place.",
                             "Your current managed user configuration is backed up before replacement. The recovery tool remains after cleanup.")
-            box.addWidget(self.label("12 desktop profiles\nSumi Deck profile switcher\nShared Lumina Music · Super + Shift + M\nProfile-scoped refresh and wallpaper helpers"))
+            box.addWidget(self.label("12 desktop profiles\nSumi Deck profile switcher · 74 LOGIN cards · 8 GRUB theme cards\nShared Lumina Music · Super + Shift + M\nProfile-scoped refresh and wallpaper helpers"))
+            box.addWidget(self.label("GRUB boot menu", "eyebrow"))
+            self.grub_choice = QComboBox()
+            self.grub_choice.setObjectName("grub_choice")
+            self.grub_choice.addItem("Keep current GRUB appearance", "")
+            for identifier, title in grub_setup.THEMES:
+                self.grub_choice.addItem("Apply Evangelion · " + title, identifier)
+            detected = grub_setup.available()
+            self.grub_choice.setEnabled(detected)
+            box.addWidget(self.grub_choice)
+            box.addWidget(self.label("Existing GRUB detected. A selected theme is applied after desktop installation, with a separate authentication prompt and Evangelion backup. Restore the theme through Sumi Deck before restoring a newly installed theme manager."
+                                    if detected else "No existing GRUB installation detected. Theme cards are included; bootloader installation is separate.", "muted"))
             advanced = QPushButton("Advanced options ▸")
             box.addWidget(advanced)
-            panel = self.label("Hardware and kernel changes stay opt-in. This candidate does not apply device recipes.\nGRUB setup needs a separate validated module before release; your existing boot menu is retained.", "muted")
+            panel = self.label("Hardware and kernel changes stay opt-in. This setup does not apply device recipes.\nGRUB theme configuration uses your existing bootloader; it does not install a bootloader or change firmware boot entries.", "muted")
             panel.hide()
             advanced.clicked.connect(lambda: panel.setVisible(not panel.isVisible()))
             box.addWidget(panel)
             self.confirm = QCheckBox("Back up and replace the managed desktop configuration")
-            self.confirm.toggled.connect(lambda checked: self.next.setEnabled(checked and self.job is None))
+            self.confirm.setObjectName("confirm_install")
+            self.confirm.toggled.connect(lambda checked: self.show_page(self.page_index) if self.page_index == 4 else None)
             box.addWidget(self.confirm)
+            self.confirm_hint = self.label("Tick the confirmation above to enable Back up & install.", "muted")
+            box.addWidget(self.confirm_hint)
             box.addStretch()
 
         def install_page(self):
             box = self.page("05 / INSTALLING", "Your new spaces are taking shape.",
                             "Keep this window open while setup runs. Progress comes from the installer; authentication uses your system prompt.")
-            box.addWidget(self.label("A failed optional step will not be reported as a successful desktop installation.", "muted"))
+            box.addWidget(self.label("Desktop installation and the optional GRUB theme step report their outcomes separately.", "muted"))
             box.addStretch()
 
         def finish_page(self):
@@ -358,7 +380,7 @@ def main():
             self.page_index = index
             self.stack.setCurrentIndex(index)
             for step, label in enumerate(self.steps):
-                label.setStyleSheet("color:#e6c6b7;font-weight:600" if step == index else "color:#91a0b7")
+                label.setStyleSheet("color:#b4d088;font-weight:600" if step == index else "color:#a2aa92")
             self.back.setEnabled(index in (1, 2, 3, 4) and self.job is None)
             titles = ("Begin setup", "Continue", "Continue", "Prepare verified image", "Back up & install", "Installing…", "Finish / Later")
             self.next.setText(titles[index])
@@ -369,6 +391,7 @@ def main():
                 enabled = enabled and manifest is not None
             if index == 4:
                 enabled = enabled and self.confirm.isChecked()
+                self.confirm_hint.setVisible(not self.confirm.isChecked())
             self.next.setEnabled(enabled)
 
         def go_back(self):
@@ -455,8 +478,11 @@ def main():
                 folders = tuple(self.source_folders)
                 self.start_job(lambda callback: prepare_image(manifest, cache, callback, folders, args.offline), self.image_ready)
             elif index == 4 and self.confirm.isChecked():
+                selected_theme = self.grub_choice.currentData()
                 self.show_page(5)
-                self.start_job(lambda callback: runner.install(self.image, manifest, cache, home, callback), self.installed)
+                self.start_job(lambda callback: grub_setup.install_with_theme(
+                    lambda progress: runner.install(self.image, manifest, cache, home, progress),
+                    selected_theme, callback), self.installed)
             elif index == 6:
                 if self.cleanup.isChecked():
                     cache.cleanup()
@@ -469,7 +495,14 @@ def main():
 
         def installed(self, result):
             self.receipt = result["receipt"]
-            self.finish_result.setText("Backup / receipt: " + self.receipt + "\nGRUB: retained.\nReboot when you're ready.")
+            grub = result.get("grub", {"status": "retained"})
+            if grub["status"] == "configured":
+                grub_text = "GRUB theme configured: " + dict(grub_setup.THEMES)[grub["theme"]] + ". Restore through Sumi Deck → GRUB THEMES."
+            elif grub["status"] == "failed":
+                grub_text = "Desktop installed; GRUB theme step failed: " + grub["message"]
+            else:
+                grub_text = "GRUB: current appearance retained; eight theme cards are available in Sumi Deck."
+            self.finish_result.setText("Backup / receipt: " + self.receipt + "\n" + grub_text + "\nReboot when you're ready.")
             self.cleanup.setText(f"Remove downloaded installer files · {cache.cleanup_size() / 1024**3:.2f} GiB")
             self.show_page(6)
 
@@ -492,7 +525,8 @@ def main():
                 import subprocess
                 if self.cleanup.isChecked():
                     cache.cleanup()
-                result = subprocess.run(["systemctl", "reboot"], capture_output=True, text=True)
+                result = subprocess.run(["systemctl", "reboot"], capture_output=True, text=True,
+                                        env=external_environment())
                 if result.returncode:
                     QMessageBox.warning(self, "Reboot stopped", result.stderr)
 

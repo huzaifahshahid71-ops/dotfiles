@@ -14,20 +14,30 @@ import re
 import subprocess
 import tempfile
 import zipfile
+from runtime_sources import special_source, SPECIAL, command_source
 
 PROFILES = ("caelestia", "end4", "ambxst", "dms", "serpantinum", "noctalia",
             "sayconlun", "tsugumori", "jaqc", "clavis", "nixri", "inir")
 EXTENSIONS = {".qml", ".js", ".mjs", ".lua", ".kdl", ".sh", ".py", ".css", ".scss",
               ".ini", ".conf", ".json", ".jsonc", ".toml", ".svg", ".png", ".webp", ".jpg",
               ".jpeg", ".desktop", ".service", ".target", ".xml", ".qrc", ".cpp", ".h",
-              ".txt", ".cmake", ".ttf", ".otf", ".patch", ".md", ".rs", ".lock"}
-SKIP_PARTS = re.compile(r"(^|/)(\.git|__pycache__|node_modules|venv|\.venv|cache|state|"
-                        r"backups?|failed-profile|downloads?|wallpapers|generated)(/|$)|before-|\.log$", re.I)
+              ".txt", ".cmake", ".ttf", ".otf", ".patch", ".md", ".rs", ".lock",
+              ".frag", ".vert", ".glsl", ".qsb"}
+SKIP_PARTS = re.compile(r"(^|/)(\.git|__pycache__|node_modules|venv|\.venv|\.?cache|\.?state|logs?|"
+                        r"backups?|failed-profile|downloads?|wallpapers|generated)(/|$)|before-|\.log$|"
+                        r"\.(bak|old|orig|backup)(?:$|[-.])", re.I)
 SECRETS = re.compile(rb"(?:gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|"
                      rb"sk-[A-Za-z0-9_-]{20,}|-----BEGIN (?:RSA |OPENSSH |EC )?PRIVATE KEY-----|"
                      rb"(?:api[_-]?key|access[_-]?token|password)\s*[:=]\s*['\"][A-Za-z0-9_+/=-]{12,}['\"])", re.I)
 MAX_FILE = 20 * 1024**2
 MAX_TOTAL = 300 * 1024**2
+
+
+def excluded(relative, directory=False):
+    if not SKIP_PARTS.search(relative): return False
+    if not special_source(relative, directory): return True
+    reduced = '/'.join(p for p in Path(relative).parts if p not in SPECIAL)
+    return bool(SKIP_PARTS.search(reduced))
 
 
 def collect(home, output):
@@ -39,7 +49,7 @@ def collect(home, output):
     def add(path, explicit=False):
         nonlocal total
         logical = path.relative_to(home).as_posix()
-        if SKIP_PARTS.search(logical):
+        if excluded(logical):
             return
         try:
             real = path.resolve(strict=True)
@@ -48,7 +58,10 @@ def collect(home, output):
                 return
             if real != path:
                 aliases[logical] = real.relative_to(home).as_posix()
-            if not explicit and real.suffix.lower() not in EXTENSIONS and real.name not in ("qmldir", "CMakeLists.txt", "LICENSE", "COPYING", "ctrl.sh"):
+            script=False
+            if command_source(logical) and real.stat().st_mode & 0o111:
+                with real.open('rb') as stream:script=stream.read(2)==b'#!'
+            if not explicit and not script and real.suffix.lower() not in EXTENSIONS and real.name not in ("qmldir", "CMakeLists.txt", "LICENSE", "COPYING", "ctrl.sh", "inir"):
                 skipped.append({"path": logical, "reason": "not an allowlisted source type"})
                 return
             if real.stat().st_size > MAX_FILE:
@@ -77,7 +90,7 @@ def collect(home, output):
             return
         for current, directories, names in os.walk(path, followlinks=False):
             directories[:] = sorted(name for name in directories
-                if not SKIP_PARTS.search((Path(current) / name).relative_to(home).as_posix()))
+                if not excluded((Path(current) / name).relative_to(home).as_posix(), directory=True))
             for name in sorted(names):
                 add(Path(current) / name)
 
@@ -105,12 +118,15 @@ def collect(home, output):
                      ".local/bin/lumina-player-overlay", ".local/bin/desktop-switch",
                      ".local/bin/multi-rice-control", ".local/bin/multi-rice-session",
                      ".local/bin/refresh-rate-auto", ".local/share/desktop-switcher/profile-metadata.sh",
+                     ".local/bin/refresh-rate-ctl",
                      ".local/share/desktop-profiles/sayconlun/support/bin/rice-wallpaper-auto",
                      ".local/share/desktop-profiles/cipher-genie-session/session.sh"):
         explicit(relative)
     for path in sorted((home / ".config/systemd/user").glob("*")):
         if path.name.startswith(("huzaifah-", "refresh-rate-auto", "rice-wallpaper-auto")) and path.is_file():
             add(path, True)
+        if path.name in ("refresh-rate-auto.service.d", "rice-wallpaper-auto.service.d"):
+            tree(path)
     for path in sorted((home / ".local/share/desktop-profiles/inir").glob("*.json")):
         if path.name in ("manifest.json", "routes.json", "source-manifest.json"):
             add(path)
