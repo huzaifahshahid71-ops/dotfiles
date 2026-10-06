@@ -83,9 +83,6 @@ def validate_plan(payload, home):
             raise SetupError('Selected compositor links are managed by the transaction, not the payload.')
     if plan.get('private_python') and plan['private_python'].get('abi') != sys.implementation.cache_tag:
         raise SetupError('The candidate private Python extension ABI differs from this system Python.')
-    if plan.get("icon_bundle"):
-        from icon_bundle import source
-        source(payload,plan["icon_bundle"])
     return plan
 
 
@@ -189,9 +186,6 @@ def install(payload, options, home, root_caller=system_call, callback=event, ver
             paths.append(str(colors.relative_to(home)))
     if ".config/desktop-profile/active" not in paths:
         paths.append(".config/desktop-profile/active")
-    if plan.get("icon_bundle"):
-        from icon_bundle import PATHS
-        paths.extend(PATHS)
     receipt_path = snapshot(home, paths)
     callback("Configuration backup verified", "backup", receipt=str(receipt_path))
     request = {"home": str(home), "uid": os.getuid(), "payload": str(payload),
@@ -261,9 +255,6 @@ def install(payload, options, home, root_caller=system_call, callback=event, ver
                          '--color','#7c8cd8','--mode','dark','--json-output',str(colors)])
                 if not isinstance(json.loads(colors.read_text()),dict):
                     raise SetupError('Eclipse initial color generation failed.')
-        if plan.get("icon_bundle"):
-            from icon_bundle import install as install_icons
-            install_icons(payload,plan["icon_bundle"],home,replacements,changed,callback)
         if verify_runtime:
             command(["/usr/bin/systemctl", "--user", "daemon-reload"])
             for profile in list(PROFILES)[8:]:

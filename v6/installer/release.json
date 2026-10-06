@@ -3,6 +3,60 @@
   "version": "6.0.0",
   "arch": "x86_64",
   "backend_protocol": 1,
-  "status": "development",
-  "reason": "The twelve-profile payload and system restore module are not yet release-validated."
+  "status": "ready",
+  "validation": "Fresh VM repair/reboot accepted; integrated revision automated checks passed; new clean VM acceptance pending",
+  "profiles": {
+    "caelestia": "Aether",
+    "end4": "Obsidian",
+    "ambxst": "Crimson",
+    "dms": "Materia",
+    "serpantinum": "Aurora",
+    "noctalia": "Nocturne",
+    "sayconlun": "Lumina",
+    "tsugumori": "Tsugumori",
+    "jaqc": "Solstice",
+    "clavis": "Cipher",
+    "nixri": "Astra",
+    "inir": "Eclipse"
+  },
+  "image": {
+    "asset": "multi-rice-v6.0.0-r2-x86_64.AppImage",
+    "bytes": 2487290360,
+    "sha256": "6be2011771c72d66e6112079a6d5d11ea8d7f36183e62e26364e8f048a50c92c",
+    "url": "https://github.com/huzaifahshahid71-ops/dotfiles/releases/download/v6.0.0/multi-rice-v6.0.0-r2-x86_64.AppImage"
+  },
+  "parts": [
+    {
+      "asset": "multi-rice-v6.0.0-r2-x86_64.AppImage.part001",
+      "bytes": 536870912,
+      "sha256": "c1a0a6a742686d00042e88ff4fe7d378f2d34547ae45c7be5117a2acb3b45ba8",
+      "url": "https://github.com/huzaifahshahid71-ops/dotfiles/releases/download/v6.0.0/multi-rice-v6.0.0-r2-x86_64.AppImage.part001"
+    },
+    {
+      "asset": "multi-rice-v6.0.0-r2-x86_64.AppImage.part002",
+      "bytes": 536870912,
+      "sha256": "983627151fe9664856f577290b2fe07501ee20250b03dabb08a9cd1a3ab2f402",
+      "url": "https://github.com/huzaifahshahid71-ops/dotfiles/releases/download/v6.0.0/multi-rice-v6.0.0-r2-x86_64.AppImage.part002"
+    },
+    {
+      "asset": "multi-rice-v6.0.0-r2-x86_64.AppImage.part003",
+      "bytes": 536870912,
+      "sha256": "24b1de411644d4e5a38756c0e05cf13eb2f0acae11b5ff355c16eca4069ab06b",
+      "url": "https://github.com/huzaifahshahid71-ops/dotfiles/releases/download/v6.0.0/multi-rice-v6.0.0-r2-x86_64.AppImage.part003"
+    },
+    {
+      "asset": "multi-rice-v6.0.0-r2-x86_64.AppImage.part004",
+      "bytes": 536870912,
+      "sha256": "24f44674fa9f2de3422d3f8d552162c1de0bfcfefd4bb8cc2995a329a051639c",
+      "url": "https://github.com/huzaifahshahid71-ops/dotfiles/releases/download/v6.0.0/multi-rice-v6.0.0-r2-x86_64.AppImage.part004"
+    },
+    {
+      "asset": "multi-rice-v6.0.0-r2-x86_64.AppImage.part005",
+      "bytes": 339806712,
+      "sha256": "340e6667c4db07f3da66502cb29f147fee5baf79110fb9af112ea896ea10558f",
+      "url": "https://github.com/huzaifahshahid71-ops/dotfiles/releases/download/v6.0.0/multi-rice-v6.0.0-r2-x86_64.AppImage.part005"
+    }
+  ],
+  "installed_bytes": 7308746546,
+  "revision": "appearance-r2"
 }

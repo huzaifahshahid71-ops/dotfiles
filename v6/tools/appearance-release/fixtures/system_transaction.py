@@ -172,9 +172,6 @@ class SystemTransaction:
                 raise SetupError("Pacman did not retain all newly installed package versions.")
             receipt["packages_after"] = after_packages
             receipt["packages_added"] = sorted(set(after_packages) - set(before_packages))
-            if plan.get("login_defaults") == "sddm-next-boot-v1":
-                import grub_records
-                receipt["grub_records"] = grub_records.prepare(self.root,state,receipt["files"])
             write_json(state / "receipt.json", receipt)
             for index, record in enumerate(receipt["files"]):
                 destination = self.destination(record["path"])
@@ -188,13 +185,6 @@ class SystemTransaction:
                 record["committed"] = True
                 write_json(state / "receipt.json", receipt)
                 callback("Installed " + record["path"], completed=index + 1, total=len(receipt["files"]))
-            if plan.get("login_defaults") == "sddm-next-boot-v1":
-                import login_defaults, grub_records
-                grub_records.change(self.root,state,receipt.get("grub_records"),"installed",lambda:write_json(state / "receipt.json",receipt))
-                receipt["login_defaults"] = login_defaults.prepare(self.root)
-                write_json(state / "receipt.json", receipt)
-                login_defaults.change(self.root,receipt["login_defaults"],"installed",lambda:write_json(state / "receipt.json",receipt))
-                callback("SDDM selected for next boot; desktop services retained")
             receipt["status"] = "installed"
             write_json(state / "receipt.json", receipt)
         except Exception:
@@ -210,12 +200,6 @@ class SystemTransaction:
         return identifier
 
     def rollback_committed(self, state, receipt):
-        if receipt.get("login_defaults"):
-            import login_defaults
-            login_defaults.change(self.root,receipt["login_defaults"],"before",partial=True)
-        if receipt.get("grub_records"):
-            import grub_records
-            grub_records.change(self.root,state,receipt["grub_records"],"before",partial=True)
         for index in reversed(range(len(receipt["files"]))):
             record = receipt["files"][index]
             if not record.get("committed"):
@@ -245,12 +229,6 @@ class SystemTransaction:
         if receipt.get("status") != "installed":
             raise SetupError("System receipt is not ready for restore.")
         conflicts = []
-        if receipt.get("login_defaults"):
-            import login_defaults
-            conflicts.extend(login_defaults.conflicts(self.root,receipt["login_defaults"]))
-        if receipt.get("grub_records"):
-            import grub_records
-            conflicts.extend(grub_records.conflicts(self.root,state,receipt["grub_records"]))
         # A reinstall may restore identical SDDM files while selection history
         # remains active. This is safe: no theme asset or manager is changed.
         # Keep the selection guard if any managed SDDM file would change/remove.
@@ -283,17 +261,7 @@ class SystemTransaction:
         for index, record in enumerate(receipt["files"]):
             copy_object(self.destination(record["path"]), retained / f"{index:04d}")
         completed = []
-        login_changed = False
-        grub_changed = False
         try:
-            if receipt.get("grub_records"):
-                import grub_records
-                grub_changed = True
-                grub_records.change(self.root,state,receipt["grub_records"],"before")
-            if receipt.get("login_defaults"):
-                import login_defaults
-                login_changed = True
-                login_defaults.change(self.root,receipt["login_defaults"],"before")
             for index, record in enumerate(receipt["files"]):
                 destination = self.destination(record["path"])
                 if fingerprint(destination) != record["installed"]:
@@ -310,10 +278,6 @@ class SystemTransaction:
             receipt["status"] = "restored"
             write_json(state / "receipt.json", receipt)
         except Exception:
-            if login_changed:
-                login_defaults.change(self.root,receipt["login_defaults"],"installed")
-            if grub_changed:
-                grub_records.change(self.root,state,receipt["grub_records"],"installed")
             for index in reversed(completed):
                 destination = self.destination(receipt["files"][index]["path"])
                 temporary = destination.with_name(destination.name + ".rollback-" + identifier)
@@ -348,7 +312,7 @@ def main():
         no_symlink_parents(MAINTENANCE)
         MAINTENANCE.mkdir(parents=True, exist_ok=True)
         MAINTENANCE.chmod(0o755)
-        for name in ("core.py", "maintenance.py", "package_policy.py", "system_transaction.py", "login_defaults.py", "grub_records.py"):
+        for name in ("core.py", "maintenance.py", "package_policy.py", "system_transaction.py"):
             source = Path(__file__).resolve().parent / name
             temporary = MAINTENANCE / (name + ".new")
             no_symlink_parents(temporary)

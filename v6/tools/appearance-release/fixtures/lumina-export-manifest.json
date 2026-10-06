@@ -1,0 +1,185 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": ".local/share/desktop-profiles/sayconlun/support/rofi/colors.rasi",
+      "source": "home/.local/share/desktop-profiles/sayconlun/support/rofi/colors.rasi",
+      "bytes": 491,
+      "sha256": "1c005d88854c196303e93397920eba69daf1cfb53fe801085960a9c69cc12042",
+      "mode": 420,
+      "template": true,
+      "init": false
+    },
+    {
+      "path": ".local/share/desktop-profiles/sayconlun/support/rofi/config.rasi",
+      "source": "home/.local/share/desktop-profiles/sayconlun/support/rofi/config.rasi",
+      "bytes": 648,
+      "sha256": "b3b23b89fab8af4d5abb0855d2b3799434e8ccec6bc807cc6aebcae0cd2fea98",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/share/desktop-profiles/sayconlun/support/rofi/launcher.rasi",
+      "source": "home/.local/share/desktop-profiles/sayconlun/support/rofi/launcher.rasi",
+      "bytes": 514,
+      "sha256": "73e3965364ef84412f22f3cfe77c19eff67bf8914c861e81f3dcfe469e43567c",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/share/desktop-profiles/sayconlun/support/rofi/menu.rasi",
+      "source": "home/.local/share/desktop-profiles/sayconlun/support/rofi/menu.rasi",
+      "bytes": 122,
+      "sha256": "919073d10f9f0f1db7bc0f026e75e9a0ef3e829996be795457b7a811378d5998",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/share/desktop-profiles/sayconlun/support/rofi/theme.rasi",
+      "source": "home/.local/share/desktop-profiles/sayconlun/support/rofi/theme.rasi",
+      "bytes": 1875,
+      "sha256": "d4bf1624abd8ff10b23760bbb64f66a643524a9f1a66289b42fba3c2b1f04849",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/share/desktop-profiles/sayconlun/support/rofi/wallpaper.rasi",
+      "source": "home/.local/share/desktop-profiles/sayconlun/support/rofi/wallpaper.rasi",
+      "bytes": 358,
+      "sha256": "a577d5b21696257ac509c95cff209dd46959d742875f428630a271fe1b2cb299",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/share/desktop-profiles/sayconlun/support/matugen/templates/btop.theme",
+      "source": "home/.local/share/desktop-profiles/sayconlun/support/matugen/templates/btop.theme",
+      "bytes": 2376,
+      "sha256": "961741235433a564a2a1871ea49c22ef0eed74389896dfd2372ae612b5215b01",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/share/desktop-profiles/sayconlun/support/matugen/templates/cava.conf",
+      "source": "home/.local/share/desktop-profiles/sayconlun/support/matugen/templates/cava.conf",
+      "bytes": 1069,
+      "sha256": "a97f7bbd115959ba41ae4f7e31ac799d6bc8ba31c9e23a837d6787eaf1bb4562",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/share/desktop-profiles/sayconlun/support/matugen/templates/fastfetch.jsonc",
+      "source": "home/.local/share/desktop-profiles/sayconlun/support/matugen/templates/fastfetch.jsonc",
+      "bytes": 5251,
+      "sha256": "a9e5d4b3db01e6950ac777720e48ec8896935c824c18a550ce70aac3eedfa06c",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/share/desktop-profiles/sayconlun/support/matugen/templates/foot.ini",
+      "source": "home/.local/share/desktop-profiles/sayconlun/support/matugen/templates/foot.ini",
+      "bytes": 1266,
+      "sha256": "72edf7c52653a455c4ac185e4559d178f1ff8806ed20d6b564bb7e438de61c9d",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/share/desktop-profiles/sayconlun/support/matugen/templates/gtk.css",
+      "source": "home/.local/share/desktop-profiles/sayconlun/support/matugen/templates/gtk.css",
+      "bytes": 2737,
+      "sha256": "35f6f53ca824d0b3f9de613b276c02af053e5e0533d2d05ac448b29ec5fcef66",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/share/desktop-profiles/sayconlun/support/matugen/templates/hyprland-colors.lua",
+      "source": "home/.local/share/desktop-profiles/sayconlun/support/matugen/templates/hyprland-colors.lua",
+      "bytes": 1310,
+      "sha256": "5d87d0857cc74b4b8fbff2d84e68e1d9ac8e9072bead820a96f17f7fffc8f9bf",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/share/desktop-profiles/sayconlun/support/matugen/templates/hyprland-live.lua",
+      "source": "home/.local/share/desktop-profiles/sayconlun/support/matugen/templates/hyprland-live.lua",
+      "bytes": 785,
+      "sha256": "e954d531545864dad3651723cb74954c6019693c32136c2423101e3a0c49a9de",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/share/desktop-profiles/sayconlun/support/matugen/templates/hyprlock-colors.conf",
+      "source": "home/.local/share/desktop-profiles/sayconlun/support/matugen/templates/hyprlock-colors.conf",
+      "bytes": 1321,
+      "sha256": "c59ec42a90bee6bd793d5606b7f6f18dae4209590d56d80d522ae9767374dd50",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/share/desktop-profiles/sayconlun/support/matugen/templates/kde.colors",
+      "source": "home/.local/share/desktop-profiles/sayconlun/support/matugen/templates/kde.colors",
+      "bytes": 12998,
+      "sha256": "f0100a069e574a558545fdd0f045b81bb0e047edaf993978b5c2e536bf52f80c",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/share/desktop-profiles/sayconlun/support/matugen/templates/kitty.conf",
+      "source": "home/.local/share/desktop-profiles/sayconlun/support/matugen/templates/kitty.conf",
+      "bytes": 1673,
+      "sha256": "bf04d5746c2b3c431e5ee69cb9afe53f1c53043092ae64be36f41bd9d560876a",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/share/desktop-profiles/sayconlun/support/matugen/templates/palette.css",
+      "source": "home/.local/share/desktop-profiles/sayconlun/support/matugen/templates/palette.css",
+      "bytes": 1565,
+      "sha256": "69da256701e45c0d6ba05de156bd3cb86a5f20ee6bdab2ffd27e6aa8dd83c737",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/share/desktop-profiles/sayconlun/support/matugen/templates/qt6ct.conf",
+      "source": "home/.local/share/desktop-profiles/sayconlun/support/matugen/templates/qt6ct.conf",
+      "bytes": 2708,
+      "sha256": "625a8da5f3bfc61e7e5d424fbdff15c807e8d749fe765eeab3e3bf79c4c81775",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/share/desktop-profiles/sayconlun/support/matugen/templates/quickshell.json",
+      "source": "home/.local/share/desktop-profiles/sayconlun/support/matugen/templates/quickshell.json",
+      "bytes": 1180,
+      "sha256": "e8b04ef7f33ed170c9e06855ad5b22b7ee5b04357c39f18b9bacfd0e2e697d5a",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/share/desktop-profiles/sayconlun/support/matugen/templates/rofi.rasi",
+      "source": "home/.local/share/desktop-profiles/sayconlun/support/matugen/templates/rofi.rasi",
+      "bytes": 795,
+      "sha256": "49e4cc0836bc4c7c6deb084268f3d84f04f0aaba14de656f98433fa19a7f941f",
+      "mode": 420,
+      "template": false,
+      "init": false
+    }
+  ]
+}

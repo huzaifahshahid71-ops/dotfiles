@@ -18,7 +18,7 @@ from runtime_sources import special_source, SPECIAL, command_source
 
 PROFILES = ("caelestia", "end4", "ambxst", "dms", "serpantinum", "noctalia",
             "sayconlun", "tsugumori", "jaqc", "clavis", "nixri", "inir")
-EXTENSIONS = {".qml", ".js", ".mjs", ".lua", ".kdl", ".sh", ".py", ".css", ".scss",
+EXTENSIONS = {'.colors', '.rasi', '.rasinc', '.theme', ".qml", ".js", ".mjs", ".lua", ".kdl", ".sh", ".py", ".css", ".scss",
               ".ini", ".conf", ".json", ".jsonc", ".toml", ".svg", ".png", ".webp", ".jpg",
               ".jpeg", ".desktop", ".service", ".target", ".xml", ".qrc", ".cpp", ".h",
               ".txt", ".cmake", ".ttf", ".otf", ".patch", ".md", ".rs", ".lock",

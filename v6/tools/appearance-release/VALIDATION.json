@@ -1,0 +1,17 @@
+{
+  "checks": 46,
+  "revision_regressions": 38,
+  "prior_restore_regressions": 8,
+  "result": "passed",
+  "scope": "Uploaded installer sources/dependencies; temporary-root install/restore/rollback, candidate and guarded early-resume fixtures; actual revised image is built on the user host",
+  "pending": [
+    "host packaging",
+    "publication",
+    "new clean VM install/reboot acceptance",
+    "storage audit/cleanup"
+  ],
+  "lumina_export_files": 20,
+  "kit_revision": "v3",
+  "observed_backend_sha256": "6ca133f273062314a035c443ada9695b0d70b81607b246671e9e2749ba31cf94",
+  "observed_sources_compile": 25
+}
