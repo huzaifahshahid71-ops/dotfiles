@@ -7,7 +7,7 @@
 [![Forks](https://img.shields.io/github/forks/huzaifahshahid71-ops/dotfiles?style=for-the-badge&color=cbb8e8&labelColor=24292f)](https://github.com/huzaifahshahid71-ops/dotfiles/forks)
 [![Release](https://img.shields.io/github/v/release/huzaifahshahid71-ops/dotfiles?style=for-the-badge&color=9de0cf&labelColor=24292f)](https://github.com/huzaifahshahid71-ops/dotfiles/releases/latest)
 [![Last commit](https://img.shields.io/github/last-commit/huzaifahshahid71-ops/dotfiles/main?style=for-the-badge&color=a6c9ff&labelColor=24292f)](https://github.com/huzaifahshahid71-ops/dotfiles/commits/main)
-[![License: not specified](https://img.shields.io/badge/license-not_specified-e8c58a?style=for-the-badge&labelColor=24292f)](#sources-and-credits)
+[![License: MIT](https://img.shields.io/badge/license-MIT-e8c58a?style=for-the-badge&labelColor=24292f)](LICENSE)
 <!-- SUMI_BADGES_END -->
 
 **12 desktops. One Sumi Deck. One install command.**
@@ -135,5 +135,7 @@ These are screenshots from the earlier v3 setup, retained as examples of the ups
 Release sources are maintained on [`v6.0-tahoe-dev`](https://github.com/huzaifahshahid71-ops/dotfiles/tree/v6.0-tahoe-dev). The [v6 release](https://github.com/huzaifahshahid71-ops/dotfiles/releases/tag/v6.0.0) includes the matching **`sumi-installer-source-v6.0.0-r3.zip`**, split payload, setup runtime and checksums. Older release assets remain available for their corresponding revisions; use matching revision files together.
 
 This setup builds on Caelestia, end4, Ambxst/axctl, DankMaterialShell, Serpantinum, Noctalia, Sayconlun, Tsugumori, JAQC, Clavis, Nixri, iNiR, Hyprland, Niri, Quickshell and the included SDDM/GRUB and icon themes. Third-party projects retain their respective licenses and credits.
+
+Original Sumi installer code, tools and documentation are licensed under [MIT](LICENSE). Bundled and adapted third-party components retain their respective licenses; see [licensing scope](LICENSING.md).
 
 **App developer: Huzaifah.**
