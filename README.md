@@ -71,6 +71,8 @@ Choose the optional full collection in setup to download **631 wallpapers**. The
 ## Installation video
 
 <!-- SUMI_V6_SHOWCASE_START -->
+[Watch/download the FHD+ CachyOS + Sumi v6 installation and showcase](https://github.com/huzaifahshahid71-ops/dotfiles/releases/download/v6.0.0/CachyOS-Sumi-v6-FHDplus.mp4).
+
 [Watch/download the original CachyOS + v6 installation guide](https://github.com/huzaifahshahid71-ops/dotfiles/releases/download/v6.0.0/CACHY.OS.%2B.V6.INSTALL.GUIDE.mp4).
 <!-- SUMI_V6_SHOWCASE_END -->
 
