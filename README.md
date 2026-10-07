@@ -1,391 +1,129 @@
-# Huzaifah's Hyprland Multi-Rice Dotfiles
+<div align="center">
 
-A complete Hyprland customization built around **Caelestia**, **end4-pC**, **Ambxst**, **DankMaterialShell (DMS)**, and **Noctalia v5**, with a one-command installer, Frieren SDDM theme, a dynamic desktop-profile switcher, and an auto-detected refresh-rate switcher.
+# Huzaifah Multi-Rice v6.0.0 — Sumi
 
-This repository is for people who already have an **Arch/CachyOS-family Linux installation** and want the desktop customization. It does **not** install an operating system.
+**12 desktops. One Sumi Deck. One install command.**
 
-<!-- MULTI_RICE_GALLERY_START -->
-## 📸 Multi-Rice Showcase
+**8 Hyprland · 4 Niri · 74 login themes · 8 GRUB themes · 631 wallpapers**
 
-### 🌙 Frieren SDDM
+[Download v6](https://github.com/huzaifahshahid71-ops/dotfiles/releases/tag/v6.0.0) · [Installation guide](https://github.com/huzaifahshahid71-ops/dotfiles/releases/download/v6.0.0/CACHY.OS.%2B.V6.INSTALL.GUIDE.mp4) · [Wallpaper collection](https://github.com/huzaifahshahid71-ops/multi-rice-wallpapers)
 
-<table>
-<tr>
-<td width="50%"><img src="screenshots/v3/01-frieren-sddm-login.webp" alt="Frieren SDDM login screen"></td>
-<td width="50%"><img src="screenshots/v3/02-frieren-sddm-login-filled.webp" alt="Frieren SDDM login screen with user credentials"></td>
-</tr>
-<tr><td align="center"><sub>Frieren SDDM login</sub></td><td align="center"><sub>Login form</sub></td></tr>
-</table>
+</div>
 
-### ✦ Caelestia
+Sumi brings twelve separate desktop profiles together with a shared desktop switcher, searchable shortcuts, music controls, login-theme previews and GRUB-theme selection. Install it on an existing **x86_64 CachyOS or compatible Arch Linux desktop**. Setup checks system and package compatibility before installation.
 
-<img src="screenshots/v3/03-caelestia-desktop.webp" alt="Caelestia desktop" width="100%">
+## Install with one command
 
-<table>
-<tr>
-<td width="50%"><img src="screenshots/v3/04-caelestia-notifications.webp" alt="Caelestia notifications"></td>
-<td width="50%"><img src="screenshots/v3/05-caelestia-quick-settings.webp" alt="Caelestia quick settings"></td>
-</tr>
-<tr><td align="center"><sub>Notifications</sub></td><td align="center"><sub>Quick settings</sub></td></tr>
-<tr>
-<td><img src="screenshots/v3/06-caelestia-dashboard.webp" alt="Caelestia dashboard"></td>
-<td><img src="screenshots/v3/07-caelestia-visualizer.webp" alt="Caelestia audio visualizer"></td>
-</tr>
-<tr><td align="center"><sub>Dashboard</sub></td><td align="center"><sub>Audio visualizer</sub></td></tr>
-<tr>
-<td><img src="screenshots/v3/08-caelestia-multi-rice-switcher.webp" alt="Multi-Rice switcher showing all five profiles"></td>
-<td><img src="screenshots/v3/09-caelestia-wallpaper-picker.webp" alt="Caelestia wallpaper picker"></td>
-</tr>
-<tr><td align="center"><sub>Five-profile Multi-Rice switcher</sub></td><td align="center"><sub>Wallpaper picker</sub></td></tr>
-</table>
-
-### ◈ end4-pC
-
-<img src="screenshots/v3/10-end4-pc-desktop.webp" alt="end4-pC desktop" width="100%">
-
-<table>
-<tr>
-<td width="50%"><img src="screenshots/v3/11-end4-pc-media.webp" alt="end4-pC media panel"></td>
-<td width="50%"><img src="screenshots/v3/12-end4-pc-settings.webp" alt="end4-pC settings panel"></td>
-</tr>
-<tr><td align="center"><sub>Media panel</sub></td><td align="center"><sub>Settings panel</sub></td></tr>
-</table>
-
-### ◆ Ambxst
-
-<img src="screenshots/v3/13-ambxst-dashboard.webp" alt="Ambxst dashboard" width="100%">
-
-<table>
-<tr>
-<td width="50%"><img src="screenshots/v3/14-ambxst-wallpaper-picker.webp" alt="Ambxst wallpaper picker"></td>
-<td width="50%"><img src="screenshots/v3/15-ambxst-system-monitor.webp" alt="Ambxst system monitor"></td>
-</tr>
-<tr><td align="center"><sub>Wallpaper picker</sub></td><td align="center"><sub>System monitor</sub></td></tr>
-</table>
-
-### ● DankMaterialShell (DMS)
-
-<table>
-<tr>
-<td width="50%"><img src="screenshots/v3/16-dms-overview.webp" alt="DankMaterialShell overview"></td>
-<td width="50%"><img src="screenshots/v3/17-dms-launcher.webp" alt="DankMaterialShell launcher"></td>
-</tr>
-<tr><td align="center"><sub>Overview</sub></td><td align="center"><sub>Application launcher</sub></td></tr>
-<tr>
-<td><img src="screenshots/v3/18-dms-weather.webp" alt="DankMaterialShell weather panel"></td>
-<td><img src="screenshots/v3/19-dms-processes.webp" alt="DankMaterialShell processes panel"></td>
-</tr>
-<tr><td align="center"><sub>Weather</sub></td><td align="center"><sub>Processes</sub></td></tr>
-<tr>
-<td colspan="2"><img src="screenshots/v3/25-dms-media.webp" alt="DankMaterialShell media player" width="100%"></td>
-</tr>
-<tr><td colspan="2" align="center"><sub>Media player</sub></td></tr>
-</table>
-
-### ◉ Noctalia v5
-
-<img src="screenshots/v3/20-noctalia-system.webp" alt="Noctalia v5 system panel" width="100%">
-
-<table>
-<tr>
-<td width="50%"><img src="screenshots/v3/21-noctalia-launcher.webp" alt="Noctalia v5 launcher"></td>
-<td width="50%"><img src="screenshots/v3/22-noctalia-media.webp" alt="Noctalia v5 media panel"></td>
-</tr>
-<tr><td align="center"><sub>Application launcher</sub></td><td align="center"><sub>Media panel</sub></td></tr>
-<tr>
-<td><img src="screenshots/v3/23-noctalia-btop.webp" alt="Noctalia v5 with btop"></td>
-<td><img src="screenshots/v3/24-noctalia-unimatrix-media.webp" alt="Noctalia v5 media panel with Unimatrix terminal"></td>
-</tr>
-<tr><td align="center"><sub>btop</sub></td><td align="center"><sub>Media + Unimatrix</sub></td></tr>
-</table>
-<!-- MULTI_RICE_GALLERY_END -->
-
-## ✨ What you get
-
-The default installer sets up:
-
-- ✦ **Caelestia** rice and user configuration
-- ◈ **end4-pC** rice based on pctrade/end4-pC
-- ◆ **Ambxst** rice with axctl compositor integration
-- ● **DankMaterialShell (DMS)** as an isolated rice
-- ◇ **Serpantinum 2.1.2 / Aurora** as an isolated rice
-- ◉ **Noctalia v5** with its own portable Hyprland profile and configuration
-- a separate Hyprland profile for every rice
-- a dynamic `SUPER + SHIFT + D` six-profile Multi-Rice switcher
-- an auto-detected `SUPER + SHIFT + R` refresh-rate switcher
-- saved end4 widget/top-bar layout and local album-art patches
-- search-only end4 launcher with the workspace grid hidden
-- **Frieren SDDM login theme**
-- transactional pre-install backup and exact desktop rollback support in the v4 offline installer
-
-**The installer does not choose or replace your desktop wallpaper.** The Frieren image belongs to the SDDM login theme only.
-
-## ⇄ Switching rices
-
-Press:
-
-```text
-SUPER + SHIFT + D
-```
-
-The preferred order is:
-
-```text
-✦ Caelestia
-◈ end4-pC
-◆ Ambxst
-● DankMaterialShell
-◇ Serpantinum / Aurora
-◉ Noctalia v5
-```
-
-The switcher includes those six preferred profiles and also discovers additional valid profiles placed under `~/.local/share/desktop-profiles`.
-
-CLI examples:
+Run in your graphical desktop terminal, as your normal user:
 
 ```bash
-desktop-switch list
-desktop-switch status
-desktop-switch caelestia --now
-desktop-switch end4 --now
-desktop-switch ambxst --now
-desktop-switch dms --now
-desktop-switch serpantinum --now
-desktop-switch noctalia --now
+curl -fsSL https://github.com/huzaifahshahid71-ops/dotfiles/releases/download/v6.0.0/ONLINE-INSTALL-v6.sh | bash
 ```
 
-Switching atomically repoints `~/.config/hypr` to the chosen profile and logs out so the next Hyprland session starts that rice.
+This opens **Sumi Setup**. Run preflight, choose your options, and start the backup and installation in the window. Authenticate when setup requests system changes. The command installs desktop customization on your existing Linux installation; install CachyOS itself first if you are starting from an empty machine.
 
-## ↻ Refresh-rate switcher
+The public launcher currently selects **desktop-r3**, which includes the verified Crimson wallpaper-picker sources, Cipher search routing and Aether icon lookup fixes, alongside the earlier SDDM, quiet GRUB, MacTahoe icon and Lumina launcher/palette repairs. The initial launch may take several minutes while the payload is downloaded or extracted.
 
-Press:
+## All twelve rices
 
-```text
-SUPER + SHIFT + R
-```
+| Desktop in Sumi Deck | Profile | Compositor |
+| --- | --- | --- |
+| **Aether** | Caelestia (`caelestia`) | Hyprland |
+| **Obsidian** | end4 (`end4`) | Hyprland |
+| **Crimson** | Ambxst (`ambxst`) | Hyprland |
+| **Materia** | DankMaterialShell (`dms`) | Hyprland |
+| **Aurora** | Serpantinum (`serpantinum`) | Hyprland |
+| **Nocturne** | Noctalia (`noctalia`) | Hyprland |
+| **Lumina** | Sayconlun (`sayconlun`) | Hyprland |
+| **Tsugumori** | Tsugumori (`tsugumori`) | Hyprland |
+| **Solstice** | JAQC (`jaqc`) | Niri |
+| **Cipher** | Clavis (`clavis`) | Niri |
+| **Astra** | Nixri (`nixri`) | Niri |
+| **Eclipse** | iNiR (`inir`) | Niri |
 
-The refresh switcher uses the same Fuzzel styling as the Multi-Rice switcher and is installed into all six Hyprland profiles.
+Each rice retains its own configuration and supporting files under `~/.local/share/desktop-profiles`. Use Sumi Deck to select and switch desktops.
 
-The installer reads the machine DMI vendor/product automatically:
+## Shared controls
 
-- **Zephyrus G16 detected:** enables the tested G16 profile with `60`, `90`, `120`, `144`, `165`, `180`, and `240 Hz`. The default automatic policy remains **120 Hz on battery / 240 Hz on AC**. A manual selection temporarily overrides the policy until the charger state changes or Auto is selected.
-- **Any other laptop or desktop:** no custom modelines are generated. The switcher reads the focused monitor's `availableModes` from Hyprland and offers only the refresh rates advertised for that monitor's current resolution (OEM/EDID modes).
-
-The G16 custom profile is pinned to the internal `eDP-*` panel and will not send its panel-specific modelines to an external monitor. The failed `52.03 Hz` experiment is intentionally excluded.
-
-Every mode change uses a safety confirmation. **Revert is the first/default action**, and an unconfirmed change automatically reverts after 10 seconds.
-
-Refresh-specific installer options:
-
-```text
---refresh-switcher          DMI auto-detect (default with Multi-Rice)
---generic-refresh-switcher  force OEM/EDID-only mode discovery
---g16-refresh-switcher      force G16 profile after DMI validation
---no-refresh-switcher       omit it from a Multi-Rice installation
-```
-
-## ● DankMaterialShell integration
-
-DMS is deliberately **not** enabled as a global `dms.service`. In a Multi-Rice environment that could make DMS start on top of Caelestia, end4-pC, Ambxst, or Noctalia. Instead, the DMS Hyprland profile starts it with `dms run` only when the DMS rice is active.
-
-The tested profile is based on DMS **v1.5.3** and uses Alacritty. Custom DMS shortcuts included in this setup are:
-
-```text
-SUPER                  DMS application launcher
-SUPER + SHIFT + S      region screenshot
-SUPER + SHIFT + D      Multi-Rice switcher
-SUPER + SHIFT + R      refresh-rate switcher
-SUPER + T              Alacritty
-SUPER + Q              close window
-SUPER + SHIFT + E      exit Hyprland
-```
-
-DMS wallpaper selection remains user-controlled; the installer does not force a wallpaper directory or replace the current desktop wallpaper.
-
-## ◆ Ambxst integration
-
-Ambxst is installed from the official `Axenide/Ambxst` repository. Its shell runs through Quickshell while axctl provides compositor IPC and generates Ambxst's supporting Hyprland state under:
-
-```text
-~/.local/share/ambxst/
-```
-
-The isolated profile lives at:
-
-```text
-~/.local/share/desktop-profiles/ambxst/hypr/
-```
-
-## ◉ Noctalia v5 integration
-
-Noctalia v5 is included as a first-class fifth rice with its own portable Hyprland profile, launcher/media/system panels, and saved configuration. The profile avoids forcing machine-specific DRM device paths on systems where those devices do not exist.
-
-Its isolated profile lives at:
-
-```text
-~/.local/share/desktop-profiles/noctalia/hypr/
-```
-
-## 🧩 Installer options
-
-| Option | Action |
+| Shortcut | Opens |
 | --- | --- |
-| `--customization` | Full customization; same as no flags |
-| `--multi-rice` | Full customization alias |
-| `--multi-rice-only` | Install all six rices without changing SDDM |
-| `--no-sddm-theme` | Install Multi-Rice but skip SDDM |
-| `--sddm-theme-only` | Install only the Frieren SDDM login theme |
-| `--refresh-switcher` | Install/reconfigure refresh switcher with DMI auto-detection |
-| `--generic-refresh-switcher` | Force OEM/EDID-only refresh modes |
-| `--g16-refresh-switcher` | Force tested G16 refresh profile after DMI validation |
-| `--no-refresh-switcher` | Skip refresh switcher during Multi-Rice installation |
-| `--triple-rice` / `--triple-rice-only` | Compatibility aliases |
-| `--dual-rice` / `--dual-rice-only` | Compatibility aliases |
-| `--status` | Show system-setup status |
+| **Super + Shift + D** | Sumi Deck: desktop, LOGIN and GRUB cards |
+| **Super + /** | Searchable keyboard-shortcut menu, with readable action names |
+| **Super + Shift + M** | Shared music controls |
+| **Super + Shift + R** | Refresh-rate controls |
 
-Example:
+Native launchers, settings and other bindings vary by rice. Open **Super + /** to see the active profile's shortcuts.
 
-```bash
-./install.sh --multi-rice-only
-```
+## Login and boot themes
 
-Other machine-specific extras remain opt-in:
+- **74 SDDM login cards**, including Frieren and four additional custom cards, with previews and authenticated selection in Sumi Deck → **LOGIN**.
+- **Eight Evangelion GRUB cards** with previews and authenticated selection in Sumi Deck → **GRUB**. These require an existing GRUB installation.
+- The fresh-machine fixes retain SDDM selection for the next boot and quiet GRUB configuration across theme changes.
 
-```text
---asus
---g16
---refind
---refresh
---hibernate
-```
+SDDM cards customize the login screen. Desktop lock screens are provided by the active rice and its lock-screen tools.
 
-## 📦 Fully offline AppImage — v4.0.0
+## Wallpapers
 
-**Huzaifah Multi-Rice OFFLINE v4.0.0** is the current x86_64 fully-offline release. It bundles the six-rice desktop payload and its package closure so installation does not require a network connection.
+Choose the optional full collection in setup to download **631 wallpapers**. The downloader fetches **three ZIP packs in parallel**, then verifies and extracts the images locally. Choose the destination folder in setup and select wallpapers through your rice's wallpaper picker.
 
-Release assets:
+[Browse the wallpaper repository](https://github.com/huzaifahshahid71-ops/multi-rice-wallpapers) · [Pinned 631-image collection](https://github.com/huzaifahshahid71-ops/multi-rice-wallpapers/releases/tag/wallpapers-0aa529a78a8430dc)
 
-```text
-Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.AppImage
-Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.sha256
-```
+## Installation video
 
-Verify and run:
+<!-- SUMI_V6_SHOWCASE_START -->
+[Watch/download the original CachyOS + v6 installation guide](https://github.com/huzaifahshahid71-ops/dotfiles/releases/download/v6.0.0/CACHY.OS.%2B.V6.INSTALL.GUIDE.mp4).
+<!-- SUMI_V6_SHOWCASE_END -->
+
+## Offline installation
+
+From the [v6.0.0 release](https://github.com/huzaifahshahid71-ops/dotfiles/releases/tag/v6.0.0), download **`assemble-v6-r3.py`** into an empty directory and run:
 
 ```bash
-sha256sum -c Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.sha256
-chmod +x Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.AppImage
-./Huzaifah-Multi-Rice-OFFLINE-v4.0.0-x86_64.AppImage
+python3 assemble-v6-r3.py
+APPIMAGE_EXTRACT_AND_RUN=1 ./multi-rice-v6.0.0-r3-x86_64.AppImage
 ```
 
-The v4.0.0 build was validated in a CachyOS QEMU VM with networking disabled, with 685 package archives bundled. The same validation covered all six rices, Noctalia startup, and transactional uninstall/desktop restoration.
+The assembler downloads `release-r3.json` and missing `.partNNN` files, verifies their SHA-256 hashes, and assembles the AppImage. For an offline machine, download all five r3 parts, `release-r3.json` and the assembler beforehand, then run them from the same directory. Keep `release-r3.json` beside the AppImage. The wallpaper collection is a separate optional download.
 
-Release: https://github.com/huzaifahshahid71-ops/dotfiles/releases/tag/v4.0.0
+Use **setup's preflight** to check free space, graphical authentication and package compatibility. The payload includes CachyOS-optimized packages; installation depends on the preflight and dependency checks passing on your system.
 
-## 🌙 Frieren SDDM theme
+## Backups and restore
 
-The login theme lives under:
+Setup verifies a configuration backup before installation and records its installation receipt under:
 
 ```text
-machine/sddm/themes/sddm-frieren-theme/
+~/.local/share/huzaifah-multi-rice/v6-installations/
 ```
 
-Its image asset:
+Use the receipt with the installer's restore function to restore backed-up user configuration and managed system desktop routes. Restore retains installed packages. Guards preserve files edited after installation rather than silently replacing them.
 
-```text
-machine/sddm/themes/sddm-frieren-theme/Backgrounds/frieren.jpg
-```
+## Validation
 
-is used by SDDM only. It is not installed as your desktop wallpaper.
+The original v6 payload's twelve desktops, shortcuts, login themes, GRUB themes, installation and configuration restore were tested in CachyOS VMs. Fresh-machine appearance repairs and the three desktop-r3 fixes were also accepted in a fresh VM. The combined r3 build passed payload hash checks, GUI rendering and packaged backend checks; a complete new installation of that combined r3 image has not yet been accepted.
 
-## 🛟 Recovery
+## Earlier screenshots
 
-If a rice prevents the desktop from loading, switch to a TTY and run:
+These are screenshots from the earlier v3 setup, retained as examples of the upstream desktop designs. The twelve-profile v6 inventory is listed above.
 
-```bash
-~/.local/bin/recover-caelestia
-```
+<table>
+<tr>
+<td width="50%"><img src="screenshots/v3/03-caelestia-desktop.webp" alt="Earlier Caelestia desktop"><br><b>Aether / Caelestia</b></td>
+<td width="50%"><img src="screenshots/v3/10-end4-pc-desktop.webp" alt="Earlier end4 desktop"><br><b>Obsidian / end4</b></td>
+</tr>
+<tr>
+<td><img src="screenshots/v3/13-ambxst-dashboard.webp" alt="Earlier Ambxst dashboard"><br><b>Crimson / Ambxst</b></td>
+<td><img src="screenshots/v3/16-dms-overview.webp" alt="Earlier DankMaterialShell overview"><br><b>Materia / DMS</b></td>
+</tr>
+<tr>
+<td><img src="screenshots/v3/20-noctalia-system.webp" alt="Earlier Noctalia system panel"><br><b>Nocturne / Noctalia</b></td>
+<td><img src="screenshots/v3/01-frieren-sddm-login.webp" alt="Frieren SDDM login theme"><br><b>Frieren login theme</b></td>
+</tr>
+</table>
 
-Timestamped safety backups are stored under:
+## Sources and credits
 
-```text
-~/.local/share/desktop-profile-backups/
-```
+Release sources are maintained on [`v6.0-tahoe-dev`](https://github.com/huzaifahshahid71-ops/dotfiles/tree/v6.0-tahoe-dev). The [v6 release](https://github.com/huzaifahshahid71-ops/dotfiles/releases/tag/v6.0.0) includes the matching **`sumi-installer-source-v6.0.0-r3.zip`**, split payload, setup runtime and checksums. Older release assets remain available for their corresponding revisions; use matching revision files together.
 
-The v4 offline installer additionally keeps transactional install snapshots under:
+This setup builds on Caelestia, end4, Ambxst/axctl, DankMaterialShell, Serpantinum, Noctalia, Sayconlun, Tsugumori, JAQC, Clavis, Nixri, iNiR, Hyprland, Niri, Quickshell and the included SDDM/GRUB and icon themes. Third-party projects retain their respective licenses and credits.
 
-```text
-~/.local/share/huzaifah-multi-rice/installations/
-```
-
-## 💾 Backing up the current Multi-Rice setup
-
-The historical script/path names are retained for compatibility:
-
-```bash
-cd ~/dotfiles
-./scripts/backup-dual-rice.sh
-```
-
-To review, commit, and push the snapshot automatically:
-
-```bash
-./scripts/backup-dual-rice.sh --push
-```
-
-The backup/restore workflow covers all six Hyprland profiles, including Noctalia, together with the saved rice configuration, switcher files, package/version manifests, pinned source revisions, local patches, and selected portable state. Caches, `.env` files, private keys, and obvious credential/token files are excluded or block automatic pushing.
-
-## 📁 Repository layout
-
-```text
-.
-├── install.sh
-├── screenshots/v3/                     # v3 visual showcase
-├── scripts/
-│   ├── backup-dual-rice.sh             # historical filename retained
-│   ├── install-refresh-switcher.sh     # DMI-aware refresh profile installer
-│   ├── restore-dual-rice.sh            # online Multi-Rice restore
-│   └── restore-triple-rice-offline.sh  # historical filename retained
-├── dual-rice/                           # historical path name retained
-│   ├── profiles/
-│   │   ├── caelestia/hypr/
-│   │   ├── end4/hypr/
-│   │   ├── ambxst/hypr/
-│   │   ├── dms/hypr/
-│   │   └── noctalia/hypr/
-│   ├── caelestia/
-│   ├── end4/
-│   ├── ambxst/
-│   ├── dms/
-│   ├── noctalia/
-│   ├── desktop-switcher/
-│   ├── bin/
-│   │   ├── desktop-switch
-│   │   └── refresh-switch
-│   ├── packages/
-│   ├── versions/
-│   └── state/
-├── installer-appimage/
-├── installer-appimage-offline/
-├── machine/
-│   └── sddm/themes/sddm-frieren-theme/
-└── system-setup.sh
-```
-
-## 🔧 Upstream projects
-
-This setup builds on:
-
-- **Caelestia / DiM Caelestia**
-- **end-4/dots-hyprland**
-- **pctrade/end4-pC**
-- **Axenide/Ambxst** and **axctl**
-- **AvengeMedia/DankMaterialShell**
-- **Noctalia**
-- **Hyprland** and **Quickshell**
-
-Their code remains under their respective upstream licenses. Local configuration and patches in this repository customize those projects rather than replace them.
-
-## ⚠️ Notes
-
-This is a desktop-customization repository, not a universal Linux installer. The portable refresh switcher is part of the default Multi-Rice setup, but custom modelines are only enabled for the validated Zephyrus G16 profile. Bootloader changes, hibernation, and other hardware-specific ASUS/G16 actions remain explicit opt-ins.
+**App developer: Huzaifah.**
