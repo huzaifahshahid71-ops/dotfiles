@@ -1,0 +1,165 @@
+{
+  "schema": 1,
+  "source_commit": "0ad87ff8144342e72321932d9831b6d3ec588203",
+  "format": "WebP",
+  "maximum_dimensions": [
+    1280,
+    800
+  ],
+  "files": [
+    {
+      "path": "screenshots/v6/previews/aether.webp",
+      "source": "screenshots/v6/029-Screenshot_2026-10-07_18-15-55.png",
+      "bytes": 42370,
+      "sha256": "35762ef733bcb7c1b12d5b52b8a82da0c2f9c97e525e33bad0b29e4c5ed73bc2",
+      "blob_sha": "ece1854ec724e6ce979927f403a40ec3e77b4cd0"
+    },
+    {
+      "path": "screenshots/v6/previews/obsidian.webp",
+      "source": "screenshots/v6/033-Screenshot_2026-10-07_18-16-32.png",
+      "bytes": 55412,
+      "sha256": "37c181d216662b849551c268627640c78ba416afb105f7e423505f5d7e59d611",
+      "blob_sha": "b78509d90caf83670de771b1ed7146ee23cda752"
+    },
+    {
+      "path": "screenshots/v6/previews/crimson.webp",
+      "source": "screenshots/v6/040-Screenshot_2026-10-07_18-17-43.png",
+      "bytes": 55316,
+      "sha256": "40b88f948aba9f598403f8ef98a856c29f0165dd76c22db6fbfa8a59853e20e8",
+      "blob_sha": "8ec9c94878aa29b6d008fde6af3297bd5bc2ca40"
+    },
+    {
+      "path": "screenshots/v6/previews/materia.webp",
+      "source": "screenshots/v6/051-Screenshot_2026-10-07_18-18-53.png",
+      "bytes": 102348,
+      "sha256": "a2fc854eb66176cd04e7955c7f199d7b0400aa4d0531513abfb01acc96f16cee",
+      "blob_sha": "e7dd37f102c1c10fc8f9ba7abc065864e6fbcc76"
+    },
+    {
+      "path": "screenshots/v6/previews/aurora.webp",
+      "source": "screenshots/v6/063-Screenshot_2026-10-07_18-21-09.png",
+      "bytes": 50904,
+      "sha256": "21cd18e6b0f46a942764a4a694b8a183bc4374a03e2aa7a7e54793a13916e828",
+      "blob_sha": "41107735c40cf150de637aba3ec989d79dfe3b6c"
+    },
+    {
+      "path": "screenshots/v6/previews/nocturne.webp",
+      "source": "screenshots/v6/073-Screenshot_2026-10-07_18-22-51.png",
+      "bytes": 70764,
+      "sha256": "0e256ed6d1661f1f34755c36c79aa6a6a786e4d545f5c2bff5fc386c80c8b854",
+      "blob_sha": "d57dcca03875beb1da667e8112a49ed80fb81b1d"
+    },
+    {
+      "path": "screenshots/v6/previews/lumina.webp",
+      "source": "screenshots/v6/078-Screenshot_2026-10-07_18-23-44.png",
+      "bytes": 40610,
+      "sha256": "aef311aa01cda19fa52d0c434c65d9a486c5622a82c9f533396c5bea940c1af4",
+      "blob_sha": "d749e10da717d9a8e2bedaf594ad8a81b209b09d"
+    },
+    {
+      "path": "screenshots/v6/previews/tsugumori.webp",
+      "source": "screenshots/v6/084-Screenshot_2026-10-07_18-25-19.png",
+      "bytes": 22572,
+      "sha256": "71d0336ad9455f105b68cde299be8a2d733dd4bdc61b4bd9c391b8c257784b2e",
+      "blob_sha": "3d733fad790a6f4bfa454b54302d4f88c33ba6a2"
+    },
+    {
+      "path": "screenshots/v6/previews/solstice.webp",
+      "source": "screenshots/v6/092-Screenshot_2026-10-07_18-26-13.png",
+      "bytes": 69734,
+      "sha256": "acf614b2d909d7a3ea92f8ffb907c2007cf3e47964fcc253fff69c5490e5df48",
+      "blob_sha": "62035f46095935b5746e8158ec4390134564d263"
+    },
+    {
+      "path": "screenshots/v6/previews/cipher.webp",
+      "source": "screenshots/v6/104-Screenshot_2026-10-07_18-28-16.png",
+      "bytes": 79530,
+      "sha256": "8d3fb18fc52a1ce5cb014e3148cd78959ac97cf8c76b1e48961e7b6d927b74e3",
+      "blob_sha": "7bd0a16d00546b72a0a1766accfae0fe8ecdac66"
+    },
+    {
+      "path": "screenshots/v6/previews/astra.webp",
+      "source": "screenshots/v6/108-Screenshot_2026-10-07_18-28-58.png",
+      "bytes": 63544,
+      "sha256": "858bc1fccfa5efded094d235ad2bdbc3e277cd4e44581e8bc02e0b4771fd09db",
+      "blob_sha": "da40ae5acc6962d0969defefe909d34d066c2d56"
+    },
+    {
+      "path": "screenshots/v6/previews/eclipse.webp",
+      "source": "screenshots/v6/117-Screenshot_2026-10-07_18-29-51.png",
+      "bytes": 48752,
+      "sha256": "fc45212d645cbd8d01e410fa286bc524a7b333163d993da27a98944336b1fd5a",
+      "blob_sha": "e3d759d63702570693b76247b5a88ff1f9436d65"
+    },
+    {
+      "path": "screenshots/v6/previews/setup-welcome.webp",
+      "source": "screenshots/v6/001-Screenshot_2026-10-07_18-08-29.png",
+      "bytes": 35118,
+      "sha256": "e08c6563a43615b9b1d08fdd414c535c7e91633a210f2008dfebfa5da53880d1",
+      "blob_sha": "d1768bc73fa31fae5a53f5c9101a372968e79754"
+    },
+    {
+      "path": "screenshots/v6/previews/setup-wallpapers.webp",
+      "source": "screenshots/v6/002-Screenshot_2026-10-07_18-08-47.png",
+      "bytes": 18190,
+      "sha256": "1d738ce701f366e42145ca58a1e0518f41949ab10ddde47754f417f757983b70",
+      "blob_sha": "9e989c29a7502d747a2be4079c79a9e2c8b71ddd"
+    },
+    {
+      "path": "screenshots/v6/previews/sumi-deck.webp",
+      "source": "screenshots/v6/006-Screenshot_2026-10-07_18-09-53.png",
+      "bytes": 25416,
+      "sha256": "e9355dc624e67dad5513c1cc12c652542e2ecc85ad146b1515d477b5cfc42d1f",
+      "blob_sha": "38ad46953c04b9be445114d0789d47d81cf56cd7"
+    },
+    {
+      "path": "screenshots/v6/previews/login-selection.webp",
+      "source": "screenshots/v6/007-Screenshot_2026-10-07_18-10-34.png",
+      "bytes": 21440,
+      "sha256": "cbd96d7c17544dbc0a3d9b51863dddda4f4ae60a2bf2526fed32c7019a61b0cc",
+      "blob_sha": "2f6e44033934ee629e74307faa033a98db4dd0c5"
+    },
+    {
+      "path": "screenshots/v6/previews/login-pixel-sakura.webp",
+      "source": "screenshots/v6/058-Screenshot_2026-10-07_18-20-11.png",
+      "bytes": 39522,
+      "sha256": "a74afb577a13d452f78ea928e4d2d1f2313b5480a56c8ddd4003857028e83e40",
+      "blob_sha": "d775774f8586a1af37eec42b2b45ceea6d19a969"
+    },
+    {
+      "path": "screenshots/v6/previews/grub-selection.webp",
+      "source": "screenshots/v6/052-Screenshot_2026-10-07_18-19-02.png",
+      "bytes": 29336,
+      "sha256": "cd2626408b66073ab19fe0497098c76becc91bfd1ed2688392500ec817a58c27",
+      "blob_sha": "f7cc923ef95b1710f14ce6b8fc4df4b2c3400776"
+    },
+    {
+      "path": "screenshots/v6/previews/grub-ramiel.webp",
+      "source": "screenshots/v6/120-Screenshot_2026-10-07_18-30-37.png",
+      "bytes": 53256,
+      "sha256": "cee3b3cd76d10bbb95ccb1d01d3d053a979f4df0e4f6fd9999a9298fbdb647a1",
+      "blob_sha": "ff6f5f330b318aad297a80dbaab3e6e226f9713b"
+    },
+    {
+      "path": "screenshots/v6/previews/authentication.webp",
+      "source": "screenshots/v6/054-Screenshot_2026-10-07_18-19-12.png",
+      "bytes": 14346,
+      "sha256": "d4b02c3805de21547446f3096b1af158a8feb62cf18c9bdbcd9dae62e8140c0c",
+      "blob_sha": "f8c2fc8d999b7cdb6fe7090b1cfe5c1ec57cb256"
+    },
+    {
+      "path": "screenshots/v6/previews/keyboard-shortcuts.webp",
+      "source": "screenshots/v6/016-Screenshot_2026-10-07_18-13-44.png",
+      "bytes": 47126,
+      "sha256": "bbc94c5ed9439cd186398685455775b10f30b4be1e74d5dac7e772ca86ce9034",
+      "blob_sha": "0608ece5ac194548b37a74c66f71c39a176a9f36"
+    },
+    {
+      "path": "screenshots/v6/previews/music-controls.webp",
+      "source": "screenshots/v6/018-Screenshot_2026-10-07_18-14-14.png",
+      "bytes": 30828,
+      "sha256": "46511f6d71dee6c7b3b3ca732d77e3542439af18301de4e371455a49203ea4b5",
+      "blob_sha": "c62da590701ae34eb5d22f1e44af78a76c356c98"
+    }
+  ]
+}

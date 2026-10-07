@@ -1,0 +1,846 @@
+{
+  "schema": 1,
+  "collection": "Sumi v6 installation and rice screenshots",
+  "files": [
+    {
+      "path": "screenshots/v6/001-Screenshot_2026-10-07_18-08-29.png",
+      "original_name": "Screenshot_2026-10-07_18-08-29.png",
+      "bytes": 1787322,
+      "sha256": "f5ea7989bffc74654dbee6e817ecefde419a7e5dc570ef9ecbd2e73039ccf1b7",
+      "blob_sha": "fec01ed52f3681ca1d8598f494de80a9903959d7"
+    },
+    {
+      "path": "screenshots/v6/002-Screenshot_2026-10-07_18-08-47.png",
+      "original_name": "Screenshot_2026-10-07_18-08-47.png",
+      "bytes": 1320999,
+      "sha256": "464f381cb71a0912656a382d8d5114826958dd66464e1ca3a0b24d7c8d93dab5",
+      "blob_sha": "099eab26b3703687f64daadd7aabdb1b3043ee0a"
+    },
+    {
+      "path": "screenshots/v6/003-Screenshot_2026-10-07_18-09-06.png",
+      "original_name": "Screenshot_2026-10-07_18-09-06.png",
+      "bytes": 2327397,
+      "sha256": "e404358a6e2e483d40ab30a89f6374774822e50988ca86fd38d16b029b6d9397",
+      "blob_sha": "69b7d34301f99d9a937ec688b72c3608e9818397"
+    },
+    {
+      "path": "screenshots/v6/004-Screenshot_2026-10-07_18-09-27.png",
+      "original_name": "Screenshot_2026-10-07_18-09-27.png",
+      "bytes": 2939359,
+      "sha256": "3c2c38e333513201c184d1ef88cf93267f9e657a4a1b6b1ba91ae80e8212ad9b",
+      "blob_sha": "bd94686e88990edb755c8421a996e66fa738f7c7"
+    },
+    {
+      "path": "screenshots/v6/005-Screenshot_2026-10-07_18-09-43.png",
+      "original_name": "Screenshot_2026-10-07_18-09-43.png",
+      "bytes": 1385864,
+      "sha256": "f787543440e784098b2b105de53ae686167e55e6687b5e686eaed12df42ce75e",
+      "blob_sha": "49660d9cfb7439070574ecc04c23fed58e395669"
+    },
+    {
+      "path": "screenshots/v6/006-Screenshot_2026-10-07_18-09-53.png",
+      "original_name": "Screenshot_2026-10-07_18-09-53.png",
+      "bytes": 2191819,
+      "sha256": "1cad49d6a9a5c2adfb43c5927e279dcd0c19cd28e0daa573ebb06250d00ebd98",
+      "blob_sha": "25262a2e92d32f904dc251fa1430b6a8f90a543c"
+    },
+    {
+      "path": "screenshots/v6/007-Screenshot_2026-10-07_18-10-34.png",
+      "original_name": "Screenshot_2026-10-07_18-10-34.png",
+      "bytes": 1996647,
+      "sha256": "9c54d4a4a902ccace5a9bc1b217a2259667d6e7c43cee946668337d04e4ca3e1",
+      "blob_sha": "d0857acea6d3ca4cc00a020ee93a6ee63e071902"
+    },
+    {
+      "path": "screenshots/v6/008-Screenshot_2026-10-07_18-10-57.png",
+      "original_name": "Screenshot_2026-10-07_18-10-57.png",
+      "bytes": 5165124,
+      "sha256": "50a50ff100e5eeab21367ea49af1a83294b7caad25d6a68e1f8548263b56a853",
+      "blob_sha": "162c45f2cd1ec2c926d11e439757a9d54785bd48"
+    },
+    {
+      "path": "screenshots/v6/009-Screenshot_2026-10-07_18-11-11.png",
+      "original_name": "Screenshot_2026-10-07_18-11-11.png",
+      "bytes": 5188194,
+      "sha256": "2247bcf140dca093c3d82c81ba954dc7a2d66df80090ce9b82023b661c91b53d",
+      "blob_sha": "d57ba5b5af507d6235c464a81782f4d26480d559"
+    },
+    {
+      "path": "screenshots/v6/010-Screenshot_2026-10-07_18-11-17.png",
+      "original_name": "Screenshot_2026-10-07_18-11-17.png",
+      "bytes": 4811517,
+      "sha256": "c67b83d0a0abf0cb5458f0f4ef2826d2116e576a544326ab7a11c42e5905000f",
+      "blob_sha": "80cb42052aa984722b3134560f1033f8e03083f2"
+    },
+    {
+      "path": "screenshots/v6/011-Screenshot_2026-10-07_18-12-35.png",
+      "original_name": "Screenshot_2026-10-07_18-12-35.png",
+      "bytes": 5162307,
+      "sha256": "eb81c3aa3fc9fe724a79baa9c67e3d03f32132b31975c3ad65e564677a8e57ff",
+      "blob_sha": "bb5cd5437ad130b4405af3bd88cd3ae768373d45"
+    },
+    {
+      "path": "screenshots/v6/012-Screenshot_2026-10-07_18-12-39.png",
+      "original_name": "Screenshot_2026-10-07_18-12-39.png",
+      "bytes": 3999340,
+      "sha256": "12250d4227fb1f60ac0971f5e67278ed89f0146e62dce1e0cbe3b75c2d5ec660",
+      "blob_sha": "6be38315db8561026aaaac9fe354a657713ab634"
+    },
+    {
+      "path": "screenshots/v6/013-Screenshot_2026-10-07_18-12-43.png",
+      "original_name": "Screenshot_2026-10-07_18-12-43.png",
+      "bytes": 5172317,
+      "sha256": "37bf8184e61bcb4b981f837db9afdada044db54eb92f199568246ff94aae1d21",
+      "blob_sha": "9951780fba3d4bafc559cc072ea1ba3ec94ee986"
+    },
+    {
+      "path": "screenshots/v6/014-Screenshot_2026-10-07_18-13-21.png",
+      "original_name": "Screenshot_2026-10-07_18-13-21.png",
+      "bytes": 2836269,
+      "sha256": "0cc536434247a21826f9eaef7a2b7b3ca5351643ec1c4c81d7709cdc947faa11",
+      "blob_sha": "e28a61b6f0c2cd73de3775bd8ee83687028366db"
+    },
+    {
+      "path": "screenshots/v6/015-Screenshot_2026-10-07_18-13-23.png",
+      "original_name": "Screenshot_2026-10-07_18-13-23.png",
+      "bytes": 2729994,
+      "sha256": "349b2d055e3fd69636a74c1937b6609cc7267ae59c5be7b4e7233f27c0ae1ad8",
+      "blob_sha": "6fa5bdca21c148b12c344b0623ebfdfbe7abc382"
+    },
+    {
+      "path": "screenshots/v6/016-Screenshot_2026-10-07_18-13-44.png",
+      "original_name": "Screenshot_2026-10-07_18-13-44.png",
+      "bytes": 2674124,
+      "sha256": "05e16b68233705ffe5478bd96b67b652d92b4360b30dc3c053314b4d891c3ba3",
+      "blob_sha": "584d2abdf475213f2c9318c7342a4bd5820971cc"
+    },
+    {
+      "path": "screenshots/v6/017-Screenshot_2026-10-07_18-14-02.png",
+      "original_name": "Screenshot_2026-10-07_18-14-02.png",
+      "bytes": 3597836,
+      "sha256": "bcab8db8d2c5c51f0cfa00fb3955ab8a04c06af4f59b27d0ea277c989ed01335",
+      "blob_sha": "f788322c929a544cfc347e34b0f741b46073274c"
+    },
+    {
+      "path": "screenshots/v6/018-Screenshot_2026-10-07_18-14-14.png",
+      "original_name": "Screenshot_2026-10-07_18-14-14.png",
+      "bytes": 2592145,
+      "sha256": "21ee94e50cddea2b8f609c806ee456aa2b879152ae0fc1af8aee7ecee40f187e",
+      "blob_sha": "1f3c670cd7f9efa10cbf030b00f0d96650a4cd51"
+    },
+    {
+      "path": "screenshots/v6/019-Screenshot_2026-10-07_18-14-17.png",
+      "original_name": "Screenshot_2026-10-07_18-14-17.png",
+      "bytes": 4516027,
+      "sha256": "57053fff510d8beea999adc6baf469e83ac90aacbd57e62093d284e4d4ee215b",
+      "blob_sha": "7d9885d9a65534bc0e1b026d29761a788f82c1dd"
+    },
+    {
+      "path": "screenshots/v6/020-Screenshot_2026-10-07_18-14-23.png",
+      "original_name": "Screenshot_2026-10-07_18-14-23.png",
+      "bytes": 3626949,
+      "sha256": "97f0c311acf340813360ba8d78b72b670f549134f3ad3d86eca68a380ac70c7c",
+      "blob_sha": "411b82b8dc96c91409c245c0df87467ab707cf39"
+    },
+    {
+      "path": "screenshots/v6/021-Screenshot_2026-10-07_18-14-25.png",
+      "original_name": "Screenshot_2026-10-07_18-14-25.png",
+      "bytes": 3596198,
+      "sha256": "886ae84f65b3c1910d839cfe0750d684b59928a9a789eabd1b205454b6e0a0bf",
+      "blob_sha": "9566cc3444b976f388339edb0ff66742879db5db"
+    },
+    {
+      "path": "screenshots/v6/022-Screenshot_2026-10-07_18-14-29.png",
+      "original_name": "Screenshot_2026-10-07_18-14-29.png",
+      "bytes": 3906247,
+      "sha256": "42afac6f72c41442051ac1364da0977d35e2b7ce9231d9467a41a4bbb97f500e",
+      "blob_sha": "6dec9b9774eaa36ab7e401fb27ccff308cf0afad"
+    },
+    {
+      "path": "screenshots/v6/023-Screenshot_2026-10-07_18-14-35.png",
+      "original_name": "Screenshot_2026-10-07_18-14-35.png",
+      "bytes": 4199489,
+      "sha256": "2a2921883726f314a71263d9dec49e1ce9bba8eca2127b6d2c59356b51fa2cb6",
+      "blob_sha": "1c284d80330f4c4afa352a17a50ac3d88010be34"
+    },
+    {
+      "path": "screenshots/v6/024-Screenshot_2026-10-07_18-15-02.png",
+      "original_name": "Screenshot_2026-10-07_18-15-02.png",
+      "bytes": 4307376,
+      "sha256": "b2845ae69f1d6efb9282e0a36d2bb4156ac6966100e9dd1c5e98ead8cbc1c952",
+      "blob_sha": "a42d1f036ee6c7dd20934333d1052cbe856e68fc"
+    },
+    {
+      "path": "screenshots/v6/025-Screenshot_2026-10-07_18-15-07.png",
+      "original_name": "Screenshot_2026-10-07_18-15-07.png",
+      "bytes": 2292844,
+      "sha256": "6b8cab1449e1c91cdbb2f182540eb05fb2c27d85a601da00ccecc1c1d966e477",
+      "blob_sha": "c4d32f150bd50b4db3fbf542a349bfde13147222"
+    },
+    {
+      "path": "screenshots/v6/026-Screenshot_2026-10-07_18-15-14.png",
+      "original_name": "Screenshot_2026-10-07_18-15-14.png",
+      "bytes": 3683033,
+      "sha256": "ea57027306b3dbc62289466f240ae1d06318d4eaf38e97e0141712ec2d4a8cba",
+      "blob_sha": "a3145f75e19c5afa0447fbfc7467a4b67de29ecc"
+    },
+    {
+      "path": "screenshots/v6/027-Screenshot_2026-10-07_18-15-38.png",
+      "original_name": "Screenshot_2026-10-07_18-15-38.png",
+      "bytes": 3484106,
+      "sha256": "58103013cfeecd88157b3a0b62477403d15ef1ada3549c842e406d2fd8f69eda",
+      "blob_sha": "de9d202f046ff4d57f0aa1358a823f9b7ce9f578"
+    },
+    {
+      "path": "screenshots/v6/028-Screenshot_2026-10-07_18-15-50.png",
+      "original_name": "Screenshot_2026-10-07_18-15-50.png",
+      "bytes": 2350914,
+      "sha256": "da3ba49778db75ba350a64239862c0eac896f62180b46070972b3e087bc382d6",
+      "blob_sha": "94d25511e7d1b44b7d4b19a0d8e51bd80d6a003d"
+    },
+    {
+      "path": "screenshots/v6/029-Screenshot_2026-10-07_18-15-55.png",
+      "original_name": "Screenshot_2026-10-07_18-15-55.png",
+      "bytes": 3875775,
+      "sha256": "c54a14988f6985223bba418b10a9c49a38a6496b7ea744092dbce111a493886d",
+      "blob_sha": "6b06382a703993a4c1c5bf1cdb9d259b9f411a25"
+    },
+    {
+      "path": "screenshots/v6/030-Screenshot_2026-10-07_18-16-10.png",
+      "original_name": "Screenshot_2026-10-07_18-16-10.png",
+      "bytes": 2954893,
+      "sha256": "6f37b9d65de37417b393c0496c9f3f7aa035f2049b0979d08f3a6ffb35f399b8",
+      "blob_sha": "10d84ec9dc0451d47122ffc2b8a14364d3b5201a"
+    },
+    {
+      "path": "screenshots/v6/031-Screenshot_2026-10-07_18-16-13.png",
+      "original_name": "Screenshot_2026-10-07_18-16-13.png",
+      "bytes": 4736285,
+      "sha256": "681c49bf305f7fdb5171ecf3afb16c0f4c3ab019b9214c33565006e920f8247a",
+      "blob_sha": "f63b4f520aa525c855849e637344f8ccb09d9996"
+    },
+    {
+      "path": "screenshots/v6/032-Screenshot_2026-10-07_18-16-20.png",
+      "original_name": "Screenshot_2026-10-07_18-16-20.png",
+      "bytes": 3881021,
+      "sha256": "0aeb77530dd8103e808bb5fb5f5da680cdb5bce166da187262fba32330cce2f4",
+      "blob_sha": "f1f735390965f0e07ab68ad6c6c7a8f3d302785b"
+    },
+    {
+      "path": "screenshots/v6/033-Screenshot_2026-10-07_18-16-32.png",
+      "original_name": "Screenshot_2026-10-07_18-16-32.png",
+      "bytes": 3943210,
+      "sha256": "652be36428ad8a98538b502d083d8df6ae8c96cb72ed914f92173c3264d3c5ed",
+      "blob_sha": "d1afde9c5ec5f69cbe546d54c016f7046a36d7a0"
+    },
+    {
+      "path": "screenshots/v6/034-Screenshot_2026-10-07_18-16-39.png",
+      "original_name": "Screenshot_2026-10-07_18-16-39.png",
+      "bytes": 3518750,
+      "sha256": "8014faa92fdee4d67046f87066da133be0ff9749631a98cc3582ed5f5c511341",
+      "blob_sha": "f8e4405a902d99892909702272be5dfaf21435ea"
+    },
+    {
+      "path": "screenshots/v6/035-Screenshot_2026-10-07_18-16-47.png",
+      "original_name": "Screenshot_2026-10-07_18-16-47.png",
+      "bytes": 3918040,
+      "sha256": "fc7f67b18894d773c84ae1dd5ba9c7aeccec9277ee996eeb78c12c3cd87036b6",
+      "blob_sha": "719f13701a605b623144eb9b1be32319c2628f2b"
+    },
+    {
+      "path": "screenshots/v6/036-Screenshot_2026-10-07_18-17-18.png",
+      "original_name": "Screenshot_2026-10-07_18-17-18.png",
+      "bytes": 4010984,
+      "sha256": "10fc5186330e844a2bf61b15e189cb4a1c1694f51c3177858f463c8eda3ef8b1",
+      "blob_sha": "ba07b252ecbcdcf274b153de6e5cc4e961a127c9"
+    },
+    {
+      "path": "screenshots/v6/037-Screenshot_2026-10-07_18-17-28.png",
+      "original_name": "Screenshot_2026-10-07_18-17-28.png",
+      "bytes": 3632331,
+      "sha256": "f0c3d6705a2279c191c311dea4af9b1c27fe65e1ea54d689f9f425c985e61d54",
+      "blob_sha": "52b789c26c3621bc22cddfa16170088908ed46ce"
+    },
+    {
+      "path": "screenshots/v6/038-Screenshot_2026-10-07_18-17-31.png",
+      "original_name": "Screenshot_2026-10-07_18-17-31.png",
+      "bytes": 3546936,
+      "sha256": "d592bc5bd3f45239496e4e14d84d0b395acc6b14062f2ea2762ff1b61201c7bc",
+      "blob_sha": "b3fee6cdf431232fad80482b3d1788250d57699d"
+    },
+    {
+      "path": "screenshots/v6/039-Screenshot_2026-10-07_18-17-35.png",
+      "original_name": "Screenshot_2026-10-07_18-17-35.png",
+      "bytes": 3103321,
+      "sha256": "bfa55dcb08d24e5d7a0286aed3ea7070922934d9ae1adde3c3e1718e5d9e7d41",
+      "blob_sha": "ba41359a8be3bc131ccf719643ae61b2f3178529"
+    },
+    {
+      "path": "screenshots/v6/040-Screenshot_2026-10-07_18-17-43.png",
+      "original_name": "Screenshot_2026-10-07_18-17-43.png",
+      "bytes": 3640466,
+      "sha256": "b6e26be04ea5b781f94284021ffe9c7a1ebb18276726dda76658baf05655c04d",
+      "blob_sha": "e77012a2cab8bcaf1a67fcffe1a09e8582594425"
+    },
+    {
+      "path": "screenshots/v6/041-Screenshot_2026-10-07_18-17-56.png",
+      "original_name": "Screenshot_2026-10-07_18-17-56.png",
+      "bytes": 2824459,
+      "sha256": "5e6e5cbeee2bdd366b51b7b4e863e89b62804fa2fa9d10260a1e876e5ba7759c",
+      "blob_sha": "ad401983d8c7817128f9156d76153693614d5aec"
+    },
+    {
+      "path": "screenshots/v6/042-Screenshot_2026-10-07_18-18-03.png",
+      "original_name": "Screenshot_2026-10-07_18-18-03.png",
+      "bytes": 3440392,
+      "sha256": "5802c9d264953c2a7e02ad071108f645ec3c3f8a14a1840ef7c6fbc65b8dab93",
+      "blob_sha": "30c814646cf2a78564cb2854fc6a5466439ae505"
+    },
+    {
+      "path": "screenshots/v6/043-Screenshot_2026-10-07_18-18-12.png",
+      "original_name": "Screenshot_2026-10-07_18-18-12.png",
+      "bytes": 2747374,
+      "sha256": "5c1d2ecf7344cc40e11bbf6228b00710ac5ef5d2ab2cde7011c1ba7eea6e17db",
+      "blob_sha": "bac6b6621078d7ffa6f6d08d7419d11ce6d8f67c"
+    },
+    {
+      "path": "screenshots/v6/044-Screenshot_2026-10-07_18-18-22.png",
+      "original_name": "Screenshot_2026-10-07_18-18-22.png",
+      "bytes": 4704919,
+      "sha256": "7e67e9aef94a1f2cb68e320d4be43120e4c013173f3398ff19be896c81db2b51",
+      "blob_sha": "05281833700165184e413ad6ed29c6cde7ab672f"
+    },
+    {
+      "path": "screenshots/v6/045-Screenshot_2026-10-07_18-18-24.png",
+      "original_name": "Screenshot_2026-10-07_18-18-24.png",
+      "bytes": 4305801,
+      "sha256": "16b18e7cd82d9536425dbfef7ff5d691b2e0f4981c8fe4bdcce723e30b5b4476",
+      "blob_sha": "deee13a945747a3ebd72294199516e072a6d63fb"
+    },
+    {
+      "path": "screenshots/v6/046-Screenshot_2026-10-07_18-18-26.png",
+      "original_name": "Screenshot_2026-10-07_18-18-26.png",
+      "bytes": 4269922,
+      "sha256": "b49faa9f73451d7de45b35157d07ea6c5415d19930b86e9e7360455a3ed4cc87",
+      "blob_sha": "4e6ee4a4164df7af2fd071c7c5f24a9ab516c3f3"
+    },
+    {
+      "path": "screenshots/v6/047-Screenshot_2026-10-07_18-18-29.png",
+      "original_name": "Screenshot_2026-10-07_18-18-29.png",
+      "bytes": 4580845,
+      "sha256": "c5af90425837a84223c0e325dd20da8f51cbddd34f341e02ce45253d81c5cee9",
+      "blob_sha": "afc4ed4147e23964f2ff9d23f3f2418c18cb4f70"
+    },
+    {
+      "path": "screenshots/v6/048-Screenshot_2026-10-07_18-18-36.png",
+      "original_name": "Screenshot_2026-10-07_18-18-36.png",
+      "bytes": 5114491,
+      "sha256": "80a264da23787646c64c51eb1b80785c6f8e3a9701c9a157ad77673080b2fd70",
+      "blob_sha": "52ea9c918e2d56feba44cb4e9a99f6e8209942b5"
+    },
+    {
+      "path": "screenshots/v6/049-Screenshot_2026-10-07_18-18-39.png",
+      "original_name": "Screenshot_2026-10-07_18-18-39.png",
+      "bytes": 4663478,
+      "sha256": "38abe7cb9e3846e8e9a6eda47aedbfe197b87d6d4096b8cb8e8b56780cf6fdd8",
+      "blob_sha": "d1e753198d3d72f983d59a4d1a3524aaf943f24e"
+    },
+    {
+      "path": "screenshots/v6/050-Screenshot_2026-10-07_18-18-41.png",
+      "original_name": "Screenshot_2026-10-07_18-18-41.png",
+      "bytes": 4362511,
+      "sha256": "87b15d53cf2062467a22fa6d96a763d38f6dd3ffb59d7dc3fc967370384df344",
+      "blob_sha": "dee99b915c61022bede28394e1adb2bcf874df69"
+    },
+    {
+      "path": "screenshots/v6/051-Screenshot_2026-10-07_18-18-53.png",
+      "original_name": "Screenshot_2026-10-07_18-18-53.png",
+      "bytes": 4691148,
+      "sha256": "0755e73b6840a9f0b084de46d27caae91ab313940490c7ae16d9ac947d242a80",
+      "blob_sha": "fa7ccbdb39810c8ab53b36b08e3ff7aa64018dd9"
+    },
+    {
+      "path": "screenshots/v6/052-Screenshot_2026-10-07_18-19-02.png",
+      "original_name": "Screenshot_2026-10-07_18-19-02.png",
+      "bytes": 3090257,
+      "sha256": "2e348fcd8aeea25c540850536963f272e94def788d7f3be9c47f8aed08306252",
+      "blob_sha": "b08430e10d86997bf03d3a6df395f383d31f7aa1"
+    },
+    {
+      "path": "screenshots/v6/053-Screenshot_2026-10-07_18-19-06.png",
+      "original_name": "Screenshot_2026-10-07_18-19-06.png",
+      "bytes": 3152489,
+      "sha256": "5f386da2cb676f9f7d354dd59f563710ff280ba677cebe1067d79cc4e48adebe",
+      "blob_sha": "b7b8d864fd228bc501b872333b561a96e75f3952"
+    },
+    {
+      "path": "screenshots/v6/054-Screenshot_2026-10-07_18-19-12.png",
+      "original_name": "Screenshot_2026-10-07_18-19-12.png",
+      "bytes": 1790458,
+      "sha256": "82ab41bf888084370bf2933b6ad3b9662a05e3d635333d84734bcffaf668f8c5",
+      "blob_sha": "5a6a18faad0a5807048c5c37a8cb13d84c1c3224"
+    },
+    {
+      "path": "screenshots/v6/055-Screenshot_2026-10-07_18-19-55.png",
+      "original_name": "Screenshot_2026-10-07_18-19-55.png",
+      "bytes": 3182933,
+      "sha256": "208041a52470013981dd66d13372d633b5ae1f175d9c967b0b74937bb9f9a3ec",
+      "blob_sha": "00c92582a26e7d64cad3c325a43942e569c96cdd"
+    },
+    {
+      "path": "screenshots/v6/056-Screenshot_2026-10-07_18-19-59.png",
+      "original_name": "Screenshot_2026-10-07_18-19-59.png",
+      "bytes": 3059630,
+      "sha256": "7436a74ab26f1d1a178921977104aa64ae9b145fdc9103714648e96f0fe73691",
+      "blob_sha": "be7573c1fc5b299c17d2337294a71c817fb3d933"
+    },
+    {
+      "path": "screenshots/v6/057-Screenshot_2026-10-07_18-20-07.png",
+      "original_name": "Screenshot_2026-10-07_18-20-07.png",
+      "bytes": 3268486,
+      "sha256": "b033121331f604a8236c351ce794bfcfd14f4112e425d4221d7dfd444d01b745",
+      "blob_sha": "15c31b7623fcadb9a09944d9c03e0f40959627b4"
+    },
+    {
+      "path": "screenshots/v6/058-Screenshot_2026-10-07_18-20-11.png",
+      "original_name": "Screenshot_2026-10-07_18-20-11.png",
+      "bytes": 2086521,
+      "sha256": "35f6e6a9bdda966c667d6cbc05f22916c550bbf3c324fd90819ce02ec0fa2771",
+      "blob_sha": "73752820dbe955bbf83fa3946d080def8d34e9de"
+    },
+    {
+      "path": "screenshots/v6/059-Screenshot_2026-10-07_18-20-30.png",
+      "original_name": "Screenshot_2026-10-07_18-20-30.png",
+      "bytes": 4293594,
+      "sha256": "c212674e6a5945dddbe5e4813c22d82d5c3ff020291dfd01842f91483b594ca4",
+      "blob_sha": "d096f0c5288a0f9bd1b5dbae699dece6301d6063"
+    },
+    {
+      "path": "screenshots/v6/060-Screenshot_2026-10-07_18-20-36.png",
+      "original_name": "Screenshot_2026-10-07_18-20-36.png",
+      "bytes": 3944431,
+      "sha256": "bad4f59a7267ec5feb5f505a663486b8768acdda99316c572a403209a83d22c2",
+      "blob_sha": "d2631eaf4f6ff4dc28659fd8f6a973f6df2b9e53"
+    },
+    {
+      "path": "screenshots/v6/061-Screenshot_2026-10-07_18-20-40.png",
+      "original_name": "Screenshot_2026-10-07_18-20-40.png",
+      "bytes": 2513034,
+      "sha256": "bf9e3cf75433d05e199f786157b318c7676f77b1f476697ebaa1a9ad5a16aa2e",
+      "blob_sha": "3086454707b0349e20512243f435f5f7811e72c6"
+    },
+    {
+      "path": "screenshots/v6/062-Screenshot_2026-10-07_18-20-57.png",
+      "original_name": "Screenshot_2026-10-07_18-20-57.png",
+      "bytes": 3651817,
+      "sha256": "d981cb1f54b688ae84bb5a401fff805a6ef67e2acca1524f69201759bdcd3de4",
+      "blob_sha": "48b3f3a51304145db4cfb8fcde2b4c57083816fc"
+    },
+    {
+      "path": "screenshots/v6/063-Screenshot_2026-10-07_18-21-09.png",
+      "original_name": "Screenshot_2026-10-07_18-21-09.png",
+      "bytes": 3638583,
+      "sha256": "9b75d87d6a35bdce839b8bcd8988da2ab70f6555ee4cff6f25c2b71d06c29cc3",
+      "blob_sha": "2b7ed5786d30e15790663733e255fbee1e12c983"
+    },
+    {
+      "path": "screenshots/v6/064-Screenshot_2026-10-07_18-21-16.png",
+      "original_name": "Screenshot_2026-10-07_18-21-16.png",
+      "bytes": 3621121,
+      "sha256": "5022d40505171e1cdb0ef89f2aa560b718b5342cee67d43e0acbf2475fc7e913",
+      "blob_sha": "a54540741fed7615711844c7884603e3f340a7a2"
+    },
+    {
+      "path": "screenshots/v6/065-Screenshot_2026-10-07_18-21-36.png",
+      "original_name": "Screenshot_2026-10-07_18-21-36.png",
+      "bytes": 3018228,
+      "sha256": "6334524b43f8af1346e95b4312d13d9d014462c9eeeebe97ab76ce9cb6ca00d9",
+      "blob_sha": "25dd6b66cb9b9a12cdabdc6deca2598e154a4d54"
+    },
+    {
+      "path": "screenshots/v6/066-Screenshot_2026-10-07_18-22-07.png",
+      "original_name": "Screenshot_2026-10-07_18-22-07.png",
+      "bytes": 4205972,
+      "sha256": "0c272a337960f74dce9ebcb6a2eaaa415baddd6a74411cb7ea5e60634f467e7f",
+      "blob_sha": "1cfd5ae433733676498711384615cc76365bd739"
+    },
+    {
+      "path": "screenshots/v6/067-Screenshot_2026-10-07_18-22-14.png",
+      "original_name": "Screenshot_2026-10-07_18-22-14.png",
+      "bytes": 4160648,
+      "sha256": "05f05dd92603e91177938314d8920d2a62d8b4158f5e129f5670944a6633dbde",
+      "blob_sha": "a3738baeb1704575e2669fb1b71a33f4b2e858ff"
+    },
+    {
+      "path": "screenshots/v6/068-Screenshot_2026-10-07_18-22-23.png",
+      "original_name": "Screenshot_2026-10-07_18-22-23.png",
+      "bytes": 4124525,
+      "sha256": "b79394f69f4b487e83a604795905eed0e0c5fc8ddcdb8dc0758a358054f9da8a",
+      "blob_sha": "36bb63e4ac51d164c229d8c069ffc5c1f9c768ff"
+    },
+    {
+      "path": "screenshots/v6/069-Screenshot_2026-10-07_18-22-29.png",
+      "original_name": "Screenshot_2026-10-07_18-22-29.png",
+      "bytes": 4659239,
+      "sha256": "b3168c199d1f8d2d704ca9fae90b24e6a6fb7fd0b90e07676af428f4b0d899f5",
+      "blob_sha": "39ed51af9bf7e5d9bc173324f5d9e957f0f56451"
+    },
+    {
+      "path": "screenshots/v6/070-Screenshot_2026-10-07_18-22-33.png",
+      "original_name": "Screenshot_2026-10-07_18-22-33.png",
+      "bytes": 3337790,
+      "sha256": "fb22c7b920277917b2f38739eaf7a831ab32e09ce48f70c8edb2d95cea8e0b54",
+      "blob_sha": "07f299d06c80c8c53da9742d9948cd74c15b6704"
+    },
+    {
+      "path": "screenshots/v6/071-Screenshot_2026-10-07_18-22-36.png",
+      "original_name": "Screenshot_2026-10-07_18-22-36.png",
+      "bytes": 3322058,
+      "sha256": "3ac08f48638a2f156e47337e6f286edf3354b9be692557e67bff947a6bce37e2",
+      "blob_sha": "eb43b2c29ebe8a551f8eb42efc8a3868ca135289"
+    },
+    {
+      "path": "screenshots/v6/072-Screenshot_2026-10-07_18-22-38.png",
+      "original_name": "Screenshot_2026-10-07_18-22-38.png",
+      "bytes": 3370960,
+      "sha256": "9537a6c3fbc51bb149c0e573a7142745b470c19fcad2b1fe9d111793658f2bdc",
+      "blob_sha": "120d94d3d4ec3927b9843f719b49e1a9e297c153"
+    },
+    {
+      "path": "screenshots/v6/073-Screenshot_2026-10-07_18-22-51.png",
+      "original_name": "Screenshot_2026-10-07_18-22-51.png",
+      "bytes": 3439045,
+      "sha256": "96531f2c24ac934dd90b09c986582713672bd6251fb1ed8b09a35f5419135cd2",
+      "blob_sha": "2696a193cc1e1a93213e996ae0da9e6c11eb73e9"
+    },
+    {
+      "path": "screenshots/v6/074-Screenshot_2026-10-07_18-22-53.png",
+      "original_name": "Screenshot_2026-10-07_18-22-53.png",
+      "bytes": 3895547,
+      "sha256": "6123bfd45687ed8cdf34dc0dd1da49688738589e0d984de64be2314d7031c13e",
+      "blob_sha": "e3b4a74391eefcd51911ac857c0ff3fabd074cf8"
+    },
+    {
+      "path": "screenshots/v6/075-Screenshot_2026-10-07_18-23-13.png",
+      "original_name": "Screenshot_2026-10-07_18-23-13.png",
+      "bytes": 3119138,
+      "sha256": "a697041af8722f5f6bda95ce0253aa2a64f020c9f44a7b62c3ec7590f056ed8d",
+      "blob_sha": "f0a415930088a309dc0cece8a22314b556f6b286"
+    },
+    {
+      "path": "screenshots/v6/076-Screenshot_2026-10-07_18-23-23.png",
+      "original_name": "Screenshot_2026-10-07_18-23-23.png",
+      "bytes": 2706581,
+      "sha256": "7a4601a4def88d91997513523c48cc1054aa29146a2bd8ee4ccb1ad0f7c43445",
+      "blob_sha": "9bab69f0933127936de61f6256eb56aaf4f200cf"
+    },
+    {
+      "path": "screenshots/v6/077-Screenshot_2026-10-07_18-23-40.png",
+      "original_name": "Screenshot_2026-10-07_18-23-40.png",
+      "bytes": 3057501,
+      "sha256": "49d1a83bb2e350bcfdfd01787cb533b89092e470ebf9da08a0c92cf2e4ba9ec9",
+      "blob_sha": "4b15be488b2c6a76b511de06bb458187749188dd"
+    },
+    {
+      "path": "screenshots/v6/078-Screenshot_2026-10-07_18-23-44.png",
+      "original_name": "Screenshot_2026-10-07_18-23-44.png",
+      "bytes": 3333798,
+      "sha256": "a55471cc487c8adbef09e9d158b84aec7668a5c948d9e71f39e6c3133278798d",
+      "blob_sha": "b0872294f50facf16e4ecfe7a6a68f7ba934155d"
+    },
+    {
+      "path": "screenshots/v6/079-Screenshot_2026-10-07_18-24-12.png",
+      "original_name": "Screenshot_2026-10-07_18-24-12.png",
+      "bytes": 3436971,
+      "sha256": "a06e7023152826b99a7f3dcb651dffbbb56ecb13a2bc67543cd4e3bf7ee3f717",
+      "blob_sha": "81d33f1877341881b95b3440cda8df6d3345f525"
+    },
+    {
+      "path": "screenshots/v6/080-Screenshot_2026-10-07_18-24-16.png",
+      "original_name": "Screenshot_2026-10-07_18-24-16.png",
+      "bytes": 2596198,
+      "sha256": "0f42bbadada97a7f857d6889ecfbe7c6f0838f8821f801839ce19b90ff4d32bb",
+      "blob_sha": "2139a557545537c19b6bcc72385513c8905779a1"
+    },
+    {
+      "path": "screenshots/v6/081-Screenshot_2026-10-07_18-24-34.png",
+      "original_name": "Screenshot_2026-10-07_18-24-34.png",
+      "bytes": 2218520,
+      "sha256": "b34b5b5cad6ff4067667fb49bba6554ef07e40600d3b9a0026a7b19b4e86ec53",
+      "blob_sha": "2ec7d4c5fdea792bbe8e5c08da495f676c8f56e2"
+    },
+    {
+      "path": "screenshots/v6/082-Screenshot_2026-10-07_18-24-46.png",
+      "original_name": "Screenshot_2026-10-07_18-24-46.png",
+      "bytes": 1120785,
+      "sha256": "0c817e6de373040af51c268f3d8a81808f765036a3b67e17239d9807ee10f62b",
+      "blob_sha": "8a82c994bd443dfe25bf52a65fd8a578903280ff"
+    },
+    {
+      "path": "screenshots/v6/083-Screenshot_2026-10-07_18-25-12.png",
+      "original_name": "Screenshot_2026-10-07_18-25-12.png",
+      "bytes": 2475661,
+      "sha256": "7fdea5cdd6ee6bc3fe78bcf18dee0cb0c83268ce7ae02b9214ba5f1e9da67dd1",
+      "blob_sha": "6bc6d595d97c220d53f56cb75a43182fd0c7ec43"
+    },
+    {
+      "path": "screenshots/v6/084-Screenshot_2026-10-07_18-25-19.png",
+      "original_name": "Screenshot_2026-10-07_18-25-19.png",
+      "bytes": 2783696,
+      "sha256": "4b7d5300baae18793f7425c3d04d9ae90f761332abd7aa04f205b3725fdb215c",
+      "blob_sha": "49c8a68593792813a579b4418daced785c797f4b"
+    },
+    {
+      "path": "screenshots/v6/085-Screenshot_2026-10-07_18-25-23.png",
+      "original_name": "Screenshot_2026-10-07_18-25-23.png",
+      "bytes": 2564239,
+      "sha256": "bd4a0e02caf9c461002555db226717f4be126e24e4ba5479f3b14bba9688ecda",
+      "blob_sha": "fc4767b7e5cf793a0ee361a56d46690d10bbe368"
+    },
+    {
+      "path": "screenshots/v6/086-Screenshot_2026-10-07_18-25-26.png",
+      "original_name": "Screenshot_2026-10-07_18-25-26.png",
+      "bytes": 2517935,
+      "sha256": "a6f14f71d2f63fff44604616941c60171e44f65fb37a5924058c8aa973ab6a6b",
+      "blob_sha": "635f7bb3a0153fd2b276b692205e45f567984dbf"
+    },
+    {
+      "path": "screenshots/v6/087-Screenshot_2026-10-07_18-25-41.png",
+      "original_name": "Screenshot_2026-10-07_18-25-41.png",
+      "bytes": 2519514,
+      "sha256": "c3085d55990ca0bb5cd75a721faa46f65c1c4a348891807542ee1082b12c0be3",
+      "blob_sha": "91a3e49343081bbc697aa24e4d66587f146e5638"
+    },
+    {
+      "path": "screenshots/v6/088-Screenshot_2026-10-07_18-25-44.png",
+      "original_name": "Screenshot_2026-10-07_18-25-44.png",
+      "bytes": 3329635,
+      "sha256": "6555c4a03299e7f2daa03e11843b2c63089c979ce51696b13fea277c3d5de84c",
+      "blob_sha": "3011d6bbfb3d1b0db2973f9c3fc9b832434492e7"
+    },
+    {
+      "path": "screenshots/v6/089-Screenshot_2026-10-07_18-25-49.png",
+      "original_name": "Screenshot_2026-10-07_18-25-49.png",
+      "bytes": 3849085,
+      "sha256": "770971019c7b97d815c761921655519d9977210351181d060dd9138bfda38d8c",
+      "blob_sha": "d040ac9c598c7ad835bca628cfaa5e21f16ca70c"
+    },
+    {
+      "path": "screenshots/v6/090-Screenshot_2026-10-07_18-25-54.png",
+      "original_name": "Screenshot_2026-10-07_18-25-54.png",
+      "bytes": 3718816,
+      "sha256": "4ad1460a32bf0a0b595cb70933feca5ee65264f53b504c9d1c9e112a1f666a2f",
+      "blob_sha": "788ea68a9c988238b529ccf47677bb53aaaead6b"
+    },
+    {
+      "path": "screenshots/v6/091-Screenshot_2026-10-07_18-26-02.png",
+      "original_name": "Screenshot_2026-10-07_18-26-02.png",
+      "bytes": 4084860,
+      "sha256": "219fafa8cb1620952bd175bab431265bcbb2fd8e2a3af630342f2e4aeb92f15c",
+      "blob_sha": "1e0d70919abd33c41c6dd6c565045d908f829555"
+    },
+    {
+      "path": "screenshots/v6/092-Screenshot_2026-10-07_18-26-13.png",
+      "original_name": "Screenshot_2026-10-07_18-26-13.png",
+      "bytes": 4017615,
+      "sha256": "42182ae84b1367bc1a5bcab4f8baa08f02a72dcfefa408acd36493215c623395",
+      "blob_sha": "25b425d178dedb7e9e9d8f3c558b033ad9659dc6"
+    },
+    {
+      "path": "screenshots/v6/093-Screenshot_2026-10-07_18-26-21.png",
+      "original_name": "Screenshot_2026-10-07_18-26-21.png",
+      "bytes": 3924371,
+      "sha256": "3aaa9c4f2e2772024f4c7c19a49cdc1fa081038220f4bd2b6dea9b6185b0f4f3",
+      "blob_sha": "f8191416619f7e65bbc2f0443ac980499dec3bcd"
+    },
+    {
+      "path": "screenshots/v6/094-Screenshot_2026-10-07_18-26-24.png",
+      "original_name": "Screenshot_2026-10-07_18-26-24.png",
+      "bytes": 3880819,
+      "sha256": "0a58a00d386afa1f748524cc328cb8c2ba9c310e92271e4c2c6840781ee5494c",
+      "blob_sha": "3a47e34db1c073714a0668f5d31e5768693e5705"
+    },
+    {
+      "path": "screenshots/v6/095-Screenshot_2026-10-07_18-26-34.png",
+      "original_name": "Screenshot_2026-10-07_18-26-34.png",
+      "bytes": 3610957,
+      "sha256": "99bfba64ebb6da4f9f15702625c41ca6d3d0ad7a609101ce8fce21dc29c1d400",
+      "blob_sha": "eacba8e5d0fe18ec67c4637a2231f2f55cd09df9"
+    },
+    {
+      "path": "screenshots/v6/096-Screenshot_2026-10-07_18-26-36.png",
+      "original_name": "Screenshot_2026-10-07_18-26-36.png",
+      "bytes": 3899464,
+      "sha256": "e7dfe0b067c95b4e060f4954f3ab36b21b225ff5b78acac70211873955ad4bfa",
+      "blob_sha": "ef9e25ea825e8d04f663c53be886aba50bde7b63"
+    },
+    {
+      "path": "screenshots/v6/097-Screenshot_2026-10-07_18-26-59.png",
+      "original_name": "Screenshot_2026-10-07_18-26-59.png",
+      "bytes": 3293216,
+      "sha256": "f20562eddfb298ea15752ef53090abcb8fdd34da1ea4137680685ed167a5505d",
+      "blob_sha": "4eeb1e856d028233c6773c3065a09aaef2f5846c"
+    },
+    {
+      "path": "screenshots/v6/098-Screenshot_2026-10-07_18-27-22.png",
+      "original_name": "Screenshot_2026-10-07_18-27-22.png",
+      "bytes": 1256381,
+      "sha256": "8467b5b76e90b68a77f5d6b9244094b52ab5cc9c4b1283bdfd654b76bd75d606",
+      "blob_sha": "84b58ad23de6d928306adf6c2b21059432af6a7b"
+    },
+    {
+      "path": "screenshots/v6/099-Screenshot_2026-10-07_18-27-31.png",
+      "original_name": "Screenshot_2026-10-07_18-27-31.png",
+      "bytes": 3861284,
+      "sha256": "562ab257b16ed822a30aafa1694999352a6bf8b348e0b3c82723237c3dc54422",
+      "blob_sha": "6d90a74b6f60eff2515a3032cd986b984bda7f99"
+    },
+    {
+      "path": "screenshots/v6/100-Screenshot_2026-10-07_18-27-35.png",
+      "original_name": "Screenshot_2026-10-07_18-27-35.png",
+      "bytes": 2188166,
+      "sha256": "664370bdb4a5d988bf183488dd2412b8e4a0b300e476ba39c853a00f5be6ad98",
+      "blob_sha": "926db79359fe6fb11b21e5c8d86d408b8af4f410"
+    },
+    {
+      "path": "screenshots/v6/101-Screenshot_2026-10-07_18-27-37.png",
+      "original_name": "Screenshot_2026-10-07_18-27-37.png",
+      "bytes": 3268563,
+      "sha256": "2411652dc03d6b933eaf950671b5cca21c71465b76ff499745fd40f7e509b58b",
+      "blob_sha": "e7f9e9cbf2d7901ea5efdd35510b5c8c783b5b27"
+    },
+    {
+      "path": "screenshots/v6/102-Screenshot_2026-10-07_18-27-45.png",
+      "original_name": "Screenshot_2026-10-07_18-27-45.png",
+      "bytes": 4728790,
+      "sha256": "ae8973d566aae9d0421db8546d1440c81da3fd391444e9925a7590bdd835236c",
+      "blob_sha": "0ba19bc798f578fa2cf09f5eb3aad8b8efd45e23"
+    },
+    {
+      "path": "screenshots/v6/103-Screenshot_2026-10-07_18-28-06.png",
+      "original_name": "Screenshot_2026-10-07_18-28-06.png",
+      "bytes": 4426840,
+      "sha256": "292bddd8276ae74ec9c41809261fcb40173dc6bdce6fc2e1b8f6c53a2847a190",
+      "blob_sha": "578a1bfbb41c1719cd6a82296b599e7c2db2de6c"
+    },
+    {
+      "path": "screenshots/v6/104-Screenshot_2026-10-07_18-28-16.png",
+      "original_name": "Screenshot_2026-10-07_18-28-16.png",
+      "bytes": 4549860,
+      "sha256": "749b414f971b05ce680738224884e3a18dd9979c0eec9282b8150b1ffb418c9e",
+      "blob_sha": "5019cce612052b48db1c688d01a4dd5a95a04d82"
+    },
+    {
+      "path": "screenshots/v6/105-Screenshot_2026-10-07_18-28-21.png",
+      "original_name": "Screenshot_2026-10-07_18-28-21.png",
+      "bytes": 4539022,
+      "sha256": "906e9cc1a756a7a35b67a616314f24bff725932abab017fa17540980a4a99ed7",
+      "blob_sha": "90bd1aa432c43524bc5dc863b7eeba20b7c9e3dc"
+    },
+    {
+      "path": "screenshots/v6/106-Screenshot_2026-10-07_18-28-25.png",
+      "original_name": "Screenshot_2026-10-07_18-28-25.png",
+      "bytes": 4425482,
+      "sha256": "3c9cb07302dd7badbfc74451c146198ca5fd42f71d99696157a5e4e97fce1103",
+      "blob_sha": "24eff0c373f117c746a0752290af0589809edd2d"
+    },
+    {
+      "path": "screenshots/v6/107-Screenshot_2026-10-07_18-28-46.png",
+      "original_name": "Screenshot_2026-10-07_18-28-46.png",
+      "bytes": 4571909,
+      "sha256": "e232a27484005e19371315614bddf6aa39a6296a1f4bed570d30c79f7cb13d21",
+      "blob_sha": "e124862263429ab0e853eed2cc867c123f9dddb5"
+    },
+    {
+      "path": "screenshots/v6/108-Screenshot_2026-10-07_18-28-58.png",
+      "original_name": "Screenshot_2026-10-07_18-28-58.png",
+      "bytes": 4463141,
+      "sha256": "f41beedf1b4033b81b0b01c6d60f98742f3f5bcc6b5fa465772a8116696e5f43",
+      "blob_sha": "57e50f14350a4babf516183bda90fad132fc19e9"
+    },
+    {
+      "path": "screenshots/v6/109-Screenshot_2026-10-07_18-29-01.png",
+      "original_name": "Screenshot_2026-10-07_18-29-01.png",
+      "bytes": 4466525,
+      "sha256": "86fa2016e49bc57f9e9602e9d186c5a8752c0ef681031009ea07fb4bb42a1a87",
+      "blob_sha": "6332f4b0e3a10112ca1ae8079914ea5eb0736d8b"
+    },
+    {
+      "path": "screenshots/v6/110-Screenshot_2026-10-07_18-29-07.png",
+      "original_name": "Screenshot_2026-10-07_18-29-07.png",
+      "bytes": 4632641,
+      "sha256": "2e38c1b173aff0d2743fd5fd4ce8a316708c381948a0a2cf554b54b5c723ece6",
+      "blob_sha": "d1aeb54be357624b94a110c4b6c9a63d34bbab66"
+    },
+    {
+      "path": "screenshots/v6/111-Screenshot_2026-10-07_18-29-21.png",
+      "original_name": "Screenshot_2026-10-07_18-29-21.png",
+      "bytes": 4768175,
+      "sha256": "15bec6f92515ba7aadbab8a4ba435a2407b026a7f7fd43180e782ffa39ff6b24",
+      "blob_sha": "865b48258763fa003c2510ca12fedc7afa34c759"
+    },
+    {
+      "path": "screenshots/v6/112-Screenshot_2026-10-07_18-29-26.png",
+      "original_name": "Screenshot_2026-10-07_18-29-26.png",
+      "bytes": 4675504,
+      "sha256": "c9cf7bf05825ba5dbca9217367c1f1d233c4639833348368d9916c0782ff29c3",
+      "blob_sha": "6d96d1aea0034ac06985b4eb5e9d197dcdcf7455"
+    },
+    {
+      "path": "screenshots/v6/113-Screenshot_2026-10-07_18-29-29.png",
+      "original_name": "Screenshot_2026-10-07_18-29-29.png",
+      "bytes": 4393773,
+      "sha256": "5e2f7b08163aa4c00f1261cdb1408147c870058a17016839c18c30d1281c91e3",
+      "blob_sha": "121f8759c1f9736916a5bfd128f6b568dd2da633"
+    },
+    {
+      "path": "screenshots/v6/114-Screenshot_2026-10-07_18-29-35.png",
+      "original_name": "Screenshot_2026-10-07_18-29-35.png",
+      "bytes": 4623584,
+      "sha256": "5b00d38b35dbc577ba7008b225c064253189e00c9eb2b6fcc984f572a3c21afd",
+      "blob_sha": "5af03baf9829b73de8d2c52b597da1a0cbfe339a"
+    },
+    {
+      "path": "screenshots/v6/115-Screenshot_2026-10-07_18-29-46.png",
+      "original_name": "Screenshot_2026-10-07_18-29-46.png",
+      "bytes": 3056178,
+      "sha256": "c15c72bc7d8fa7a4afd1712bd2aa3a2f4d0941dd148e4613afd6d1a6e0e34727",
+      "blob_sha": "e171d430d113bd73e3cc6f6647fc2c10fd19bf0f"
+    },
+    {
+      "path": "screenshots/v6/116-Screenshot_2026-10-07_18-29-48.png",
+      "original_name": "Screenshot_2026-10-07_18-29-48.png",
+      "bytes": 2832761,
+      "sha256": "d5a153ffc982b6f2c3b9718e6e6d782727f933e1b4ffa5751d962d40d067df08",
+      "blob_sha": "07d315dc9299d10b596a61dd708927a470bebdea"
+    },
+    {
+      "path": "screenshots/v6/117-Screenshot_2026-10-07_18-29-51.png",
+      "original_name": "Screenshot_2026-10-07_18-29-51.png",
+      "bytes": 2911896,
+      "sha256": "a752c85a76104f5ca3cf2ee8ee90bf2df3740f2d67ec81894537a2de75caa816",
+      "blob_sha": "61d3558c2dd3fef17cc59c5da2db50f3e0c30fb2"
+    },
+    {
+      "path": "screenshots/v6/118-Screenshot_2026-10-07_18-30-04.png",
+      "original_name": "Screenshot_2026-10-07_18-30-04.png",
+      "bytes": 2808030,
+      "sha256": "b35744c97d36af50d9b3a4518829306dd43b86deeff2483f5c14f4b713ec81ab",
+      "blob_sha": "a6784037c30ba8fa8afc74fd1d2df8b560ffdbd2"
+    },
+    {
+      "path": "screenshots/v6/119-Screenshot_2026-10-07_18-30-25.png",
+      "original_name": "Screenshot_2026-10-07_18-30-25.png",
+      "bytes": 3990804,
+      "sha256": "f92c9ec8507f0706fdd416e04b45b8effb5968268cc733d3df7ac3c67a579418",
+      "blob_sha": "743c1f38d18ad88c4cd0c56746ad431a44d3868c"
+    },
+    {
+      "path": "screenshots/v6/120-Screenshot_2026-10-07_18-30-37.png",
+      "original_name": "Screenshot_2026-10-07_18-30-37.png",
+      "bytes": 2162786,
+      "sha256": "ca262d199828ecc5d00e6b0f5037182046631d90bcd4f9da49e2266050a7ba6c",
+      "blob_sha": "c07081ce18b8d77df1d41d2b4bf362cebe3d4f0e"
+    }
+  ]
+}
