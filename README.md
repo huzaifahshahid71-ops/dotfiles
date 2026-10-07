@@ -164,9 +164,10 @@ Choose the optional full collection in setup to download **631 wallpapers**. The
 ## Installation video
 
 <!-- SUMI_V6_SHOWCASE_START -->
-Watch the complete videos here using GitHub’s native players. Chapters run in order and cover the full recordings; the original full-resolution files are linked below each set.
+Expand either video below to watch its chapters using GitHub’s native players. Chapters run in order and cover the full recordings; the original full-resolution files are linked below each set.
 
-### CachyOS + Sumi v6 installation and showcase
+<details>
+<summary><strong>CachyOS + Sumi v6 installation and showcase — 17 chapters</strong></summary>
 
 **Chapter 01 · 00:00–02:00**
 
@@ -238,7 +239,10 @@ https://github.com/user-attachments/assets/d7897312-77d2-4b55-ab9b-9907f6fec359
 
 [Open/download the full-resolution original](https://github.com/huzaifahshahid71-ops/dotfiles/releases/download/v6.0.0/CachyOS-Sumi-v6-FHDplus.mp4)
 
-### Original CachyOS + v6 installation guide
+</details>
+
+<details>
+<summary><strong>Original CachyOS + v6 installation guide — 10 chapters</strong></summary>
 
 **Chapter 01 · 00:00–02:00**
 
@@ -281,6 +285,8 @@ https://github.com/user-attachments/assets/a42660a0-a390-4e84-a0b8-47cbc7672ebe
 https://github.com/user-attachments/assets/8d332e9d-100d-42d4-8537-b700d2b989b0
 
 [Open/download the full-resolution original](https://github.com/huzaifahshahid71-ops/dotfiles/releases/download/v6.0.0/CACHY.OS.%2B.V6.INSTALL.GUIDE.mp4)
+
+</details>
 
 <!-- SUMI_V6_SHOWCASE_END -->
 
