@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": ".local/share/desktop-profiles/clavis/native/niri/config.kdl",
+      "before_sha256": "dded0caf45eec8c90158b660b184ad592e3e598eeaba953359165773a8a1d690",
+      "sha256": "e107f6debb43e49c3ce57ef5803c27a0d14a534664d86236c8e5da760e80038c",
+      "bytes": 29193,
+      "mode": 420,
+      "bindings": 1,
+      "backup": "/home/gamer/.local/share/huzaifah-multi-rice/cipher-search-repairs/1791380263931559155/0.before.kdl"
+    }
+  ]
+}

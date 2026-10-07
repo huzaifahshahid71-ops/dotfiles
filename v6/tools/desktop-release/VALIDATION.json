@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "revision": "desktop-r3",
+  "local_regressions": 35,
+  "public_baseline": "appearance-r2",
+  "verified_configuration_files": 3,
+  "crimson_ui_files": 9,
+  "constituent_vm_acceptance": {
+    "Crimson": "Ambxst appeared",
+    "Cipher": "search works",
+    "Aether": "all icons fixed"
+  },
+  "integrated_image_built_here": false,
+  "publication": "performed by supplied host command after its build checks",
+  "branch": "v6.0-tahoe-dev",
+  "public_source_transform": "checked against current development-branch assembler",
+  "kit_revision": 4,
+  "correction": "Read the original retained Crimson addon.zip directly; verify accepted archive digest and all nine members before import and source export; retain unchanged interrupted candidate resume"
+}

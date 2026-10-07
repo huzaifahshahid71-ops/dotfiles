@@ -32,14 +32,6 @@ SECRET = re.compile(rb'(?:gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20
 
 
 def production_path(relative):
-    # Multi-Rice: preserve Crimson wallpaper-picker UI sources
-    from pathlib import PurePosixPath as _CrimsonPath
-    _crimson_path = _CrimsonPath(relative)
-    if relative.startswith("modules/widgets/dashboard/wallpapers/") and (
-        _crimson_path.suffix.lower() in {".qml", ".js", ".mjs", ".qsb", ".frag", ".vert", ".glsl", ".svg", ".png", ".webp"}
-        or _crimson_path.name == "qmldir"
-    ):
-        relative = relative.replace("/wallpapers/", "/wallpaper-ui/", 1)
     path = relative_path(relative)
     ignored = SKIP_NAMES - {'state', '.state'} if state_code(relative) else SKIP_NAMES
     extras = {'docs', 'screenshots', 'recordings', 'test', 'tests',
@@ -171,9 +163,6 @@ class Layer:
                 destination.unlink()
                 raise SetupError('Possible credential in runtime input; retained on host: ' + relative)
             data, _ = portable(data, str(self.home))
-            # Multi-Rice: retain VM-accepted Aether and Cipher launch settings
-            from desktop_defaults import desktop_defaults
-            data = desktop_defaults(relative, data)
             if relative in ECLIPSE_CONFIGS:
                 data = eclipse_defaults(data)
             if relative==CIPHER_SHELL:data=cipher_shell_path(data)

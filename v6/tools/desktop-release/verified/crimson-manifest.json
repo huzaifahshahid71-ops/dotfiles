@@ -1,0 +1,91 @@
+{
+  "schema": 1,
+  "kind": "crimson-wallpaper-ui",
+  "anchors": {
+    "shell.qml": "e2e82efb68cdc61a1c75e22bf9b3ed91d46b829b497bc3714c97ba85861f07cc",
+    "cli.sh": "355e08bd24fec08770d568904ee7a7521bfc4da750ae6d1578face5d611276b2"
+  },
+  "files": [
+    {
+      "path": ".local/src/ambxst/modules/widgets/dashboard/wallpapers/FilterBar.qml",
+      "source": "home/.local/src/ambxst/modules/widgets/dashboard/wallpapers/FilterBar.qml",
+      "bytes": 13578,
+      "sha256": "22343ef924963af346cffa0e7c141077eb7b4625abbf828241057bf85dad4198",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/src/ambxst/modules/widgets/dashboard/wallpapers/MpvShaderGenerator.js",
+      "source": "home/.local/src/ambxst/modules/widgets/dashboard/wallpapers/MpvShaderGenerator.js",
+      "bytes": 2787,
+      "sha256": "f1aa4fd3935add97110fe7aa1eda6da719eb1011a1d2bfce06d11bb8a6c04bd6",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/src/ambxst/modules/widgets/dashboard/wallpapers/SchemeSelector.qml",
+      "source": "home/.local/src/ambxst/modules/widgets/dashboard/wallpapers/SchemeSelector.qml",
+      "bytes": 20331,
+      "sha256": "15e153563f1086d3c1bd68a8555e87ef6770af4613abba7e3f05b8bfc8c6d0e9",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/src/ambxst/modules/widgets/dashboard/wallpapers/Wallpaper.qml",
+      "source": "home/.local/src/ambxst/modules/widgets/dashboard/wallpapers/Wallpaper.qml",
+      "bytes": 55681,
+      "sha256": "8ae1d6e8895f0cdc94bfb693e942d0c9805da2f9670a0395a1999b757e7cbbb3",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/src/ambxst/modules/widgets/dashboard/wallpapers/WallpapersTab.qml",
+      "source": "home/.local/src/ambxst/modules/widgets/dashboard/wallpapers/WallpapersTab.qml",
+      "bytes": 54028,
+      "sha256": "5fe3dd771b038a51bd61e6a02d6cb482ccfe7c6f20d025201af74cdcfb7e8b77",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/src/ambxst/modules/widgets/dashboard/wallpapers/palette.frag",
+      "source": "home/.local/src/ambxst/modules/widgets/dashboard/wallpapers/palette.frag",
+      "bytes": 1705,
+      "sha256": "f98c80d1b80122729e3adc5469c08f190db8bb07749af1e3887573fe03119277",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/src/ambxst/modules/widgets/dashboard/wallpapers/palette.frag.qsb",
+      "source": "home/.local/src/ambxst/modules/widgets/dashboard/wallpapers/palette.frag.qsb",
+      "bytes": 2474,
+      "sha256": "ddf2c7ca063a2f6d13f2f3c87df965c9956d24351bfd1a538684766a4e32555f",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/src/ambxst/modules/widgets/dashboard/wallpapers/palette.vert",
+      "source": "home/.local/src/ambxst/modules/widgets/dashboard/wallpapers/palette.vert",
+      "bytes": 403,
+      "sha256": "bc32c6721c75ed9dd0c3d22e603417b33ada8023b0103b9ce003aa7c9193c91b",
+      "mode": 420,
+      "template": false,
+      "init": false
+    },
+    {
+      "path": ".local/src/ambxst/modules/widgets/dashboard/wallpapers/palette.vert.qsb",
+      "source": "home/.local/src/ambxst/modules/widgets/dashboard/wallpapers/palette.vert.qsb",
+      "bytes": 1580,
+      "sha256": "c9072ab42bbe3589b9df6886787b9a98957394944e85b588943b0970c2345c7b",
+      "mode": 420,
+      "template": false,
+      "init": false
+    }
+  ]
+}

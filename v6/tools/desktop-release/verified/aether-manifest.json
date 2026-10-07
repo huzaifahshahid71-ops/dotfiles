@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": ".local/share/desktop-profiles/caelestia/hypr/hyprland/execs.lua",
+      "sha256": "1c49aedba6880ddfaeb2d8343f88a04b964b3fbd3473f85645f0a7105240a1c2",
+      "before_sha256": "68e0e091d522ba40093896ac27f53c24c8303d21026632b19b23dbbcf4c70e79",
+      "bytes": 1958,
+      "mode": 420,
+      "launches": 1,
+      "backup": "/home/gamer/.local/share/huzaifah-multi-rice/aether-icon-repairs/1791381327498579022/0.before.lua"
+    },
+    {
+      "path": ".local/share/desktop-profiles/caelestia/hypr/hyprland/keybinds.lua",
+      "sha256": "b2a9611acff4aaf9736664864f2aeedecffa75498fa6254f4d8dfc3ca1f44261",
+      "before_sha256": "bc160eb9d2b3d5f77f1ed1292a9ccdd5ab5cd755a92b0d59b8472e5411cb0944",
+      "bytes": 9114,
+      "mode": 420,
+      "launches": 2,
+      "backup": "/home/gamer/.local/share/huzaifah-multi-rice/aether-icon-repairs/1791381327498579022/1.before.lua"
+    }
+  ]
+}

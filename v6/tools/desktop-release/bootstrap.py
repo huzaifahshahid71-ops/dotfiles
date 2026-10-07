@@ -1,6 +1,3 @@
-#!/usr/bin/env bash
-set -euo pipefail
-python3 - <<'SUMI_ONLINE_PY'
 import fcntl
 import hashlib
 import json
@@ -15,8 +12,8 @@ import urllib.request
 
 BASE='https://github.com/huzaifahshahid71-ops/dotfiles/releases/download/v6.0.0/'
 INFO_NAME='online-installer-r3.json'
-INFO_SHA256='933aa8cd237f6b9f84ef957039905349c5d60c0ba7d0acbda4ea0773168c96a4'
-INFO_BYTES=int('63925')
+INFO_SHA256='@INFO_SHA256@'
+INFO_BYTES=int('@INFO_BYTES@')
 
 
 def sha(path):
@@ -112,5 +109,3 @@ def main():
 try:main()
 except Exception as error:
     print('Sumi launcher stopped:',error,file=sys.stderr);sys.exit(1)
-
-SUMI_ONLINE_PY

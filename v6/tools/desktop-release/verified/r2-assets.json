@@ -1,0 +1,26 @@
+{
+  "ONLINE-INSTALL-v6-r2.sh": {
+    "asset": "ONLINE-INSTALL-v6-r2.sh",
+    "bytes": 5337,
+    "sha256": "92d9ced86df209d3a5f2e33e920f640ec7b91a53e91ebc781ab6902960aead24",
+    "url": "https://github.com/huzaifahshahid71-ops/dotfiles/releases/download/v6.0.0/ONLINE-INSTALL-v6-r2.sh"
+  },
+  "online-installer-r2.json": {
+    "asset": "online-installer-r2.json",
+    "bytes": 63928,
+    "sha256": "eef8daf63b7cecd982318c2783409a76df5877947a8d6ae037414fbe46cb3225",
+    "url": "https://github.com/huzaifahshahid71-ops/dotfiles/releases/download/v6.0.0/online-installer-r2.json"
+  },
+  "release-r2.json": {
+    "asset": "release-r2.json",
+    "bytes": 2543,
+    "sha256": "83157104148b4c85125faff9028563ed13cc29ba6907832af0bc1980e1f0fe63",
+    "url": "https://github.com/huzaifahshahid71-ops/dotfiles/releases/download/v6.0.0/release-r2.json"
+  },
+  "sumi-installer-source-v6.0.0-r2.zip": {
+    "asset": "sumi-installer-source-v6.0.0-r2.zip",
+    "bytes": 2351391,
+    "sha256": "cbaae7102a184714ea3acb682bbd7e536a8706c63be7020a9b63b3cbdf14593f",
+    "url": "https://github.com/huzaifahshahid71-ops/dotfiles/releases/download/v6.0.0/sumi-installer-source-v6.0.0-r2.zip"
+  }
+}
