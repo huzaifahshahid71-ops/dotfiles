@@ -2,6 +2,14 @@
 
 # Huzaifah Multi-Rice v6.0.0 — Sumi
 
+<!-- SUMI_BADGES_START -->
+[![Stars](https://img.shields.io/github/stars/huzaifahshahid71-ops/dotfiles?style=for-the-badge&color=a6c9ff&labelColor=24292f)](https://github.com/huzaifahshahid71-ops/dotfiles/stargazers)
+[![Forks](https://img.shields.io/github/forks/huzaifahshahid71-ops/dotfiles?style=for-the-badge&color=cbb8e8&labelColor=24292f)](https://github.com/huzaifahshahid71-ops/dotfiles/forks)
+[![Release](https://img.shields.io/github/v/release/huzaifahshahid71-ops/dotfiles?style=for-the-badge&color=9de0cf&labelColor=24292f)](https://github.com/huzaifahshahid71-ops/dotfiles/releases/latest)
+[![Last commit](https://img.shields.io/github/last-commit/huzaifahshahid71-ops/dotfiles/main?style=for-the-badge&color=a6c9ff&labelColor=24292f)](https://github.com/huzaifahshahid71-ops/dotfiles/commits/main)
+[![License: not specified](https://img.shields.io/badge/license-not_specified-e8c58a?style=for-the-badge&labelColor=24292f)](#sources-and-credits)
+<!-- SUMI_BADGES_END -->
+
 **12 desktops. One Sumi Deck. One install command.**
 
 **8 Hyprland · 4 Niri · 74 login themes · 8 GRUB themes · 631 wallpapers**
